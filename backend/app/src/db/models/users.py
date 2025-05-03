@@ -10,3 +10,6 @@ class User(models.Model):
 
   boards: fields.ReverseRelation["BoardUser"]
   comments: fields.ReverseRelation["Comment"]
+
+  class Meta:
+    table = "users"

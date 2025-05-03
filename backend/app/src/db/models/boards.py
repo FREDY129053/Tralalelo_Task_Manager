@@ -13,6 +13,9 @@ class Board(models.Model):
     columns: fields.ReverseRelation["Column"]
     members: fields.ReverseRelation["BoardUser"]
 
+    class Meta:
+        table = "boards"
+
 
 class BoardUser(models.Model):
     id = fields.IntField(pk=True)
@@ -20,7 +23,8 @@ class BoardUser(models.Model):
     board = fields.ForeignKeyField("models.Board", related_name="members", on_delete=fields.CASCADE)
     role = fields.CharEnumField(UserRole, default=UserRole.member)
 
-    class Meta: ...
+    class Meta: 
+        table = "board_users"
 
 
 class Column(models.Model):
@@ -30,6 +34,9 @@ class Column(models.Model):
     position = fields.IntField()
 
     tasks: fields.ReverseRelation["Task"]
+
+    class Meta:
+        table = "columns"
 
 
 class Task(models.Model):
@@ -45,12 +52,18 @@ class Task(models.Model):
     subtasks: fields.ReverseRelation["Subtask"]
     comments: fields.ReverseRelation["Comment"]
 
+    class Meta:
+        table = "tasks"
+
 
 class Subtask(models.Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     task = fields.ForeignKeyField("models.Task", related_name="subtasks", on_delete=fields.CASCADE)
     title = fields.CharField(max_length=255)
     is_completed = fields.BooleanField(default=False)
+
+    class Meta:
+        table = "subtasks"
 
 
 class Comment(models.Model):
@@ -61,3 +74,6 @@ class Comment(models.Model):
     )
     content = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "comments"
