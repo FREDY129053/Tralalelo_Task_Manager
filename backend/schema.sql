@@ -144,7 +144,8 @@ CREATE TABLE public.users (
     email text NOT NULL,
     phone text,
     avatar_url text,
-    is_admin boolean DEFAULT false
+    is_admin boolean DEFAULT false,
+    password text NOT NULL DEFAULT ''
 );
 
 
