@@ -1,4 +1,6 @@
-![Main](https://m.gjcdn.net/video-poster/900/40595871-axse7zjr-v4.webp)
+<div style="display: flex; align-items:center; justify-content: center;">
+  <img src="https://m.gjcdn.net/video-poster/900/40595871-axse7zjr-v4.webp" alt="IDOL" />
+</div>
 
 # Tralalelo Task Manager
 
