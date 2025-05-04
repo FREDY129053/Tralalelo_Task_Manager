@@ -2,7 +2,7 @@
   <img align="center" width="250px" height="250px" src="https://m.gjcdn.net/video-poster/900/40595871-axse7zjr-v4.webp" alt="IDOL" />
 </div>
 
-# Tralalelo Task Manager
+# Tralalelo Tasklala Manager
 
 Basic description of your project.
 
