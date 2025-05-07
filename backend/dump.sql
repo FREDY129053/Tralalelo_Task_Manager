@@ -25,37 +25,14 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.board_users (
-    id integer NOT NULL,
-    user_id uuid,
-    board_id uuid,
+    user_id uuid NOT NULL,
+    board_id uuid NOT NULL,
     role text NOT NULL,
     CONSTRAINT board_users_role_check CHECK ((role = ANY (ARRAY['CREATOR'::text, 'MODERATOR'::text, 'MEMBER'::text])))
 );
 
 
 ALTER TABLE public.board_users OWNER TO postgres;
-
---
--- Name: board_users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.board_users_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.board_users_id_seq OWNER TO postgres;
-
---
--- Name: board_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.board_users_id_seq OWNED BY public.board_users.id;
-
 
 --
 -- Name: boards; Type: TABLE; Schema: public; Owner: postgres
@@ -65,7 +42,9 @@ CREATE TABLE public.boards (
     id uuid NOT NULL,
     title text NOT NULL,
     description text,
-    is_public boolean DEFAULT true
+    is_public boolean DEFAULT true,
+    color character varying(7),
+    CONSTRAINT color_hex_constraint_boards CHECK (((color IS NULL) OR ((color)::text ~* '^#[a-f0-9]{6}$'::text)))
 );
 
 
@@ -79,7 +58,9 @@ CREATE TABLE public.columns (
     id uuid NOT NULL,
     board_id uuid,
     title text NOT NULL,
-    "position" integer
+    "position" integer,
+    color character varying(7),
+    CONSTRAINT color_hex_constraint_columns CHECK (((color IS NULL) OR ((color)::text ~* '^#[a-f0-9]{6}$'::text)))
 );
 
 
@@ -126,9 +107,11 @@ CREATE TABLE public.tasks (
     due_date timestamp without time zone,
     priority text,
     status text,
-    color text,
+    color character varying(7),
+    responsible_id uuid,
+    CONSTRAINT color_hex_constraint_tasks CHECK (((color IS NULL) OR ((color)::text ~* '^#[a-f0-9]{6}$'::text))),
     CONSTRAINT tasks_priority_check CHECK ((priority = ANY (ARRAY['LOW'::text, 'MEDIUM'::text, 'HIGH'::text]))),
-    CONSTRAINT tasks_status_check CHECK ((status = ANY (ARRAY['TODO'::text, 'IN_PROGRESS'::text, 'DONE'::text])))
+    CONSTRAINT tasks_status_check CHECK ((status = ANY (ARRAY['TODO'::text, 'IN_PROGRESS'::text, 'DONE'::text, 'REJECT'::text])))
 );
 
 
@@ -144,26 +127,23 @@ CREATE TABLE public.users (
     email text NOT NULL,
     phone text,
     avatar_url text,
-    is_admin boolean DEFAULT false
+    registered_at timestamp without time zone DEFAULT now(),
+    is_admin boolean DEFAULT false,
+    hashed_password text NOT NULL
 );
 
 
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- Name: board_users id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.board_users ALTER COLUMN id SET DEFAULT nextval('public.board_users_id_seq'::regclass);
-
-
---
 -- Data for Name: board_users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.board_users (id, user_id, board_id, role) FROM stdin;
-1	6f8a6abd-8bef-4f24-af71-17491774f43a	391361ae-e561-4f1a-b0ee-440c5c62611e	CREATOR
-2	9869795d-ffa1-448b-a9fc-a2e9ee2cbe3f	391361ae-e561-4f1a-b0ee-440c5c62611e	MEMBER
+COPY public.board_users (user_id, board_id, role) FROM stdin;
+00000000-0000-0000-0000-000000000001	10000000-0000-0000-0000-000000000001	CREATOR
+00000000-0000-0000-0000-000000000002	10000000-0000-0000-0000-000000000001	MEMBER
+00000000-0000-0000-0000-000000000002	10000000-0000-0000-0000-000000000002	CREATOR
+00000000-0000-0000-0000-000000000003	10000000-0000-0000-0000-000000000002	MEMBER
 \.
 
 
@@ -171,9 +151,9 @@ COPY public.board_users (id, user_id, board_id, role) FROM stdin;
 -- Data for Name: boards; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.boards (id, title, description, is_public) FROM stdin;
-391361ae-e561-4f1a-b0ee-440c5c62611e	Frontend Redesign	Redesign the frontend using modern UI practices.	t
-bee5e92c-d1e6-46fb-acc1-8b0dfc6bc3a7	Backend Refactor	Refactor legacy backend services for better performance.	f
+COPY public.boards (id, title, description, is_public, color) FROM stdin;
+10000000-0000-0000-0000-000000000001	Project A	Private project	f	#ff5733
+10000000-0000-0000-0000-000000000002	Public Board	Shared tasks	t	#33ccff
 \.
 
 
@@ -181,10 +161,9 @@ bee5e92c-d1e6-46fb-acc1-8b0dfc6bc3a7	Backend Refactor	Refactor legacy backend se
 -- Data for Name: columns; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.columns (id, board_id, title, "position") FROM stdin;
-9efdd78c-97b7-47b7-884a-ec689019adc4	391361ae-e561-4f1a-b0ee-440c5c62611e	To Do	1
-1ad40261-b051-460d-8176-10a3d7226b8f	391361ae-e561-4f1a-b0ee-440c5c62611e	In Progress	2
-17231aad-6286-411d-982a-98756c029a12	391361ae-e561-4f1a-b0ee-440c5c62611e	Done	3
+COPY public.columns (id, board_id, title, "position", color) FROM stdin;
+20000000-0000-0000-0000-000000000001	10000000-0000-0000-0000-000000000001	To Do	1	#dddddd
+20000000-0000-0000-0000-000000000002	10000000-0000-0000-0000-000000000001	Done	2	\N
 \.
 
 
@@ -193,6 +172,7 @@ COPY public.columns (id, board_id, title, "position") FROM stdin;
 --
 
 COPY public.comments (id, task_id, user_id, content, created_at) FROM stdin;
+50000000-0000-0000-0000-000000000001	30000000-0000-0000-0000-000000000001	00000000-0000-0000-0000-000000000001	Working on it.	2025-05-07 06:00:00
 \.
 
 
@@ -201,6 +181,8 @@ COPY public.comments (id, task_id, user_id, content, created_at) FROM stdin;
 --
 
 COPY public.subtasks (id, task_id, title, is_completed) FROM stdin;
+40000000-0000-0000-0000-000000000001	30000000-0000-0000-0000-000000000001	Check logs	t
+40000000-0000-0000-0000-000000000002	30000000-0000-0000-0000-000000000001	Write test	f
 \.
 
 
@@ -208,7 +190,8 @@ COPY public.subtasks (id, task_id, title, is_completed) FROM stdin;
 -- Data for Name: tasks; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.tasks (id, column_id, title, description, due_date, priority, status, color) FROM stdin;
+COPY public.tasks (id, column_id, title, description, due_date, priority, status, color, responsible_id) FROM stdin;
+30000000-0000-0000-0000-000000000001	20000000-0000-0000-0000-000000000001	Fix Bug	Fix login issue	2025-05-10 10:00:00	HIGH	TODO	#f1c40f	00000000-0000-0000-0000-000000000002
 \.
 
 
@@ -216,17 +199,11 @@ COPY public.tasks (id, column_id, title, description, due_date, priority, status
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.users (id, username, email, phone, avatar_url, is_admin) FROM stdin;
-6f8a6abd-8bef-4f24-af71-17491774f43a	alice	alice@example.com	+1234567890	https://example.com/avatars/alice.png	f
-9869795d-ffa1-448b-a9fc-a2e9ee2cbe3f	bob	bob@example.com	+0987654321	https://example.com/avatars/bob.png	f
+COPY public.users (id, username, email, phone, avatar_url, registered_at, is_admin, hashed_password) FROM stdin;
+00000000-0000-0000-0000-000000000001	alice	alice@example.com	1234567890	\N	2025-05-07 05:59:02	t	hashed_pass_alice
+00000000-0000-0000-0000-000000000002	bob	bob@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_bob
+00000000-0000-0000-0000-000000000003	carol	carol@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_carol
 \.
-
-
---
--- Name: board_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.board_users_id_seq', 2, true);
 
 
 --
@@ -234,7 +211,7 @@ SELECT pg_catalog.setval('public.board_users_id_seq', 2, true);
 --
 
 ALTER TABLE ONLY public.board_users
-    ADD CONSTRAINT board_users_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT board_users_pkey PRIMARY KEY (user_id, board_id);
 
 
 --
@@ -347,6 +324,14 @@ ALTER TABLE ONLY public.subtasks
 
 ALTER TABLE ONLY public.tasks
     ADD CONSTRAINT tasks_column_id_fkey FOREIGN KEY (column_id) REFERENCES public.columns(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tasks tasks_responsible_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT tasks_responsible_id_fkey FOREIGN KEY (responsible_id) REFERENCES public.users(id);
 
 
 --

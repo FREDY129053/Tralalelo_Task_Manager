@@ -25,37 +25,14 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.board_users (
-    id integer NOT NULL,
-    user_id uuid,
-    board_id uuid,
+    user_id uuid NOT NULL,
+    board_id uuid NOT NULL,
     role text NOT NULL,
     CONSTRAINT board_users_role_check CHECK ((role = ANY (ARRAY['CREATOR'::text, 'MODERATOR'::text, 'MEMBER'::text])))
 );
 
 
 ALTER TABLE public.board_users OWNER TO postgres;
-
---
--- Name: board_users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.board_users_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.board_users_id_seq OWNER TO postgres;
-
---
--- Name: board_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.board_users_id_seq OWNED BY public.board_users.id;
-
 
 --
 -- Name: boards; Type: TABLE; Schema: public; Owner: postgres
@@ -65,7 +42,9 @@ CREATE TABLE public.boards (
     id uuid NOT NULL,
     title text NOT NULL,
     description text,
-    is_public boolean DEFAULT true
+    is_public boolean DEFAULT true,
+    color character varying(7),
+    CONSTRAINT color_hex_constraint_boards CHECK (((color IS NULL) OR ((color)::text ~* '^#[a-f0-9]{6}$'::text)))
 );
 
 
@@ -79,7 +58,9 @@ CREATE TABLE public.columns (
     id uuid NOT NULL,
     board_id uuid,
     title text NOT NULL,
-    "position" integer
+    "position" integer,
+    color character varying(7),
+    CONSTRAINT color_hex_constraint_columns CHECK (((color IS NULL) OR ((color)::text ~* '^#[a-f0-9]{6}$'::text)))
 );
 
 
@@ -126,9 +107,11 @@ CREATE TABLE public.tasks (
     due_date timestamp without time zone,
     priority text,
     status text,
-    color text,
+    color character varying(7),
+    responsible_id uuid,
+    CONSTRAINT color_hex_constraint_tasks CHECK (((color IS NULL) OR ((color)::text ~* '^#[a-f0-9]{6}$'::text))),
     CONSTRAINT tasks_priority_check CHECK ((priority = ANY (ARRAY['LOW'::text, 'MEDIUM'::text, 'HIGH'::text]))),
-    CONSTRAINT tasks_status_check CHECK ((status = ANY (ARRAY['TODO'::text, 'IN_PROGRESS'::text, 'DONE'::text])))
+    CONSTRAINT tasks_status_check CHECK ((status = ANY (ARRAY['TODO'::text, 'IN_PROGRESS'::text, 'DONE'::text, 'REJECT'::text])))
 );
 
 
@@ -144,25 +127,20 @@ CREATE TABLE public.users (
     email text NOT NULL,
     phone text,
     avatar_url text,
-    is_admin boolean DEFAULT false
+    registered_at timestamp without time zone DEFAULT now(),
+    is_admin boolean DEFAULT false,
+    hashed_password text NOT NULL
 );
 
 
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- Name: board_users id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.board_users ALTER COLUMN id SET DEFAULT nextval('public.board_users_id_seq'::regclass);
-
-
---
 -- Name: board_users board_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.board_users
-    ADD CONSTRAINT board_users_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT board_users_pkey PRIMARY KEY (user_id, board_id);
 
 
 --
@@ -275,6 +253,14 @@ ALTER TABLE ONLY public.subtasks
 
 ALTER TABLE ONLY public.tasks
     ADD CONSTRAINT tasks_column_id_fkey FOREIGN KEY (column_id) REFERENCES public.columns(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tasks tasks_responsible_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT tasks_responsible_id_fkey FOREIGN KEY (responsible_id) REFERENCES public.users(id);
 
 
 --

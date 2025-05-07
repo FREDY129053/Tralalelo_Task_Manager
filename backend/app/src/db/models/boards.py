@@ -9,6 +9,7 @@ class Board(models.Model):
     title = fields.CharField(max_length=255)
     description = fields.TextField(null=True)
     is_public = fields.BooleanField(default=True)
+    color = fields.CharField(max_length=7, null=True)
 
     columns: fields.ReverseRelation["Column"]
     members: fields.ReverseRelation["BoardUser"]
@@ -32,6 +33,7 @@ class Column(models.Model):
     board = fields.ForeignKeyField("models.Board", related_name="columns", on_delete=fields.CASCADE)
     title = fields.CharField(max_length=255)
     position = fields.IntField()
+    color = fields.CharField(max_length=7, null=True)
 
     tasks: fields.ReverseRelation["Task"]
 
@@ -48,6 +50,7 @@ class Task(models.Model):
     priority = fields.CharEnumField(Priority, default=Priority.low)
     status = fields.CharEnumField(Status, default=Status.to_do)
     color = fields.CharField(max_length=20, null=True)
+    responsible = fields.ForeignKeyField("models.User", related_name="responsible_tasks", null=True)
 
     subtasks: fields.ReverseRelation["Subtask"]
     comments: fields.ReverseRelation["Comment"]
