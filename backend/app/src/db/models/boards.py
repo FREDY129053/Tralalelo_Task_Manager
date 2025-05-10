@@ -1,6 +1,6 @@
 import uuid
 
-from app.src.enums import Priority, Status, UserRole
+from backend.app.src.enums import Priority, Status, UserRole
 from tortoise import fields, models
 
 

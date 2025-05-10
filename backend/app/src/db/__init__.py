@@ -6,7 +6,7 @@ TORTOISE_ORM = {
     "connections": {"default": "postgres://postgres:12345@main_db:5432/tralalelo_db"},
     "apps": {
         "models": {
-          "models": ["app.src.db.models"],
+          "models": ["backend.app.src.db.models"],
           "default_connection": "default",
         }
     },

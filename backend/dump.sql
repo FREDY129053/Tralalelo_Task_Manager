@@ -25,6 +25,7 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.board_users (
+    id integer NOT NULL,
     user_id uuid NOT NULL,
     board_id uuid NOT NULL,
     role text NOT NULL,
@@ -33,6 +34,29 @@ CREATE TABLE public.board_users (
 
 
 ALTER TABLE public.board_users OWNER TO postgres;
+
+--
+-- Name: user_company_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.board_users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.board_users_id_seq OWNER TO postgres;
+
+--
+-- Name: user_company_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.board_users_id_seq OWNED BY public.board_users.id;
+
+ALTER TABLE ONLY public.board_users ALTER COLUMN id SET DEFAULT nextval('public.board_users_id_seq'::regclass);
 
 --
 -- Name: boards; Type: TABLE; Schema: public; Owner: postgres
@@ -127,7 +151,7 @@ CREATE TABLE public.users (
     email text NOT NULL,
     phone text,
     avatar_url text,
-    registered_at timestamp without time zone DEFAULT now(),
+    registered_at timestamp with time zone DEFAULT now(),
     is_admin boolean DEFAULT false,
     hashed_password text NOT NULL
 );
@@ -140,10 +164,10 @@ ALTER TABLE public.users OWNER TO postgres;
 --
 
 COPY public.board_users (user_id, board_id, role) FROM stdin;
-00000000-0000-0000-0000-000000000001	10000000-0000-0000-0000-000000000001	CREATOR
-00000000-0000-0000-0000-000000000002	10000000-0000-0000-0000-000000000001	MEMBER
-00000000-0000-0000-0000-000000000002	10000000-0000-0000-0000-000000000002	CREATOR
-00000000-0000-0000-0000-000000000003	10000000-0000-0000-0000-000000000002	MEMBER
+E63961D3-EC08-4218-A963-62B0B1807D51	1ECB27CB-D670-4E63-A1D1-1F77B2CA2ED4	CREATOR
+C6A107FD-EB99-4C18-8FCB-EC030685D942	1ECB27CB-D670-4E63-A1D1-1F77B2CA2ED4	MEMBER
+C6A107FD-EB99-4C18-8FCB-EC030685D942	B9E7DDC8-47CF-475F-ADEA-D379535C3292	CREATOR
+87CB46FF-26F8-4ED5-94F7-6C70E00976FE	B9E7DDC8-47CF-475F-ADEA-D379535C3292	MEMBER
 \.
 
 
@@ -152,8 +176,8 @@ COPY public.board_users (user_id, board_id, role) FROM stdin;
 --
 
 COPY public.boards (id, title, description, is_public, color) FROM stdin;
-10000000-0000-0000-0000-000000000001	Project A	Private project	f	#ff5733
-10000000-0000-0000-0000-000000000002	Public Board	Shared tasks	t	#33ccff
+1ECB27CB-D670-4E63-A1D1-1F77B2CA2ED4	Project A	Private project	f	#ff5733
+B9E7DDC8-47CF-475F-ADEA-D379535C3292	Public Board	Shared tasks	t	#33ccff
 \.
 
 
@@ -162,8 +186,8 @@ COPY public.boards (id, title, description, is_public, color) FROM stdin;
 --
 
 COPY public.columns (id, board_id, title, "position", color) FROM stdin;
-20000000-0000-0000-0000-000000000001	10000000-0000-0000-0000-000000000001	To Do	1	#dddddd
-20000000-0000-0000-0000-000000000002	10000000-0000-0000-0000-000000000001	Done	2	\N
+1ECB27CB-D670-4E63-A1D1-1F77B2CA2ED4	1ECB27CB-D670-4E63-A1D1-1F77B2CA2ED4	To Do	1	#dddddd
+B9E7DDC8-47CF-475F-ADEA-D379535C3292	1ECB27CB-D670-4E63-A1D1-1F77B2CA2ED4	Done	2	\N
 \.
 
 
@@ -172,7 +196,7 @@ COPY public.columns (id, board_id, title, "position", color) FROM stdin;
 --
 
 COPY public.comments (id, task_id, user_id, content, created_at) FROM stdin;
-50000000-0000-0000-0000-000000000001	30000000-0000-0000-0000-000000000001	00000000-0000-0000-0000-000000000001	Working on it.	2025-05-07 06:00:00
+1D6DDCFC-7BA2-4CF1-926C-5C828035CAE8	36A87185-B559-4E9C-A74A-23D621E6FFE2	E63961D3-EC08-4218-A963-62B0B1807D51	Working on it.	2025-05-07 06:00:00
 \.
 
 
@@ -181,8 +205,8 @@ COPY public.comments (id, task_id, user_id, content, created_at) FROM stdin;
 --
 
 COPY public.subtasks (id, task_id, title, is_completed) FROM stdin;
-40000000-0000-0000-0000-000000000001	30000000-0000-0000-0000-000000000001	Check logs	t
-40000000-0000-0000-0000-000000000002	30000000-0000-0000-0000-000000000001	Write test	f
+3EF9B483-C3CD-4DEF-B2F9-CED6434512B7	36A87185-B559-4E9C-A74A-23D621E6FFE2	Check logs	t
+DF0D436C-319A-4F45-BC1A-920AFA68EF62	36A87185-B559-4E9C-A74A-23D621E6FFE2	Write test	f
 \.
 
 
@@ -191,7 +215,7 @@ COPY public.subtasks (id, task_id, title, is_completed) FROM stdin;
 --
 
 COPY public.tasks (id, column_id, title, description, due_date, priority, status, color, responsible_id) FROM stdin;
-30000000-0000-0000-0000-000000000001	20000000-0000-0000-0000-000000000001	Fix Bug	Fix login issue	2025-05-10 10:00:00	HIGH	TODO	#f1c40f	00000000-0000-0000-0000-000000000002
+36A87185-B559-4E9C-A74A-23D621E6FFE2	B9E7DDC8-47CF-475F-ADEA-D379535C3292	Fix Bug	Fix login issue	2025-05-10 10:00:00	HIGH	TODO	#f1c40f	C6A107FD-EB99-4C18-8FCB-EC030685D942
 \.
 
 
@@ -200,9 +224,9 @@ COPY public.tasks (id, column_id, title, description, due_date, priority, status
 --
 
 COPY public.users (id, username, email, phone, avatar_url, registered_at, is_admin, hashed_password) FROM stdin;
-00000000-0000-0000-0000-000000000001	alice	alice@example.com	1234567890	\N	2025-05-07 05:59:02	t	hashed_pass_alice
-00000000-0000-0000-0000-000000000002	bob	bob@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_bob
-00000000-0000-0000-0000-000000000003	carol	carol@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_carol
+E63961D3-EC08-4218-A963-62B0B1807D51	alice	alice@example.com	1234567890	\N	2025-05-07 05:59:02	t	$2b$12$QoaDexl3tzBVmPGZnf5oOun4RzLo8KuSgULbhAsWZ5aw9ATBME7ZW
+C6A107FD-EB99-4C18-8FCB-EC030685D942	bob	bob@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_bob
+87CB46FF-26F8-4ED5-94F7-6C70E00976FE	carol	carol@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_carol
 \.
 
 
