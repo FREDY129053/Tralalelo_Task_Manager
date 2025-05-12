@@ -1,7 +1,7 @@
 from typing import List, Union
 from uuid import UUID
 
-from backend.app.src.db.models import User, BoardUser, Board
+from backend.app.src.db.models import User, BoardUser
 
 
 async def get_all_users() -> List[User]:

@@ -95,6 +95,7 @@ async def login_user(data: Login):
 
   return response
 
+# TODO: зачистка куков нормальная
 @user_router.post('/logout')
 async def logout_user(request: Request, response: Response):
   cookie_data = request.cookies.get("user", None)
