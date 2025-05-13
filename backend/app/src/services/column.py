@@ -1,0 +1,35 @@
+from uuid import UUID
+
+import backend.app.src.repository.column as ColumnRepo
+import backend.app.src.repository.user as UserRepo
+from backend.app.src.schemas import TaskCreate
+
+async def delete_column(uuid: UUID) -> bool:
+  return await ColumnRepo.delete_column_by_uuid(uuid=uuid)
+
+async def create_task(uuid: UUID, task_data: TaskCreate) -> bool:
+  column = await ColumnRepo.get_column(uuid=uuid)
+  if not column:
+    print(1)
+    return False
+  
+  user = None
+  if task_data.responsible:
+    print(2)
+    user = await UserRepo.get_user_info(uuid=task_data.responsible)
+    if not user:
+      print(3)
+      return False
+    
+  task = await ColumnRepo.create_task(
+    column=column,
+    title=task_data.title,
+    description=task_data.description,
+    due_date=task_data.due_date,
+    priority=task_data.priority,
+    status=task_data.status,
+    color=task_data.color,
+    responsible=user
+  )
+
+  return bool(task)

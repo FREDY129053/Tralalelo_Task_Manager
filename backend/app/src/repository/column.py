@@ -1,0 +1,44 @@
+from typing import Optional
+from uuid import UUID
+
+from tortoise.exceptions import OperationalError
+
+from backend.app.src.db.models import Column, User, Task
+from backend.app.src.enums import Priority, Status
+
+async def get_column(uuid: UUID) -> Optional[Column]:
+    return await Column.get_or_none(id=uuid)
+
+async def delete_column_by_uuid(uuid: UUID) -> bool:
+    column = await Column.get_or_none(id=uuid)
+
+    if not column:
+        return False
+
+    try:
+        await column.delete()
+        return True
+    except OperationalError:
+        return False
+
+
+async def create_task(
+    column: Column,
+    title: str,
+    description: Optional[str],
+    due_date: Optional[str],
+    priority: Priority,
+    status: Status,
+    color: Optional[str],
+    responsible: User,
+) -> Task:
+    return await Task.create(
+        column=column,
+        title=title,
+        description=description,
+        due_date=due_date,
+        priority=priority,
+        status=status,
+        color=color,
+        responsible=responsible
+      )

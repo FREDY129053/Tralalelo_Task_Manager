@@ -99,7 +99,7 @@ CREATE TABLE public.comments (
     task_id uuid,
     user_id uuid,
     content text NOT NULL,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -128,7 +128,7 @@ CREATE TABLE public.tasks (
     column_id uuid,
     title text NOT NULL,
     description text,
-    due_date timestamp without time zone,
+    due_date timestamp with time zone,
     priority text,
     status text,
     color character varying(7),
