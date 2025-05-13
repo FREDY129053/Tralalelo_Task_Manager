@@ -19,7 +19,7 @@ async def get_user_by_uuid(uuid: UUID):
   user = await UserService.get_user_info(uuid)
   if not user:
     raise HTTPException(
-      detail={"error": "user not found!"},
+      detail="user not found!",
       status_code=status.HTTP_404_NOT_FOUND
     )
   
@@ -31,7 +31,7 @@ async def create_user(user_data: CreateUser):
   is_created = await UserService.create_user(user_data)
   if not is_created:
     raise HTTPException(
-      detail={"error": "cannot create user!"},
+      detail="cannot create user!",
       status_code=status.HTTP_400_BAD_REQUEST
     )
   
@@ -47,7 +47,7 @@ async def update_user_by_uuid(uuid: UUID, user_data: BaseUserInfo):
 
   if not is_updated:
     raise HTTPException(
-      detail={"error": "cannot update user!"},
+      detail="cannot update user!",
       status_code=status.HTTP_400_BAD_REQUEST
     )
   
@@ -63,7 +63,7 @@ async def delete_user_by_uuid(uuid: UUID):
 
   if not is_deleted:
     raise HTTPException(
-      detail={"error": "user not found!"},
+      detail="user not found!",
       status_code=status.HTTP_404_NOT_FOUND
     )
   
@@ -87,7 +87,7 @@ async def login_user(data: Login):
   if not token:
     raise HTTPException(
       status_code=status.HTTP_400_BAD_REQUEST,
-      detail={"error": "invalid data"}
+      detail="invalid data"
     )
   
   response = JSONResponse(content={"message": "login successfully"}, status_code=status.HTTP_200_OK)
@@ -103,7 +103,7 @@ async def logout_user(request: Request, response: Response):
   if not cookie_data:
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
-      detail={"error": "unauthorized!"}
+      detail="unauthorized!"
     )
   
   response.delete_cookie("user")
@@ -119,10 +119,16 @@ async def get_role_at_board(request: Request, board_uuid: UUID):
   cookie_data = request.cookies.get("user", None)
 
   role = await UserService.get_user_role(cookie_data, board_uuid)
-  if not cookie_data or not role:
+  if not cookie_data:
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
-      detail={"error": "unauthorized!"}
+      detail="unauthorized!"
+    )
+  
+  if not role:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail="user or board not found!"
     )
   
   return JSONResponse(
