@@ -5,7 +5,7 @@ import {
   BsFillImageFill,
   BsPerson,
   BsReverseLayoutTextSidebarReverse,
-  BsSearch,
+  // BsSearch,
 } from "react-icons/bs";
 import {
   AiFillEnvironment,
@@ -44,12 +44,12 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`bg-dark-purple h-screen p-5 pt-8 ${
+      className={`bg-sidebar-bg h-screen p-5 pt-8 ${
         open ? "w-66" : "w-20"
       } relative duration-300`}
     >
       <BsArrowLeftShort
-        className={`bg-white border border-dark-purple text-dark-purple text-3xl rounded-full absolute -right-3.5 top-9 cursor-pointer ${
+        className={`bg-white border border-sidebar-bg text-sidebar-bg text-3xl rounded-full absolute -right-3.5 top-9 cursor-pointer ${
           !open && "rotate-180"
         }`}
         onClick={() => setOpen(!open)}
@@ -64,38 +64,38 @@ export default function Sidebar() {
         <h1
           className={`${
             !open && "scale-0"
-          } text-white origin-left font-medium text-2xl duration-300`}
+          } text-sidebar-text origin-left font-medium text-2xl duration-300`}
         >
           Tralalelo
         </h1>
       </div>
-
+{/* 
       <div
         className={`flex items-center rounded-md bg-light-white mt-6 py-2 ${
           !open ? "px-2.5" : "px-4"
         } duration-300`}
       >
         <BsSearch
-          className={`text-white text-lg block float-left cursor-pointer ${
+          className={`text-sidebar-text text-lg block float-left cursor-pointer ${
             open && "mr-2"
           } `}
         />
         <input
-          className={`text-base bg-transparent w-full text-white focus:outline-none ${
+          className={`text-base bg-transparent w-full text-sidebar-text focus:outline-none ${
             !open && "hidden"
           }`}
           type="search"
           name="search"
           placeholder="Search"
         />
-      </div>
+      </div> */}
 
       <ul className="pt-2">
         {Menus.map((menu, index) => (
           <React.Fragment key={index}>
             <li
               // key={index}
-              className={`text-gray-300 flex items-center gap-x-4 cursor-pointer p-2 hover:bg-light-white rounded-md ${
+              className={`text-sidebar-text flex items-center gap-x-4 cursor-pointer p-2 hover:bg-sidebar-hover rounded-md ${
                 menu.spacing ? "mt-7" : "mt-2"
               }`}
               onClick={
@@ -122,7 +122,7 @@ export default function Sidebar() {
                 {menu.submenuItems.map((submenuItem, subIndex) => (
                   <li
                     key={subIndex}
-                    className="text-gray-300 text-sm flex items-center gap-x-4 cursor-pointer p-2 px-5 rounded-md hover:bg-light-white"
+                    className="text-sidebar-text text-sm flex items-center gap-x-4 cursor-pointer p-2 px-5 rounded-md hover:bg-sidebar-hover"
                   >
                     {submenuItem.title}
                   </li>

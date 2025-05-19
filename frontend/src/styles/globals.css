@@ -8,6 +8,64 @@
 @theme inline {
   --color-dark-purple: #081a51;
   --color-light-white: rgba(255, 255, 255, 0.18);
+
+  /* Основные цвета интерфейса */
+  --color-bg-base: #f9fafb; /* основной фон контентной части */
+  --color-bg-elevated: #ffffff; /* фон карточек, панелей */
+  --color-bg-muted: #f1f5f9; /* нейтральный фон, например, при ховере */
+  --color-text-primary: #1f2937; /* основной текст */
+  --color-text-secondary: #6b7280; /* вторичный текст */
+  --color-border: #e5e7eb; /* границы, бордеры */
+
+  /* Боковая панель и шапка */
+  --color-sidebar-bg: #1f2937; /* тёмно-серый фон боковой панели */
+  --color-sidebar-text: #f3f4f6; /* текст в боковой панели */
+  --color-sidebar-hover: #374151; /* ховер по элементам боковой панели */
+
+  /* Инпуты и формы */
+  --color-input-bg: #ffffff;
+  --color-input-border: #d1d5db;
+  --color-input-focus: #60a5fa;
+  --color-input-placeholder: #9ca3af;
+
+  /* Кнопки */
+  --color-button-primary-bg: #3b82f6;
+  --color-button-primary-text: #ffffff;
+  --color-button-primary-hover: #2563eb;
+
+  --color-button-muted-bg: #e5e7eb;
+  --color-button-muted-text: #374151;
+  --color-button-muted-hover: #d1d5db;
+
+  /* Состояния */
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-error: #f87171;
+  --color-info: #38bdf8;
+
+  /* Тени и разделители */
+  --color-shadow-light: rgba(0, 0, 0, 0.05);
+  --color-shadow-medium: rgba(0, 0, 0, 0.1);
+
+  /* Цвета для колонок/задач — пастельные, светлые */
+  --tag-color-blue: #cfe8fc;
+  --tag-color-green: #d3f9d8;
+  --tag-color-yellow: #fef9c3;
+  --tag-color-orange: #ffe4b5;
+  --tag-color-pink: #fcd3e1;
+  --tag-color-purple: #e4d9fa;
+  --tag-color-teal: #ccfbf1;
+  --tag-color-lavender: #ede9fe;
+  --tag-color-mint: #dcfce7;
+  --tag-color-gray: #e5e7eb;
+
+  /* Цвета прогресс-бара */
+  --progress-bg: #e5e7eb;
+  --progress-fill: #3b82f6;
+
+  /* Панель редактирования задачи */
+  --color-panel-bg: #ffffff;
+  --color-panel-shadow: rgba(0, 0, 0, 0.08);
 }
 
 @layer utilities {
@@ -19,7 +77,7 @@
     width: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #0369a1; 
+    background: #0369a1;
     border-radius: 4px;
   }
 }
