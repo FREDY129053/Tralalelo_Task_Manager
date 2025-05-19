@@ -1,13 +1,33 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from "next";
+import { IBoardFullInfo, IBoardShortInfo } from "@/interfaces/Board";
 
-type Data = {
-  name: string;
-};
+export async function getBoards(): Promise<IBoardShortInfo[]> {
+  const res = await fetch(`http://localhost:8080/api/boards`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
 
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>,
-) {
-  res.status(200).json({ name: "John Doe" });
+  if (!res.ok) {
+    throw new Error(`Ошибка при получении досок: ${res.statusText}`);
+  }
+
+  const boards: IBoardShortInfo[] = await res.json();
+  return boards;
+}
+
+export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
+  const res = await fetch(`http://localhost:8080/api/boards/${boardId}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Ошибка при получении пользователя: ${res.statusText}`);
+  }
+
+  const board: IBoardFullInfo = await res.json();
+  return board;
 }

@@ -14,6 +14,14 @@
   .touch-action-none {
     touch-action: none;
   }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #0369a1; 
+    border-radius: 4px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,4 +30,3 @@
     --foreground: #ededed;
   }
 }
-
