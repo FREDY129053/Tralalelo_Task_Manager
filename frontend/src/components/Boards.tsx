@@ -1,5 +1,5 @@
 import { IBoardShortInfo } from "@/interfaces/Board";
-import { getBoards } from "@/pages/api/hello";
+import { getBoards } from "@/pages/api/board";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 

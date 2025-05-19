@@ -18,59 +18,36 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import React from "react";
-import { nanoid } from "nanoid";
+import React, { useEffect, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
+import { IBoardFullInfo, IColumn, ITask } from "@/interfaces/Board";
+import { getBoardData } from "../api/board";
+import { useRouter } from "next/router";
 
-function createData(length: number, initializer: (index: number) => string) {
-  return [...new Array(length)].map((_, index) => {
-    return {
-      id: nanoid(),
-      name: `${initializer(index)}`,
-    };
-  });
-}
+type DraggedTask = { type: "task"; task: ITask };
+type DraggedColumn = { type: "column"; column: IColumn };
 
-export const initialItems = [
-  {
-    id: nanoid(),
-    name: "Container A",
-    items: createData(2, (index) => `ITEM A${index + 1}`),
-  },
-  {
-    id: nanoid(),
-    name: "Container B",
-    items: createData(2, (index) => `ITEM B${index + 1}`),
-  },
-  {
-    id: nanoid(),
-    name: "Container C",
-    items: createData(2, (index) => `ITEM C${index + 1}`),
-  },
-  {
-    id: nanoid(),
-    name: "Container D",
-    items: createData(10, (index) => `ITEM D${index + 1}`),
-  },
-  {
-    id: nanoid(),
-    name: "Container E",
-    items: createData(4, (index) => `ITEM E${index + 1}`),
-  },
-];
-
-export type Item = {
-  id: string;
-  name: string;
-};
-
-export default function App() {
-  const [sortables, setSortables] = React.useState([...initialItems]);
-  const [activeItem, setActiveItem] = React.useState<
-    SortableContainerProps | Item | null
+export default function BoardPage() {
+  const router = useRouter();
+  const [boardData, setBoardData] = useState<IBoardFullInfo | null>(null);
+  const [activeItem, setActiveItem] = useState<
+    DraggedTask | DraggedColumn | null
   >(null);
+  const [uuid, setUuid] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (router.isReady) {
+      setUuid(router.query.id as string);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (!uuid) return;
+    getBoardData(uuid).then(setBoardData).catch(console.error);
+  }, [uuid]);
+
   const sensors = useSensors(
     useSensor(TouchSensor),
     useSensor(MouseSensor),
@@ -79,7 +56,122 @@ export default function App() {
     })
   );
 
-  const containerIds = sortables.map((s) => s.id);
+  if (!boardData) return <div>Loading...</div>;
+
+  function findColumnByTaskId(taskId: string): string | undefined {
+    return boardData!.columns.find((col) =>
+      col.tasks.some((t) => t.id === taskId)
+    )?.id;
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const { active } = event;
+    const activeId = active.id as string;
+    const column = boardData!.columns.find((col) => col.id === activeId);
+    if (column) {
+      setActiveItem({ type: "column", column });
+    } else {
+      const task = boardData!.columns
+        .flatMap((col) => col.tasks)
+        .find((t) => t.id === activeId);
+      if (task) setActiveItem({ type: "task", task });
+    }
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!active || !over) return;
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activeColumnId = findColumnByTaskId(activeId);
+    const overColumnId = boardData!.columns.find((col) => col.id === overId)
+      ? overId
+      : findColumnByTaskId(overId);
+
+    if (!activeColumnId || !overColumnId || activeColumnId === overColumnId)
+      return;
+
+    const activeColumn = boardData!.columns.find(
+      (col) => col.id === activeColumnId
+    )!;
+    const overColumn = boardData!.columns.find(
+      (col) => col.id === overColumnId
+    )!;
+
+    const activeTaskIndex = activeColumn.tasks.findIndex(
+      (t) => t.id === activeId
+    );
+    const overTaskIndex = overColumn.tasks.findIndex((t) => t.id === overId);
+
+    const newIndex =
+      overTaskIndex >= 0 ? overTaskIndex : overColumn.tasks.length;
+
+    // Не обновлять, если задача уже на нужном месте
+    if (activeColumnId === overColumnId && activeTaskIndex === newIndex) {
+      return;
+    }
+
+    const nextColumns = boardData!.columns.map((col) => {
+      if (col.id === activeColumnId) {
+        return { ...col, tasks: col.tasks.filter((t) => t.id !== activeId) };
+      }
+      if (col.id === overColumnId) {
+        const newTasks = [...col.tasks];
+        newTasks.splice(newIndex, 0, activeColumn.tasks[activeTaskIndex]);
+        return { ...col, tasks: newTasks };
+      }
+      return col;
+    });
+
+    setBoardData({ board: boardData!.board, columns: nextColumns });
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!active || !over) return;
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Перемещение колонок
+    const activeColIndex = boardData!.columns.findIndex(
+      (col) => col.id === activeId
+    );
+    const overColIndex = boardData!.columns.findIndex(
+      (col) => col.id === overId
+    );
+
+    if (
+      activeColIndex !== -1 &&
+      overColIndex !== -1 &&
+      activeColIndex !== overColIndex
+    ) {
+      const newColumns = arrayMove(
+        boardData!.columns,
+        activeColIndex,
+        overColIndex
+      );
+      setBoardData({ board: boardData!.board, columns: newColumns });
+      console.log(newColumns)
+      return;
+    }
+
+    // Перемещение задач внутри колонки
+    const columnId = findColumnByTaskId(activeId);
+    if (!columnId) return;
+    const column = boardData!.columns.find((col) => col.id === columnId)!;
+    const oldIndex = column.tasks.findIndex((t) => t.id === activeId);
+    const newIndex = column.tasks.findIndex((t) => t.id === overId);
+
+    if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+      const newTasks = arrayMove(column.tasks, oldIndex, newIndex);
+      const newColumns = boardData!.columns.map((col) =>
+        col.id === columnId ? { ...col, tasks: newTasks } : col
+      );
+      console.log(activeId)
+      setBoardData({ board: boardData!.board, columns: newColumns });
+    }
+  }
 
   return (
     <DndContext
@@ -90,190 +182,33 @@ export default function App() {
       onDragStart={handleDragStart}
     >
       <SortableContext
-        items={sortables}
+        items={boardData.columns}
         strategy={horizontalListSortingStrategy}
       >
         <div className="flex h-full justify-center w-screen gap-6 p-6 overflow-x-auto">
-          {sortables.map((s) => (
-            <SortableContainer
-              key={s.id}
-              id={s.id}
-              name={s.name}
-              items={s.items}
-            />
+          {boardData.columns.map((col) => (
+            <SortableColumn key={col.id} column={col} />
           ))}
         </div>
       </SortableContext>
       <DragOverlay>
         {activeItem ? (
-          <>
-            {containerIds.includes(activeItem.id) ? (
-              <OverlayContainer {...(activeItem as SortableContainerProps)} />
-            ) : (
-              <OverlayItem {...(activeItem as Item)} />
-            )}
-          </>
+          activeItem.type === "task" ? (
+            <OverlayTask task={activeItem.task} />
+          ) : (
+            <OverlayColumn column={activeItem.column} />
+          )
         ) : null}
       </DragOverlay>
     </DndContext>
   );
-
-  function findContainer(id?: string) {
-    if (id) {
-      if (containerIds.includes(id)) return id;
-      const container = sortables?.find((i) =>
-        i.items?.find((l) => l?.id === id)
-      );
-
-      return container?.id;
-    }
-  }
-
-  /*Returns true if we are sorting containers
-   * we will know if we are sorting containers if the id of the active item is a
-   * container id and it is being dragged over any item in the over container
-   * or the over container itself
-   */
-  function isSortingContainers({
-    activeId,
-    overId,
-  }: {
-    activeId: string;
-    overId: string;
-  }) {
-    const isActiveContainer = containerIds.includes(activeId);
-    const isOverContainer =
-      findContainer(overId) || containerIds.includes(overId);
-    return !!isActiveContainer && !!isOverContainer;
-  }
-
-  function handleDragStart(event: DragStartEvent) {
-    const { active } = event;
-    const activeId = active.id as string;
-
-    if (containerIds.includes(activeId)) {
-      const container = sortables.find((i) => i.id === activeId);
-      if (container) setActiveItem(container);
-    } else {
-      const containerId = findContainer(activeId);
-      const container = sortables.find((i) => i.id === containerId);
-      const item = container?.items.find((i) => i.id === activeId);
-      if (item) setActiveItem(item);
-    }
-  }
-
-  /*In this function we handle when a sortable item is dragged from one container 
-    to another container, to do this we need to know:
-     - what item is being dragged 
-     - what container it is being dragged from
-     - what container it is being dragged to
-     - what index to insert the active item into, in the new container
-     */
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!active || !over) return;
-    const activeId = active.id as string;
-    const overId = over.id as string;
-    const activeContainerId = findContainer(activeId);
-    const overContainerId = findContainer(overId);
-    if (!overContainerId || !activeContainerId) return;
-
-    if (isSortingContainers({ activeId, overId })) return;
-
-    if (activeContainerId !== overContainerId) {
-      const activeContainer = sortables.find((i) => i.id === activeContainerId);
-      const overContainer = sortables.find((i) => i.id === overContainerId);
-      const activeItems = activeContainer?.items || [];
-      const activeIndex = activeItems.findIndex((i) => i.id === activeId);
-      const overItems = overContainer?.items || [];
-      const overIndex = sortables.findIndex((i) => i.id === overId);
-      let newIndex: number;
-      if (containerIds.includes(overId)) {
-        newIndex = overItems.length + 1;
-      } else {
-        const isBelowOverItem =
-          over &&
-          active.rect.current.translated &&
-          active.rect.current.translated.top > over.rect.top + over.rect.height;
-        const modifier = isBelowOverItem ? 1 : 0;
-        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
-      }
-
-      const newItems = sortables.map((item) =>
-        item.id === activeContainerId
-          ? {
-              ...item,
-              items: activeItems.filter((item) => item.id !== active.id),
-            }
-          : item.id === overContainerId
-          ? {
-              ...item,
-              items: [
-                ...item.items.slice(0, newIndex),
-                activeItems[activeIndex],
-                ...overItems.slice(newIndex, item.items.length),
-              ],
-            }
-          : item
-      );
-
-      setSortables(newItems);
-    }
-  }
-
-  /*In this function we handle when a sortable item is sorted within its container
-      or when a sortable container is sorted with other sortable container
-     */
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!active || !over) return;
-    const activeId = active.id as string;
-    const overId = over.id as string;
-    const activeContainerId = findContainer(activeId);
-    const overContainerId = findContainer(overId);
-
-    if (isSortingContainers({ activeId, overId })) {
-      if (activeId !== overId) {
-        setSortables((items) => {
-          const oldIndex = sortables.findIndex(
-            (f) => f.id === activeContainerId
-          );
-          const newIndex = sortables.findIndex((f) => f.id === overContainerId);
-          return arrayMove(items, oldIndex, newIndex);
-        });
-      }
-    }
-
-    if (activeContainerId === overContainerId) {
-      const activeContainer = sortables.find((i) => i.id === activeContainerId);
-      const activeItems = activeContainer?.items || [];
-      const oldIndex = activeItems.findIndex((i) => i.id === activeId);
-      const newIndex = activeItems.findIndex((i) => i.id === overId);
-      const newItems = sortables.map((s) =>
-        s.id === activeContainerId
-          ? {
-              ...s,
-              items: arrayMove(s.items, oldIndex, newIndex),
-            }
-          : s
-      );
-
-      if (oldIndex !== newIndex) {
-        setSortables(newItems);
-      }
-    }
-  }
 }
 
-export type SortableContainerProps = {
-  id: string;
-  name?: string;
-  items: Item[];
+type SortableColumnProps = {
+  column: IColumn;
 };
 
-export function SortableContainer(props: SortableContainerProps) {
-  const { name, id, items } = props;
-
+function SortableColumn({ column }: SortableColumnProps) {
   const {
     attributes,
     listeners,
@@ -282,8 +217,8 @@ export function SortableContainer(props: SortableContainerProps) {
     transition,
     isDragging,
   } = useSortable({
-    id: id,
-    data: { name, type: "container" },
+    id: column.id,
+    data: { type: "column" },
   });
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -294,76 +229,43 @@ export function SortableContainer(props: SortableContainerProps) {
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style }}
-      className="flex items-start bg-sky-400 gap-2 w-2xs rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 min-h-full"
+      style={style}
+      className="flex flex-col gap-2 w-2xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
     >
-      <div className="flex flex-col gap-2 w-full h-full">
-        <div
-          {...listeners}
-          {...attributes}
-          className="sticky z-10 active:cursor-grab flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] cursor-grab"
-        >
-          {name}
-        </div>
-        <div className="flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
-          {items.length === 0 ? (
-            <div
-              key={id}
-              className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase"
-            >
-              List is empty
-            </div>
-          ) : (
-            <SortableContext
-              items={items}
-              strategy={verticalListSortingStrategy}
-            >
-              {items.map((s) => (
-                <SortableItem {...s} key={s.id} />
-              ))}
-            </SortableContext>
-          )}
-        </div>
+      <div
+        {...listeners}
+        {...attributes}
+        className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
+      >
+        {column.title}
+      </div>
+      <div className="flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700 max-h-[400px]">
+        {column.tasks.length === 0 ? (
+          <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
+            List is empty
+          </div>
+        ) : (
+          <SortableContext
+            items={column.tasks}
+            strategy={verticalListSortingStrategy}
+          >
+            {column.tasks.map((task) => (
+              <SortableTask key={task.id} task={task} />
+            ))}
+          </SortableContext>
+        )}
       </div>
     </div>
   );
 }
 
-export function OverlayContainer(props: SortableContainerProps) {
-  const { name, id, items } = props;
-
-  return (
-    <div className="flex items-start bg-sky-400 gap-2 w-full rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 min-h-full">
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] cursor-grabbing">
-          {name}
-        </div>
-
-        <div className="flex flex-col items-center gap-2 w-full p-4">
-          {items.length === 0 ? (
-            <div
-              key={id}
-              className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase"
-            >
-              List is empty
-            </div>
-          ) : null}
-          {items.map((s) => (
-            <OverlayItem {...s} key={s.id} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type SortableItemProps = {
-  id: string;
-  name?: string;
+type SortableTaskProps = {
+  task: ITask;
 };
 
-export function SortableItem(props: SortableItemProps) {
-  const { name, id } = props;
+function SortableTask({ task }: SortableTaskProps) {
   const {
     attributes,
     listeners,
@@ -372,8 +274,8 @@ export function SortableItem(props: SortableItemProps) {
     transition,
     isDragging,
   } = useSortable({
-    id: id,
-    data: { name, type: "item" },
+    id: task.id,
+    data: { type: "task" },
   });
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -384,25 +286,53 @@ export function SortableItem(props: SortableItemProps) {
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style }}
-      className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 g-2 font-black"
+      style={style}
+      className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 gap-2 font-black"
     >
       <MdDragIndicator
-        className="h-6 w-6 cursor-grab text-sky-300 active:cursor-grabbing focus:outline-2 focus:outline-transparent focus:outline-offset-2"
+        className={`h-6 w-6 ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        } text-sky-300 focus:outline-2 focus:outline-transparent focus:outline-offset-2`}
         {...listeners}
         {...attributes}
       />
-      <span>{name}</span>
+      <span>{task?.title}</span>
     </div>
   );
 }
 
-export function OverlayItem(props: { name: string }) {
-  const { name } = props;
+function OverlayColumn({ column }: { column: IColumn }) {
   return (
-    <div className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 g-2 font-black">
-      <MdDragIndicator className="h-6 w-6 text-sky-300 active:cursor-grabbing focus:outline-2 focus:outline-transparent focus:outline-offset-2 cursor-grabbing" />
-      <span>{name}</span>
+    <div className="flex flex-col gap-2 w-2xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10">
+      <div className="flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] cursor-grabbing">
+        {column.title}
+      </div>
+      <div className="flex flex-col items-center gap-2 w-full p-4 max-h-[400px] overflow-y-auto">
+        {column.tasks.length === 0 ? (
+          <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
+            List is empty
+          </div>
+        ) : (
+          column.tasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 gap-2 font-black opacity-70"
+            >
+              <MdDragIndicator className="h-6 w-6 text-sky-300" />
+              <span>{task.title}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OverlayTask({ task }: { task: ITask }) {
+  return (
+    <div className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 gap-2 font-black">
+      <MdDragIndicator className="h-6 w-6 cursor-grabbing text-sky-300 focus:outline-2 focus:outline-transparent focus:outline-offset-2" />
+      <span>{task?.title}</span>
     </div>
   );
 }
