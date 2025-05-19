@@ -1,21 +1,37 @@
 # Здесь собраны все схемы запросов, ответов для хэндлеров
-from .user import CreateUser, BaseUserInfo, FullInfo, Login
-from .board import FullBoardInfo, AbsoluteFullBoardInfo, FullColumnInfo, FullTaskInfo, FullSubtaskInfo, FullCommentInfo, CreateColumn, TaskCreate, SubtaskCreate, CommentCreate, CreateBoard
+from .board import (
+    AbsoluteFullBoardInfo,
+    CommentCreate,
+    CreateBoard,
+    CreateColumn,
+    FullBoardInfo,
+    FullColumnInfo,
+    FullCommentInfo,
+    FullSubtaskInfo,
+    FullTaskInfo,
+    SubtaskCreate,
+    TaskCreate,
+    UpdateColumnsPos,
+    UpdateTaskInfo,
+)
+from .user import BaseUserInfo, CreateUser, FullInfo, Login
 
 __all__ = [
-  "CreateUser",
-  "BaseUserInfo",
-  "FullInfo",
-  "Login",
-  "FullBoardInfo",
-  "AbsoluteFullBoardInfo",
-  "FullColumnInfo",
-  "FullTaskInfo",
-  "FullSubtaskInfo",
-  "FullCommentInfo",
-  "CreateColumn",
-  "TaskCreate",
-  "SubtaskCreate",
-  "CommentCreate",
-  "CreateBoard",
+    "CreateUser",
+    "BaseUserInfo",
+    "FullInfo",
+    "Login",
+    "FullBoardInfo",
+    "AbsoluteFullBoardInfo",
+    "FullColumnInfo",
+    "FullTaskInfo",
+    "FullSubtaskInfo",
+    "FullCommentInfo",
+    "CreateColumn",
+    "TaskCreate",
+    "SubtaskCreate",
+    "CommentCreate",
+    "CreateBoard",
+    "UpdateColumnsPos",
+    "UpdateTaskInfo"
 ]

@@ -23,7 +23,7 @@ import { MdDragIndicator } from "react-icons/md";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { IBoardFullInfo, IColumn, ITask } from "@/interfaces/Board";
-import { getBoardData } from "../api/board";
+import { getBoardData, updateColumnsPositions, updateTaskData } from "../api/board";
 import { useRouter } from "next/router";
 
 type DraggedTask = { type: "task"; task: ITask };
@@ -152,25 +152,45 @@ export default function BoardPage() {
         overColIndex
       );
       setBoardData({ board: boardData!.board, columns: newColumns });
-      console.log(newColumns)
+      
+      const colsData = newColumns.map((col, index) => (
+        {
+          col_id: col.id,
+          new_pos: index
+        }
+      ))
+
+      updateColumnsPositions(colsData)
       return;
     }
 
-    // Перемещение задач внутри колонки
-    const columnId = findColumnByTaskId(activeId);
-    if (!columnId) return;
-    const column = boardData!.columns.find((col) => col.id === columnId)!;
-    const oldIndex = column.tasks.findIndex((t) => t.id === activeId);
-    const newIndex = column.tasks.findIndex((t) => t.id === overId);
-
-    if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-      const newTasks = arrayMove(column.tasks, oldIndex, newIndex);
-      const newColumns = boardData!.columns.map((col) =>
-        col.id === columnId ? { ...col, tasks: newTasks } : col
-      );
-      console.log(activeId)
-      setBoardData({ board: boardData!.board, columns: newColumns });
+    
+    // Определяем колонку, куда перенесли задачу
+    let targetColumnId: string | undefined;
+    if (boardData!.columns.some((col) => col.id === overId)) {
+      targetColumnId = overId;
+    } else {
+      targetColumnId = findColumnByTaskId(overId);
     }
+    if (!targetColumnId) return;
+
+    // Определяем позицию задачи в новой колонке
+    const targetColumn = boardData!.columns.find(
+      (col) => col.id === targetColumnId
+    )!;
+    let newIndex = targetColumn.tasks.findIndex((t) => t.id === overId);
+    if (newIndex === -1) {
+      newIndex = targetColumn.tasks.length;
+    }
+
+    updateTaskData(activeId, targetColumnId)
+    // Выводим в консоль нужные данные
+    console.log({
+      taskId: activeId,
+      newColumnId: targetColumnId,
+      newIndex: newIndex,
+    });
+
   }
 
   return (

@@ -1,5 +1,10 @@
 import { IBoardFullInfo, IBoardShortInfo } from "@/interfaces/Board";
 
+interface IUpdateCols {
+  col_id: string
+  new_pos: number
+}
+
 export async function getBoards(): Promise<IBoardShortInfo[]> {
   const res = await fetch(`http://localhost:8080/api/boards`, {
     method: "GET",
@@ -30,4 +35,33 @@ export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
 
   const board: IBoardFullInfo = await res.json();
   return board;
+}
+
+export async function updateColumnsPositions(colsInfo: IUpdateCols[]): Promise<void> {
+  const res = await fetch(`http://localhost:8080/api/columns/update_positions`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify(colsInfo),
+  })
+
+  if (!res.ok) {
+    throw new Error(`Ошибка при обновлении позиций колонок: ${res.statusText}`)
+  }
+}
+
+export async function updateTaskData(taskUUID: string, colUUID: string) {
+  const res = await fetch(`http://localhost:8080/api/tasks/${taskUUID}?col_id=${colUUID}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Ошибка при обновлении задачи: ${res.statusText}`)
+  }
 }

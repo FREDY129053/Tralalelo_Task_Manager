@@ -1,9 +1,9 @@
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
-
+from typing import List
 import backend.app.src.services.column as ColumnService
-from backend.app.src.schemas import TaskCreate
+from backend.app.src.schemas import TaskCreate, UpdateColumnsPos
 
 
 column_router = APIRouter(prefix='/columns', tags=["Columns Endpoints"])
@@ -36,4 +36,19 @@ async def create_task(uuid: UUID, task_data: TaskCreate):
   return JSONResponse(
     content={"message": "task created"},
     status_code=status.HTTP_201_CREATED
+  )
+
+@column_router.patch("/update_positions")
+async def update_columns_positions(data: List[UpdateColumnsPos]):
+  result = await ColumnService.update_cols_positions(data=data)
+
+  if not result:
+    raise HTTPException(
+      status_code=400,
+      detail="cannot update positions"
+    )
+  
+  return JSONResponse(
+    content={"message": "updated successfully"},
+    status_code=status.HTTP_200_OK
   )

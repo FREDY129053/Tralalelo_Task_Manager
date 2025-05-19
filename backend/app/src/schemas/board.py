@@ -48,6 +48,15 @@ class CreateBoard(BaseModel):
     is_public: bool = True
     color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
 
+class UpdateColumnsPos(BaseModel):
+    col_id: UUID
+    new_pos: int
+
+class UpdateTaskInfo(BaseModel):
+    task_id: UUID
+    col_id: UUID
+    # position: int
+
 class CreateColumn(BaseModel):
     title: str
     position: int

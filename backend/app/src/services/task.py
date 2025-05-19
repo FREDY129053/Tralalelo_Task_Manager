@@ -2,6 +2,7 @@ from uuid import UUID
 
 import backend.app.src.repository.task as TaskRepo
 import backend.app.src.repository.user as UserRepo
+import backend.app.src.repository.column as ColumnRepo
 from backend.app.src.schemas import SubtaskCreate, CommentCreate
 from backend.app.src.helpers.jwt import decode_jwt_token
 
@@ -42,3 +43,11 @@ async def create_subtask(uuid: UUID, subtask_data: SubtaskCreate) -> bool:
   )
 
   return bool(subtask)
+
+async def update_task_data(task_id: UUID, col_id: UUID) -> bool:
+  column = await ColumnRepo.get_column(uuid=col_id)
+  if not column:
+    return False
+  await TaskRepo.update_task(task_uuid=task_id, column=column)
+
+  return True

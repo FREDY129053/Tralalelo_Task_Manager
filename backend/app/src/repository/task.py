@@ -2,7 +2,7 @@ from uuid import UUID
 from typing import Optional
 from tortoise.exceptions import OperationalError
 
-from backend.app.src.db.models import Task, User, Comment, Subtask
+from backend.app.src.db.models import Task, User, Comment, Subtask, Column
 
 async def get_task(uuid: UUID) -> Optional[Task]:
   return await Task.get_or_none(id=uuid)
@@ -30,3 +30,8 @@ async def create_subtask(task: Task, title: str, is_completed: bool) -> Subtask:
       title=title,
       is_completed=is_completed,
    )
+
+async def update_task(task_uuid: UUID, column: Column):
+   task = await Task.get(id=task_uuid)
+   task.column = column
+   await task.save()

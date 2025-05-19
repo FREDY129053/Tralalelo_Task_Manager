@@ -1,5 +1,6 @@
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 from tortoise.exceptions import OperationalError
 
@@ -26,11 +27,11 @@ async def create_task(
     column: Column,
     title: str,
     description: Optional[str],
-    due_date: Optional[str],
+    due_date: Optional[datetime],
     priority: Priority,
     status: Status,
     color: Optional[str],
-    responsible: User,
+    responsible: Optional[User],
 ) -> Task:
     return await Task.create(
         column=column,
@@ -42,3 +43,6 @@ async def create_task(
         color=color,
         responsible=responsible
       )
+
+async def update_col_position(col_id: UUID, new_pos: int):
+    return await Column.filter(id=col_id).update(position=new_pos)
