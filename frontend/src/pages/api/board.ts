@@ -52,8 +52,8 @@ export async function updateColumnsPositions(colsInfo: IUpdateCols[]): Promise<v
   }
 }
 
-export async function updateTaskData(taskUUID: string, colUUID: string) {
-  const res = await fetch(`http://localhost:8080/api/tasks/${taskUUID}?col_id=${colUUID}`, {
+export async function updateTaskData(taskUUID: string, colUUID: string, position: number) {
+  const res = await fetch(`http://localhost:8080/api/tasks/${taskUUID}?col_id=${colUUID}&position=${position}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

@@ -128,6 +128,7 @@ CREATE TABLE public.tasks (
     column_id uuid,
     title text NOT NULL,
     description text,
+    "position" integer DEFAULT 0,
     due_date timestamp with time zone,
     priority text,
     status text,

@@ -22,7 +22,6 @@ export default function Boards() {
     <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Мои доски</h1>
 
-      {/* Фильтры */}
       <div className="flex justify-center gap-4 mb-10 flex-wrap">
         {["all", "public", "private"].map((f) => {
           const isActive = filter === f;
@@ -45,7 +44,6 @@ export default function Boards() {
         })}
       </div>
 
-      {/* Список досок */}
       <div className={`${filteredBoards.length <= 0 ? "flex flex-col items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"}`}>
         {filteredBoards.length > 0 ? (
           filteredBoards.map((board) => (
@@ -54,7 +52,6 @@ export default function Boards() {
               key={board.id}
               className="bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] rounded-xl shadow-md hover:shadow-lg border border-[var(--color-border)] p-5 relative transition"
             >
-              {/* Цветная боковая граница */}
               <div
                 className="absolute top-0 left-0 h-full w-2 rounded-l-xl"
                 style={{ backgroundColor: board.color ?? "var(--color-button-primary-bg)" }}

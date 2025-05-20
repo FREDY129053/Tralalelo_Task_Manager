@@ -44,8 +44,8 @@ async def create_subtask(uuid: UUID, subtask_info: SubtaskCreate):
   )
 
 @task_router.patch("/{uuid}")
-async def update_task_info(uuid: UUID, col_id: UUID):
-  res = await TaskService.update_task_data(task_id=uuid, col_id=col_id)
+async def update_task_info(uuid: UUID, col_id: UUID, position: int):
+  res = await TaskService.update_task_data(task_id=uuid, col_id=col_id, position=position)
   if not res:
     raise HTTPException(
       status_code=400,

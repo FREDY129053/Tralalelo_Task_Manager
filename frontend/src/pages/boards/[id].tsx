@@ -183,14 +183,7 @@ export default function BoardPage() {
       newIndex = targetColumn.tasks.length;
     }
 
-    updateTaskData(activeId, targetColumnId)
-    // Выводим в консоль нужные данные
-    console.log({
-      taskId: activeId,
-      newColumnId: targetColumnId,
-      newIndex: newIndex,
-    });
-
+    updateTaskData(activeId, targetColumnId, newIndex)
   }
 
   return (

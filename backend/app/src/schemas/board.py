@@ -55,7 +55,7 @@ class UpdateColumnsPos(BaseModel):
 class UpdateTaskInfo(BaseModel):
     task_id: UUID
     col_id: UUID
-    # position: int
+    position: int
 
 class CreateColumn(BaseModel):
     title: str
@@ -100,6 +100,7 @@ class TaskOut(BaseModel):
     id: UUID
     title: str
     description: Optional[str]
+    position: int
     due_date: Optional[datetime]
     priority: Priority
     status: Status

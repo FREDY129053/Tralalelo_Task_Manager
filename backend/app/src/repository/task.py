@@ -31,7 +31,8 @@ async def create_subtask(task: Task, title: str, is_completed: bool) -> Subtask:
       is_completed=is_completed,
    )
 
-async def update_task(task_uuid: UUID, column: Column):
+async def update_task(task_uuid: UUID, column: Column, position: int):
    task = await Task.get(id=task_uuid)
    task.column = column
+   task.position = position
    await task.save()

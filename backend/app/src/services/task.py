@@ -44,10 +44,10 @@ async def create_subtask(uuid: UUID, subtask_data: SubtaskCreate) -> bool:
 
   return bool(subtask)
 
-async def update_task_data(task_id: UUID, col_id: UUID) -> bool:
+async def update_task_data(task_id: UUID, col_id: UUID, position: int) -> bool:
   column = await ColumnRepo.get_column(uuid=col_id)
   if not column:
     return False
-  await TaskRepo.update_task(task_uuid=task_id, column=column)
+  await TaskRepo.update_task(task_uuid=task_id, column=column, position=position)
 
   return True
