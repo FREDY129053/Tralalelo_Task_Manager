@@ -22,7 +22,6 @@ async def delete_column_by_uuid(uuid: UUID) -> bool:
     except OperationalError:
         return False
 
-
 async def create_task(
     column: Column,
     title: str,

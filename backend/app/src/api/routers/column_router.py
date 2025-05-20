@@ -25,16 +25,16 @@ async def delete_column(uuid: UUID):
 
 @column_router.post('/{uuid}/tasks')
 async def create_task(uuid: UUID, task_data: TaskCreate):
-  is_created = await ColumnService.create_task(uuid=uuid, task_data=task_data)
+  task_uuid = await ColumnService.create_task(uuid=uuid, task_data=task_data)
 
-  if not is_created:
+  if not task_uuid:
     raise HTTPException(
       status_code=status.HTTP_400_BAD_REQUEST,
       detail="invalid data(column or responsible user)"
     )
   
   return JSONResponse(
-    content={"message": "task created"},
+    content={"message": "ok"},
     status_code=status.HTTP_201_CREATED
   )
 

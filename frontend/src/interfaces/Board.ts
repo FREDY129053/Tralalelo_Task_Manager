@@ -24,15 +24,12 @@ type Priority = "LOW" | "MEDIUM" | "HIGH"
 export interface ITask {
   id: string
   title: string
-  description: string | null
   position: number
-  due_date: string | null
   priority: Priority
   status: Status
   color: string | null
   responsible_id: string | null
   subtasks: ISubtask[]
-  comments: IComment[]
 }
 
 export interface IColumn {

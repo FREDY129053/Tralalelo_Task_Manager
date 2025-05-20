@@ -18,12 +18,18 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
+import { FaPlus } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
 import { MdDragIndicator } from "react-icons/md";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { IBoardFullInfo, IColumn, ITask } from "@/interfaces/Board";
-import { getBoardData, updateColumnsPositions, updateTaskData } from "../api/board";
+import {
+  createColumn,
+  getBoardData,
+  updateColumnsPositions,
+  updateTaskData,
+} from "../api/board";
 import { useRouter } from "next/router";
 
 type DraggedTask = { type: "task"; task: ITask };
@@ -57,6 +63,15 @@ export default function BoardPage() {
   );
 
   if (!boardData) return <div>Loading...</div>;
+
+  async function handleAddColumn() {
+    const title = prompt("Введите название колонки");
+    if (!title) return;
+    const position = boardData!.columns.length + 1;
+
+    createColumn(uuid!, title, position).then().catch(console.error);
+    getBoardData(uuid!).then(setBoardData).catch(console.error);
+  }
 
   function findColumnByTaskId(taskId: string): string | undefined {
     return boardData!.columns.find((col) =>
@@ -133,7 +148,7 @@ export default function BoardPage() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Перемещение колонок
+    // Проверяем: если оба id — это колонки, значит dnd колонок
     const activeColIndex = boardData!.columns.findIndex(
       (col) => col.id === activeId
     );
@@ -146,25 +161,24 @@ export default function BoardPage() {
       overColIndex !== -1 &&
       activeColIndex !== overColIndex
     ) {
+      // DnD колонок
       const newColumns = arrayMove(
         boardData!.columns,
         activeColIndex,
         overColIndex
       );
       setBoardData({ board: boardData!.board, columns: newColumns });
-      
-      const colsData = newColumns.map((col, index) => (
-        {
-          col_id: col.id,
-          new_pos: index
-        }
-      ))
 
-      updateColumnsPositions(colsData)
+      const colsData = newColumns.map((col, index) => ({
+        col_id: col.id,
+        new_pos: index,
+      }));
+
+      updateColumnsPositions(colsData);
       return;
     }
 
-    
+    // DnD задачи (activeId — задача)
     // Определяем колонку, куда перенесли задачу
     let targetColumnId: string | undefined;
     if (boardData!.columns.some((col) => col.id === overId)) {
@@ -183,7 +197,13 @@ export default function BoardPage() {
       newIndex = targetColumn.tasks.length;
     }
 
-    updateTaskData(activeId, targetColumnId, newIndex)
+    // Проверяем, что activeId действительно задача (а не колонка)
+    const isTask = boardData!.columns.some((col) =>
+      col.tasks.some((t) => t.id === activeId)
+    );
+    if (isTask) {
+      updateTaskData(activeId, targetColumnId, newIndex);
+    }
   }
 
   return (
@@ -198,10 +218,24 @@ export default function BoardPage() {
         items={boardData.columns}
         strategy={horizontalListSortingStrategy}
       >
-        <div className="flex h-full justify-center w-screen gap-6 p-6 overflow-x-auto">
+        <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
           {boardData.columns.map((col) => (
             <SortableColumn key={col.id} column={col} />
           ))}
+          {/* Кнопка "Добавить колонку" — маленькая, рядом с последней колонкой */}
+          <div className="flex items-center">
+            <button
+              onClick={handleAddColumn}
+              className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
+              title="Добавить колонку"
+              style={{ minWidth: "48px" }}
+            >
+              <FaPlus className="text-2xl sm:text-xl" />
+              <span className="hidden sm:inline font-semibold text-base ml-2">
+                Добавить колонку
+              </span>
+            </button>
+          </div>
         </div>
       </SortableContext>
       <DragOverlay>
@@ -243,7 +277,7 @@ function SortableColumn({ column }: SortableColumnProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex flex-col gap-2 w-2xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
+      className="flex flex-col gap-2 w-2xs min-h-full min-w-64 rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
     >
       <div
         {...listeners}

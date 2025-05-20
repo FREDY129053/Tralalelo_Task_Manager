@@ -30,15 +30,15 @@ async def get_board_data(uuid: UUID):
 
 @board_router.post('/{board_uuid}/columns')
 async def create_column(board_uuid: UUID, column_data: CreateColumn):
-  is_created = await BoardService.create_column(board_uuid=board_uuid, column_data=column_data)
-  if not is_created:
+  column_uuid = await BoardService.create_column(board_uuid=board_uuid, column_data=column_data)
+  if not column_uuid:
     raise HTTPException(
       status_code=status.HTTP_400_BAD_REQUEST,
       detail="invalid data or board not found"
     )
   
   return JSONResponse(
-    content={"message": "column created"},
+    content={"message": "ok"},
     status_code=status.HTTP_201_CREATED
   )
   

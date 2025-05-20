@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 import backend.app.src.repository.column as ColumnRepo
 import backend.app.src.repository.user as UserRepo
 from backend.app.src.schemas import TaskCreate, UpdateColumnsPos
@@ -7,11 +7,11 @@ from backend.app.src.schemas import TaskCreate, UpdateColumnsPos
 async def delete_column(uuid: UUID) -> bool:
   return await ColumnRepo.delete_column_by_uuid(uuid=uuid)
 
-async def create_task(uuid: UUID, task_data: TaskCreate) -> bool:
+async def create_task(uuid: UUID, task_data: TaskCreate) -> Optional[UUID]:
   column = await ColumnRepo.get_column(uuid=uuid)
   if not column:
     print(1)
-    return False
+    return None
   
   user = None
   if task_data.responsible:
@@ -19,7 +19,7 @@ async def create_task(uuid: UUID, task_data: TaskCreate) -> bool:
     user = await UserRepo.get_user_info(uuid=task_data.responsible)
     if not user:
       print(3)
-      return False
+      return None
     
   task = await ColumnRepo.create_task(
     column=column,
@@ -32,7 +32,7 @@ async def create_task(uuid: UUID, task_data: TaskCreate) -> bool:
     responsible=user
   )
 
-  return bool(task)
+  return task.id
 
 async def update_cols_positions(data: List[UpdateColumnsPos]) -> bool:
   for col_data in data:

@@ -17,10 +17,10 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
     columns=board.columns,
   )
 
-async def create_column(board_uuid: UUID, column_data: CreateColumn) -> bool:
+async def create_column(board_uuid: UUID, column_data: CreateColumn) -> Optional[UUID]:
   board = await BoardRepo.get_board(uuid=board_uuid)
   if not board:
-    return False
+    return None
   
   column = await BoardRepo.create_column(
     board=board,
@@ -29,4 +29,4 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn) -> bool:
     color=column_data.color,
   )
 
-  return bool(column)
+  return column.id

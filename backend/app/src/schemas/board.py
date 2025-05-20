@@ -96,6 +96,20 @@ class SubtaskOut(BaseModel):
         from_attributes = True
 
 
+class TaskShortOut(BaseModel):
+    id: UUID
+    title: str
+    position: int
+    priority: Priority
+    status: Status
+    color: Optional[str]
+    responsible_id: Optional[UUID]
+
+    subtasks: List[SubtaskOut]
+
+    class Config:
+        from_attributes = True
+
 class TaskOut(BaseModel):
     id: UUID
     title: str
@@ -119,7 +133,7 @@ class ColumnOut(BaseModel):
     title: str
     position: int
     color: Optional[str]
-    tasks: List[TaskOut]
+    tasks: List[TaskShortOut]
 
     class Config:
         from_attributes = True

@@ -9,7 +9,6 @@ async def get_all_boards() -> List[Board]:
 async def get_full_board_data(uuid: UUID) -> Optional[Board]:
   return await Board.get_or_none(id=uuid).prefetch_related(
     "columns__tasks__subtasks",
-    "columns__tasks__comments"
   )
 
 async def get_board(uuid: UUID) -> Optional[Board]:
