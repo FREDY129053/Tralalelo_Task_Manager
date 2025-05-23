@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Optional
+from typing import Any, Optional, Dict
 from tortoise.exceptions import OperationalError
 
 from backend.app.src.db.models import Task, User, Comment, Subtask, Column
@@ -36,3 +36,11 @@ async def update_task(task_uuid: UUID, column: Column, position: int):
    task.column = column
    task.position = position
    await task.save()
+
+async def update_fields(task_id: UUID, fields: Dict[str, Any]):
+   task = await Task.get(id=task_id)
+
+   for key, val in fields.items():
+      setattr(task, key, val)
+
+   return await task.save(update_fields=list(fields.keys()))

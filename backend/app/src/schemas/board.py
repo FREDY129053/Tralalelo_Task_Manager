@@ -65,9 +65,19 @@ class CreateColumn(BaseModel):
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
+    position: int
     due_date: Optional[datetime] = None
     priority: Priority = Priority.low
     status: Status = Status.to_do
+    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
+    responsible: Optional[UUID] = None
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    due_date: Optional[datetime] = None
+    priority: Optional[Priority] = None
+    status: Optional[Status] = None
     color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
     responsible: Optional[UUID] = None
 

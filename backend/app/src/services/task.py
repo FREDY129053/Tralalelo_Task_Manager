@@ -3,7 +3,7 @@ from uuid import UUID
 import backend.app.src.repository.task as TaskRepo
 import backend.app.src.repository.user as UserRepo
 import backend.app.src.repository.column as ColumnRepo
-from backend.app.src.schemas import SubtaskCreate, CommentCreate
+from backend.app.src.schemas import SubtaskCreate, CommentCreate, TaskUpdate
 from backend.app.src.helpers.jwt import decode_jwt_token
 
 async def delete_task(uuid: UUID) -> bool:
@@ -49,5 +49,12 @@ async def update_task_data(task_id: UUID, col_id: UUID, position: int) -> bool:
   if not column:
     return False
   await TaskRepo.update_task(task_uuid=task_id, column=column, position=position)
+
+  return True
+
+async def update_task_fields(task_id: UUID, fields: TaskUpdate) -> bool:
+  data_to_update = fields.model_dump(exclude_unset=True)
+  
+  await TaskRepo.update_fields(task_id, data_to_update)
 
   return True

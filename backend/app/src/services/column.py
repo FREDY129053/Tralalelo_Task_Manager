@@ -25,6 +25,7 @@ async def create_task(uuid: UUID, task_data: TaskCreate) -> Optional[UUID]:
     column=column,
     title=task_data.title,
     description=task_data.description,
+    position=task_data.position,
     due_date=task_data.due_date,
     priority=task_data.priority,
     status=task_data.status,

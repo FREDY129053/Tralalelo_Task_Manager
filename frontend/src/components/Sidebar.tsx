@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from "react";
 import {
   BsArrowLeftShort,
@@ -18,8 +20,21 @@ import {
 import { RiDashboardFill } from "react-icons/ri";
 
 export default function Sidebar() {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("isOpenSidebar")
+      return saved ? JSON.parse(saved) : false
+    }
+    return false
+  });
   const [submenuOpen, setSubmenuOpen] = useState<boolean>(false);
+
+  const handleToggle = () => {
+    setOpen((prev) => {
+      localStorage.setItem("isOpenSidebar", JSON.stringify(!prev))
+      return !prev;
+    })
+  }
 
   const Menus = [
     { title: "Dashboard", icon: <RiDashboardFill /> },
@@ -52,7 +67,7 @@ export default function Sidebar() {
         className={`bg-white border border-sidebar-bg text-sidebar-bg text-3xl rounded-full absolute -right-3.5 top-9 cursor-pointer ${
           !open && "rotate-180"
         }`}
-        onClick={() => setOpen(!open)}
+        onClick={(e) => handleToggle()}
       />
 
       <div className="inline-flex">
@@ -69,26 +84,6 @@ export default function Sidebar() {
           Tralalelo
         </h1>
       </div>
-{/* 
-      <div
-        className={`flex items-center rounded-md bg-light-white mt-6 py-2 ${
-          !open ? "px-2.5" : "px-4"
-        } duration-300`}
-      >
-        <BsSearch
-          className={`text-sidebar-text text-lg block float-left cursor-pointer ${
-            open && "mr-2"
-          } `}
-        />
-        <input
-          className={`text-base bg-transparent w-full text-sidebar-text focus:outline-none ${
-            !open && "hidden"
-          }`}
-          type="search"
-          name="search"
-          placeholder="Search"
-        />
-      </div> */}
 
       <ul className="pt-2">
         {Menus.map((menu, index) => (

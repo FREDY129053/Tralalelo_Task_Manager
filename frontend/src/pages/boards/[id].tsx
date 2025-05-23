@@ -26,6 +26,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { IBoardFullInfo, IColumn, ITask } from "@/interfaces/Board";
 import {
   createColumn,
+  createTask,
   getBoardData,
   updateColumnsPositions,
   updateTaskData,
@@ -62,6 +63,8 @@ export default function BoardPage() {
     })
   );
 
+  const updateBoard = () => getBoardData(uuid!).then(setBoardData).catch(console.error);
+
   if (!boardData) return <div>Loading...</div>;
 
   async function handleAddColumn() {
@@ -69,7 +72,7 @@ export default function BoardPage() {
     if (!title) return;
     const position = boardData!.columns.length + 1;
 
-    createColumn(uuid!, title, position).then().catch(console.error);
+    await createColumn(uuid!, title, position).then().catch(console.error);
     getBoardData(uuid!).then(setBoardData).catch(console.error);
   }
 
@@ -220,7 +223,7 @@ export default function BoardPage() {
       >
         <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
           {boardData.columns.map((col) => (
-            <SortableColumn key={col.id} column={col} />
+            <SortableColumn key={col.id} column={col} updateBoard={updateBoard} />
           ))}
           {/* Кнопка "Добавить колонку" — маленькая, рядом с последней колонкой */}
           <div className="flex items-center">
@@ -253,9 +256,10 @@ export default function BoardPage() {
 
 type SortableColumnProps = {
   column: IColumn;
+  updateBoard: () => void
 };
 
-function SortableColumn({ column }: SortableColumnProps) {
+function SortableColumn({ column, updateBoard }: SortableColumnProps) {
   const {
     attributes,
     listeners,
@@ -273,11 +277,20 @@ function SortableColumn({ column }: SortableColumnProps) {
     opacity: isDragging ? 0.2 : 1,
   };
 
+  async function handleAddTask() {
+    const title = prompt("Введите название задачи");
+    if (!title) return;
+    const position = column.tasks.length + 1;
+
+    await createTask(column.id, title, position).then().catch(console.error);
+    updateBoard()
+  }
+
   return (
-    <div
+   <div
       ref={setNodeRef}
       style={style}
-      className="flex flex-col gap-2 w-2xs min-h-full min-w-64 rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
+      className="relative flex flex-col min-w-[260px] w-2xs max-w-xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
     >
       <div
         {...listeners}
@@ -288,7 +301,7 @@ function SortableColumn({ column }: SortableColumnProps) {
       >
         {column.title}
       </div>
-      <div className="flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700 max-h-[400px]">
+      <div className="flex-1 flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
         {column.tasks.length === 0 ? (
           <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
             List is empty
@@ -303,6 +316,20 @@ function SortableColumn({ column }: SortableColumnProps) {
             ))}
           </SortableContext>
         )}
+      </div>
+      {/* Кнопка всегда внизу */}
+      <div className="flex justify-center py-4 z-20 bg-gradient-to-t from-sky-400 via-sky-400/80 to-transparent">
+        <button
+          onClick={handleAddTask}
+          className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
+          title="Добавить задачу"
+          style={{ minWidth: "48px" }}
+        >
+          <FaPlus className="text-2xl sm:text-xl" />
+          <span className="hidden sm:inline font-semibold text-base ml-2">
+            Добавить задачу
+          </span>
+        </button>
       </div>
     </div>
   );
@@ -328,13 +355,14 @@ function SortableTask({ task }: SortableTaskProps) {
     transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.2 : 1,
+    backgroundColor: task.color ?? "#fff"
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 gap-2 font-black"
+      className={`flex w-full h-16 text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black`}
     >
       <MdDragIndicator
         className={`h-6 w-6 ${

@@ -1,9 +1,10 @@
 from uuid import UUID
+from typing import Any
 from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 
 import backend.app.src.services.task as TaskService
-from backend.app.src.schemas import SubtaskCreate, CommentCreate
+from backend.app.src.schemas import SubtaskCreate, CommentCreate, TaskUpdate
 
 task_router = APIRouter(prefix='/tasks', tags=["Tasks Endpoints"])
 
@@ -46,6 +47,20 @@ async def create_subtask(uuid: UUID, subtask_info: SubtaskCreate):
 @task_router.patch("/{uuid}")
 async def update_task_info(uuid: UUID, col_id: UUID, position: int):
   res = await TaskService.update_task_data(task_id=uuid, col_id=col_id, position=position)
+  if not res:
+    raise HTTPException(
+      status_code=400,
+      detail="troubles"
+    )
+  
+  return JSONResponse(
+    content={"message": "ok"},
+  )
+
+@task_router.patch("/{uuid}/fields")
+async def update_task_field(uuid: UUID, task_update: TaskUpdate):
+  res = await TaskService.update_task_fields(uuid, task_update)
+
   if not res:
     raise HTTPException(
       status_code=400,

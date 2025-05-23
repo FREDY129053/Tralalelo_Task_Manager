@@ -28,7 +28,7 @@ export default function Boards() {
           return (
             <button
               key={f}
-              onClick={() => setFilter(f as any)}
+              onClick={() => setFilter(f as never)}
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition
                 ${
                   isActive

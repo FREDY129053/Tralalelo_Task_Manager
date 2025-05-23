@@ -104,3 +104,28 @@ export async function createColumn(
     throw new Error(`Ошибка при создании колонки: ${res.statusText}`);
   }
 }
+
+export async function createTask(
+  columnUUID: string,
+  title: string,
+  position: number,
+): Promise<void> {
+  const res = await fetch(
+    `http://localhost:8080/api/columns/${columnUUID}/tasks`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        position,
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Ошибка при создании задачи: ${res.statusText}`);
+  }
+}
