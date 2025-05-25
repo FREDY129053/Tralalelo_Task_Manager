@@ -46,6 +46,7 @@ class Task(models.Model):
     column = fields.ForeignKeyField("models.Column", related_name="tasks", on_delete=fields.CASCADE)
     title = fields.CharField(max_length=255)
     description = fields.TextField(null=True)
+    position = fields.IntField()
     due_date = fields.DatetimeField(null=True)
     priority = fields.CharEnumField(Priority, default=Priority.low)
     status = fields.CharEnumField(Status, default=Status.to_do)

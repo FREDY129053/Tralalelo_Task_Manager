@@ -6,10 +6,14 @@ from contextlib import asynccontextmanager
 
 from backend.app.src.db import init_db_tortoise
 from backend.app.src.api.routers import router
+from backend.app.src.config import validate_environment, load_environment
 
 # Это инициализирует БД до запуска приложения(параметр lifespan)
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+  load_environment()
+  validate_environment()
+  
   await init_db_tortoise(_app)
   yield
 
