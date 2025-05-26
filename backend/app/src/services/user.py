@@ -1,5 +1,5 @@
 from typing import List, Union
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import backend.app.src.repository.user as UserRepo
 from backend.app.src.helpers.avatar_gen.avatar_gen import AvatarGenerator
@@ -24,26 +24,20 @@ async def get_user_info(uuid: UUID) -> Union[FullInfo, None]:
 async def create_user(user: RegUser) -> bool:
   new_pass = hash_pass(user.password)
   avatar = AvatarGenerator(user.username).generate_avatar_url()
-  UUID4 = uuid4()
 
   data = await UserRepo.create_user(
-    uuid=UUID4,
     username=user.username,
     email=user.email,
     phone=user.phone,
     avatar_url=avatar,
-    is_admin=False,
     password=new_pass
   )
 
   return True if data else False
 
 
-async def update_user(uuid: UUID, user: BaseUserInfo, new_password="") -> bool:
-  if new_password:
-    new_pass = hash_pass(new_password)
-  else:
-    new_pass = hash_pass(user.hashed_password)
+async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:
+  new_pass = hash_pass(user.hashed_password)
   avatar = AvatarGenerator(user.username).generate_avatar_url()
 
   data = await UserRepo.update_user(
@@ -57,6 +51,21 @@ async def update_user(uuid: UUID, user: BaseUserInfo, new_password="") -> bool:
   )
 
   return True if data else False
+
+
+async def update_pass(uuid: UUID, old_password: str, new_password: str):
+  user = await UserRepo.get_user_info(uuid=uuid)
+  if not user:
+    return False
+
+  is_right_pass = check_pass(user.hashed_password, old_password)
+  if not is_right_pass:
+    return False
+
+  new_password = hash_pass(new_password)
+  await UserRepo.update_pass(uuid=uuid, new_password=new_password)
+
+  return True
 
 
 async def delete_user(uuid: UUID) -> bool:

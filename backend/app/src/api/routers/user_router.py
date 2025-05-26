@@ -13,14 +13,6 @@ user_router = APIRouter(prefix='/users', tags=["User Endpoints"])
 async def get_all_users():
   """
   # Возвращает полную информацию о всех пользователях
-  ### - **username**: логин
-  ### - **email**: электронная почта
-  ### - **phone**: телефон
-  ### - **avatar_url**: ссылка на аватарку
-  ### - **is_admin**: является ли пользователь админом
-  ### - **hashed_password**: хешированный пароль
-  ### - **id**: id пользователя
-  ### - **registred_at**: время регистрации
   """
   return await UserService.get_all_users()
 
@@ -29,17 +21,6 @@ async def get_all_users():
 async def get_user_by_uuid(uuid: UUID):
   """
   # Возвращает полную информацию о пользователе по uuid
-  ### - *uuid: id пользователя*
-  ### - **username**: логин
-  ### - **email**: электронная почта
-  ### - **phone**: телефон
-  ### - **avatar_url**: ссылка на аватарку
-  ### - **is_admin**: является ли пользователь админом
-  ### - **hashed_password**: хешированный пароль
-  ### - **id**: id пользователя
-  ### - **registred_at**: время регистрации
-  ## Ошибки
-  ### - 404: Пользователь не найден
   """
   user = await UserService.get_user_info(uuid)
   if not user:
@@ -55,13 +36,6 @@ async def get_user_by_uuid(uuid: UUID):
 async def create_user(user_data: RegUser):
   """
   # Регистрация нового пользователя
-  ### - *username: логин*
-  ### - *email: электронная почта*
-  ### - *phone: телефон*
-  ### - *password: пароль*
-  ## Ошибки
-  ### - 400: Нельзя создать пользователя
-  ### - 422: Неправильынй формат почты или телефона
   """
   is_created = await UserService.create_user(user_data)
   if not is_created:
@@ -80,15 +54,6 @@ async def create_user(user_data: RegUser):
 async def update_user_by_uuid(uuid: UUID, user_data: BaseUserInfo):
   """
   # Обновляет данные пользователя по uuid
-  ### - *uuid: id пользователя*
-  ### - **username**: логин
-  ### - **email**: электронная почта
-  ### - **phone**: телефон
-  ### - **avatar_url**: ссылка на аватарку
-  ### - **is_admin**: является ли пользователь админом
-  ### - **hashed_password**: хешированный пароль
-  ## Ошибки
-  ### - 400: Нельзя обновить данные
   """
   is_updated = await UserService.update_user(uuid=uuid, user=user_data)
 
@@ -108,9 +73,6 @@ async def update_user_by_uuid(uuid: UUID, user_data: BaseUserInfo):
 async def delete_user_by_uuid(uuid: UUID):
   """
   # Удаляет пользователя по uuid
-  ### - *uuid: id пользователя*
-  ## Ошибки
-  ### - 404: Пользователь не найден
   """
   is_deleted = await UserService.delete_user(uuid=uuid)
 
@@ -127,16 +89,11 @@ async def delete_user_by_uuid(uuid: UUID):
 
 
 @user_router.patch('/{uuid}')
-async def update_user_password(uuid: UUID, new_pass: str):
+async def update_user_password(uuid: UUID, old_pass: str, new_pass: str):
   """
   # Обновляет пароль пользователя по uuid
-  ### - *uuid: id пользователя*
-  ### - *new_pass: новый пароль*
-  ## Ошибки
-  ### - 400: Нельзя обновить пароль
   """
-  user = await UserService.get_user_info(uuid)
-  is_updated = await UserService.update_user(uuid=uuid, user=user, new_password=new_pass)
+  is_updated = await UserService.update_pass(uuid=uuid, old_password=old_pass, new_password=new_pass)
 
   if not is_updated:
     raise HTTPException(
@@ -153,8 +110,6 @@ async def update_user_password(uuid: UUID, new_pass: str):
 async def login_user(data: Login):
   """
   # Вход в аккаунт
-  ## Ошибки
-  ### - 400: Неверные данные
   """
   token = await UserService.login_user(
     username=data.username,
@@ -177,8 +132,6 @@ async def login_user(data: Login):
 async def logout_user(request: Request, response: Response):
   """
   # Выход из аккаунта
-  ## Ошибки
-  ### - 401: Пользователь не авторизован
   """
   cookie_data = request.cookies.get("user", None)
 
@@ -200,10 +153,6 @@ async def logout_user(request: Request, response: Response):
 async def get_role_at_board(request: Request, board_uuid: UUID):
   """
   # Получение роли в доске
-  ### - *board_uuid: id доски*
-  ## Ошибки
-  ### - 401: Пользователь не авторизован
-  ### - 404: Доска или пользователь не найдены
   """
   cookie_data = request.cookies.get("user", None)
 
