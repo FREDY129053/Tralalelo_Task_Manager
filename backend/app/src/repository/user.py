@@ -15,23 +15,25 @@ async def get_user_by_username(username: str) -> Union[User, None]:
     return await User.get_or_none(username=username)
 
 async def create_user(
-    uuid: UUID,
     username: str,
     email: str,
     phone: str,
     avatar_url: str,
-    is_admin: bool,
     password: str,
 ) -> User:
     return await User.create(
-        id=uuid,
         username=username,
         email=email,
         phone=phone,
         avatar_url=avatar_url,
-        is_admin=is_admin,
         hashed_password=password,
     )
+
+
+async def update_pass(uuid: UUID, new_password: str):
+    user = await User.get(id=uuid)
+    user.hashed_password = new_password
+    await user.save()
 
 
 async def update_user(

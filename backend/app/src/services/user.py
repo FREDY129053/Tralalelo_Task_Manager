@@ -6,6 +6,7 @@ from backend.app.src.helpers.avatar_gen.avatar_gen import AvatarGenerator
 from backend.app.src.helpers.jwt import create_jwt_token, decode_jwt_token
 from backend.app.src.helpers.password import check_pass, hash_pass
 from backend.app.src.schemas import BaseUserInfo, CreateUser, FullInfo
+from backend.app.src.schemas.user import RegUser
 
 
 async def get_all_users() -> List[FullInfo]:
@@ -20,17 +21,15 @@ async def get_user_info(uuid: UUID) -> Union[FullInfo, None]:
   return user
 
 
-async def create_user(user: CreateUser) -> bool:
-  new_pass = hash_pass(user.hashed_password)
+async def create_user(user: RegUser) -> bool:
+  new_pass = hash_pass(user.password)
   avatar = AvatarGenerator(user.username).generate_avatar_url()
 
   data = await UserRepo.create_user(
-    uuid=user.id,
     username=user.username,
     email=user.email,
     phone=user.phone,
     avatar_url=avatar,
-    is_admin=user.is_admin,
     password=new_pass
   )
 
@@ -52,6 +51,21 @@ async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:
   )
 
   return True if data else False
+
+
+async def update_pass(uuid: UUID, old_password: str, new_password: str):
+  user = await UserRepo.get_user_info(uuid=uuid)
+  if not user:
+    return False
+
+  is_right_pass = check_pass(user.hashed_password, old_password)
+  if not is_right_pass:
+    return False
+
+  new_password = hash_pass(new_password)
+  await UserRepo.update_pass(uuid=uuid, new_password=new_password)
+
+  return True
 
 
 async def delete_user(uuid: UUID) -> bool:

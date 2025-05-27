@@ -15,11 +15,12 @@ from .board import (
     UpdateTaskInfo,
     TaskUpdate
 )
-from .user import BaseUserInfo, CreateUser, FullInfo, Login
+from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser
 
 __all__ = [
     "CreateUser",
     "BaseUserInfo",
+    "RegUser",
     "FullInfo",
     "Login",
     "FullBoardInfo",
