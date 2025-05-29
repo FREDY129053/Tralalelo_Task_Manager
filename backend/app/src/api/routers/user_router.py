@@ -47,7 +47,9 @@ async def get_user_by_uuid(uuid: UUID):
     """
     user = await UserService.get_user_info(uuid)
     if not user:
-        raise HTTPException(detail="user not found!", status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(
+            detail="user not found!", status_code=status.HTTP_404_NOT_FOUND
+        )
 
     return user
 
@@ -67,10 +69,13 @@ async def create_user(user_data: RegUser):
     """
     is_created = await UserService.create_user(user_data)
     if not is_created:
-        raise HTTPException(detail="cannot create user!", status_code=status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(
+            detail="cannot create user!", status_code=status.HTTP_400_BAD_REQUEST
+        )
 
     return JSONResponse(
-        content={"message": "user created successfully"}, status_code=status.HTTP_201_CREATED
+        content={"message": "user created successfully"},
+        status_code=status.HTTP_201_CREATED,
     )
 
 
@@ -90,7 +95,9 @@ async def update_user_by_uuid(uuid: UUID, user_data: BaseUserInfo):
     is_updated = await UserService.update_user(uuid=uuid, user=user_data)
 
     if not is_updated:
-        raise HTTPException(detail="cannot update user!", status_code=status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(
+            detail="cannot update user!", status_code=status.HTTP_400_BAD_REQUEST
+        )
 
     return JSONResponse(
         content={"message": "user updated successfully"}, status_code=status.HTTP_200_OK
@@ -113,7 +120,9 @@ async def delete_user_by_uuid(uuid: UUID):
     is_deleted = await UserService.delete_user(uuid=uuid)
 
     if not is_deleted:
-        raise HTTPException(detail="user not found!", status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(
+            detail="user not found!", status_code=status.HTTP_404_NOT_FOUND
+        )
 
     return JSONResponse(
         content={"message": "user deleted successfully"}, status_code=status.HTTP_200_OK
@@ -143,7 +152,8 @@ async def update_user_password(uuid: UUID, data: UpdatePass):
         )
 
     return JSONResponse(
-        content={"message": "password updated successfully"}, status_code=status.HTTP_200_OK
+        content={"message": "password updated successfully"},
+        status_code=status.HTTP_200_OK,
     )
 
 
@@ -166,7 +176,9 @@ async def login_user(data: Login):
     )
 
     if not token:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid data")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="invalid data"
+        )
 
     response = JSONResponse(
         content={"message": "login successfully"}, status_code=status.HTTP_200_OK
@@ -193,11 +205,15 @@ async def logout_user(request: Request, response: Response):
     cookie_data = request.cookies.get("user", None)
 
     if not cookie_data:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!"
+        )
 
     response.delete_cookie("user")
 
-    return JSONResponse(content={"message": "logout successfully!"}, status_code=status.HTTP_200_OK)
+    return JSONResponse(
+        content={"message": "logout successfully!"}, status_code=status.HTTP_200_OK
+    )
 
 
 @user_router.get(
@@ -215,7 +231,9 @@ async def get_role_at_board(request: Request, board_uuid: UUID):
     """
     cookie_data = request.cookies.get("user", None)
     if not cookie_data:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!"
+        )
 
     role = await UserService.get_user_role(cookie_data, board_uuid)
 

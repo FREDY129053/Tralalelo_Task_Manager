@@ -1,18 +1,22 @@
 from typing import List, Optional
 from uuid import UUID
+
 from tortoise.exceptions import IntegrityError
 
-from backend.app.src.db.models import User, BoardUser
+from backend.app.src.db.models import BoardUser, User
 
 
 async def get_all_users() -> List[User]:
     return await User.all()
 
+
 async def get_user_info(uuid: UUID) -> Optional[User]:
     return await User.get_or_none(id=uuid)
 
+
 async def get_user_by_username(username: str) -> Optional[User]:
     return await User.get_or_none(username=username)
+
 
 async def create_user(
     username: str,
@@ -23,19 +27,21 @@ async def create_user(
 ) -> Optional[User]:
     try:
         return await User.create(
-        username=username,
-        email=email,
-        phone=phone,
-        avatar_url=avatar_url,
-        hashed_password=password,
-    )
+            username=username,
+            email=email,
+            phone=phone,
+            avatar_url=avatar_url,
+            hashed_password=password,
+        )
     except IntegrityError:
         return None
+
 
 async def update_pass(uuid: UUID, new_password: str):
     user = await User.get(id=uuid)
     user.hashed_password = new_password
     await user.save()
+
 
 async def update_user(
     uuid: UUID,
@@ -60,6 +66,7 @@ async def update_user(
 
     return await user_on_server.save() is None
 
+
 async def delete_user(uuid: UUID) -> bool:
     user = await User.get_or_none(id=uuid)
     if not user:
@@ -67,18 +74,21 @@ async def delete_user(uuid: UUID) -> bool:
 
     return await user.delete() is None
 
+
 async def get_role(user_uuid: UUID, board_uuid: UUID) -> Optional[str]:
-    board_info = await BoardUser.filter(
-        user_id=user_uuid,
-        board_id=board_uuid
-    ).first()
+    board_info = await BoardUser.filter(user_id=user_uuid, board_id=board_uuid).first()
 
     if board_info:
         return board_info.role
     else:
         return None
-    
+
+
 async def search_users(query: str):
-    users = await User.filter(username__icontains=query).limit(20).values("id", "username", "avatar_url")
+    users = (
+        await User.filter(username__icontains=query)
+        .limit(20)
+        .values("id", "username", "avatar_url")
+    )
 
     return users

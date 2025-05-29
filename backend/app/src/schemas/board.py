@@ -1,10 +1,10 @@
 import re
 import typing
 from datetime import datetime
-from typing import List, Optional, Annotated
+from typing import Annotated, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ValidationError, field_validator, AfterValidator, Field
+from pydantic import AfterValidator, BaseModel, Field, ValidationError, field_validator
 from tortoise.contrib.pydantic import pydantic_model_creator
 
 from backend.app.src.db.models import Board, BoardUser, Column, Comment, Subtask, Task
@@ -23,13 +23,17 @@ def _is_valid_color(value: str) -> str:
 FullBoardInfo = typing.NewType(
     "FullBoardInfo",
     pydantic_model_creator(
-        Board, name="Board", validators={"color": field_validator("color")(_is_valid_color)}
+        Board,
+        name="Board",
+        validators={"color": field_validator("color")(_is_valid_color)},
     ),
 )
 FullColumnInfo = typing.NewType(
     "FullColumnInfo",
     pydantic_model_creator(
-        Column, name="Column", validators={"color": field_validator("color")(_is_valid_color)}
+        Column,
+        name="Column",
+        validators={"color": field_validator("color")(_is_valid_color)},
     ),
 )
 FullTaskInfo = typing.NewType(
@@ -38,29 +42,44 @@ FullTaskInfo = typing.NewType(
         Task, name="Task", validators={"color": field_validator("color")(_is_valid_color)}
     ),
 )
-FullSubtaskInfo = typing.NewType("FullSubtaskInfo", pydantic_model_creator(Subtask, name="Subtask"))
-FullCommentInfo = typing.NewType("FullCommentInfo", pydantic_model_creator(Comment, name="Comment"))
-BoardUserInfo = typing.NewType("BoardUserInfo", pydantic_model_creator(BoardUser, name="BoardUser"))
+FullSubtaskInfo = typing.NewType(
+    "FullSubtaskInfo", pydantic_model_creator(Subtask, name="Subtask")
+)
+FullCommentInfo = typing.NewType(
+    "FullCommentInfo", pydantic_model_creator(Comment, name="Comment")
+)
+BoardUserInfo = typing.NewType(
+    "BoardUserInfo", pydantic_model_creator(BoardUser, name="BoardUser")
+)
+
 
 class CreateBoard(BaseModel):
     title: str
     description: str | None = None
     is_public: bool = True
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
+    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
+        default=None, description="Hex color, e.g. #000000"
+    )
+
 
 class UpdateColumnsPos(BaseModel):
     col_id: UUID
     new_pos: int
+
 
 class UpdateTaskInfo(BaseModel):
     task_id: UUID
     col_id: UUID
     position: int
 
+
 class CreateColumn(BaseModel):
     title: str
     position: int
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
+    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
+        default=None, description="Hex color, e.g. #000000"
+    )
+
 
 class TaskCreate(BaseModel):
     title: str
@@ -69,8 +88,11 @@ class TaskCreate(BaseModel):
     due_date: Optional[datetime] = None
     priority: Priority = Priority.low
     status: Status = Status.to_do
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
+    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
+        default=None, description="Hex color, e.g. #000000"
+    )
     responsible: Optional[UUID] = None
+
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
@@ -78,15 +100,20 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
     priority: Optional[Priority] = None
     status: Optional[Status] = None
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(default=None, description="Hex color, e.g. #000000")
+    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
+        default=None, description="Hex color, e.g. #000000"
+    )
     responsible: Optional[UUID] = None
+
 
 class SubtaskCreate(BaseModel):
     title: str
     is_completed: bool = False
 
+
 class CommentCreate(BaseModel):
     content: str
+
 
 class CommentOut(BaseModel):
     id: UUID
@@ -97,9 +124,11 @@ class CommentOut(BaseModel):
     class Config:
         from_attributes = True
 
+
 class SubtaskUpdate(BaseModel):
     title: Optional[str] = None
     is_completed: Optional[bool] = None
+
 
 class SubtaskOut(BaseModel):
     id: UUID
@@ -125,6 +154,7 @@ class TaskShortOut(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class TaskOut(BaseModel):
     id: UUID

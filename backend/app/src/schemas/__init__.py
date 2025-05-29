@@ -1,6 +1,8 @@
 # Здесь собраны все схемы запросов, ответов для хэндлеров
 from .board import (
     AbsoluteFullBoardInfo,
+    BoardOut,
+    ColumnOut,
     CommentCreate,
     CreateBoard,
     CreateColumn,
@@ -10,18 +12,24 @@ from .board import (
     FullSubtaskInfo,
     FullTaskInfo,
     SubtaskCreate,
+    SubtaskUpdate,
     TaskCreate,
+    TaskOut,
+    TaskShortOut,
+    TaskUpdate,
     UpdateColumnsPos,
     UpdateTaskInfo,
-    TaskUpdate,
-    ColumnOut,
-    TaskShortOut,
-    BoardOut,
-    TaskOut,
-    SubtaskUpdate,
 )
-from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser, UserPreview, UpdatePass
 from .error import Error
+from .user import (
+    BaseUserInfo,
+    CreateUser,
+    FullInfo,
+    Login,
+    RegUser,
+    UpdatePass,
+    UserPreview,
+)
 
 __all__ = [
     "CreateUser",

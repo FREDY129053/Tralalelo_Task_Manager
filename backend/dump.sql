@@ -382,4 +382,3 @@ ALTER TABLE ONLY public.tasks
 --
 -- PostgreSQL database dump complete
 --
-
