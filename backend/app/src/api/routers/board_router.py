@@ -47,9 +47,15 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn):
     content={"message": "ok"},
     status_code=status.HTTP_201_CREATED
   )
-  
 
-
-@board_router.delete("/")
-async def delete_board():
+@board_router.delete("/{uuid}")
+async def delete_board(uuid: UUID):
   ...
+
+@board_router.post("/{uuid}/comments")
+async def write_comment(uuid: UUID):
+  ...
+
+@board_router.get("/{uuid}/comments")
+async def get_comments(uuid: UUID):
+  return await BoardService.get_comments(uuid=uuid)

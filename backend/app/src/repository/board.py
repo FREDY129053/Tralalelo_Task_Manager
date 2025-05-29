@@ -58,3 +58,8 @@ async def create_column(board: Board, title: str, position: int, color: Optional
     position=position,
     color=color
   )
+
+async def get_comments(id: UUID):
+  board = await Board.get(id=id).prefetch_related("comments")
+
+  return board.comments

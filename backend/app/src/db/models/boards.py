@@ -13,6 +13,7 @@ class Board(models.Model):
 
     columns: fields.ReverseRelation["Column"]
     members: fields.ReverseRelation["BoardUser"]
+    comments: fields.ReverseRelation["BoardComment"]
 
     class Meta:
         table = "boards"
@@ -22,7 +23,7 @@ class BoardComment(models.Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     board = fields.ForeignKeyField("models.Board", related_name="comments", on_delete=fields.CASCADE)
     user = fields.ForeignKeyField(
-        "models.User", related_name="comments", null=True, on_delete=fields.SET_NULL
+        "models.User", related_name="board_comments", null=True, on_delete=fields.SET_NULL
     )
     content = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)

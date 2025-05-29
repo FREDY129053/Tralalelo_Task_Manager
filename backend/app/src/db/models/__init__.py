@@ -1,5 +1,5 @@
 # Здесь собираются все модели, чтобы импортировать можно было из модуля, а не из файлов двух
-from .boards import Board, BoardUser, Column, Task, Subtask, Comment
+from .boards import Board, BoardUser, Column, Task, Subtask, Comment, BoardComment
 from .users import User
 
 __all__ = [
@@ -9,5 +9,6 @@ __all__ = [
   "Column",
   "Task",
   "Subtask",
-  "Comment"
+  "Comment",
+  "BoardComment"
 ]

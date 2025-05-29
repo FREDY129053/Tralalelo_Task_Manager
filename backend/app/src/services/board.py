@@ -32,3 +32,6 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn) -> Optional
   )
 
   return column.id
+
+async def get_comments(uuid: UUID):
+  return await BoardRepo.get_comments(id=uuid)
