@@ -34,7 +34,6 @@ async def get_user_by_uuid(uuid: UUID):
 
   return user
 
-
 @user_router.post('/')
 async def create_user(user_data: RegUser):
   """
@@ -51,7 +50,6 @@ async def create_user(user_data: RegUser):
     content={"message": "user created successfully"},
     status_code=status.HTTP_201_CREATED
   )
-
 
 @user_router.put('/{uuid}')
 async def update_user_by_uuid(uuid: UUID, user_data: BaseUserInfo):
@@ -71,7 +69,6 @@ async def update_user_by_uuid(uuid: UUID, user_data: BaseUserInfo):
     status_code=status.HTTP_200_OK
   )
 
-
 @user_router.delete('/{uuid}')
 async def delete_user_by_uuid(uuid: UUID):
   """
@@ -89,7 +86,6 @@ async def delete_user_by_uuid(uuid: UUID):
     content={"message": "user deleted successfully"},
     status_code=status.HTTP_200_OK
   )
-
 
 @user_router.patch('/{uuid}')
 async def update_user_password(uuid: UUID, old_pass: str, new_pass: str):
@@ -150,7 +146,6 @@ async def logout_user(request: Request, response: Response):
     content={"message": "logout successfully!"},
     status_code=status.HTTP_200_OK
   )
-
 
 @user_router.get('/role/{board_uuid}')
 async def get_role_at_board(request: Request, board_uuid: UUID):
