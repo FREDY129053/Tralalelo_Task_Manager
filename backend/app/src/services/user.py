@@ -99,3 +99,8 @@ async def get_user_role(token: str, board_uuid: UUID) -> Union[str, None]:
     return None
   
   return await UserRepo.get_role(user_uuid=user_uuid, board_uuid=board_uuid)
+
+async def search_users(query: str):
+  res = await UserRepo.search_users(query=query)
+
+  return res

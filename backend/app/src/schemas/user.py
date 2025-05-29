@@ -26,3 +26,8 @@ class FullInfo(CreateUser):
 class Login(BaseModel):
   username: str
   password: str
+
+class UserPreview(BaseModel):
+  id: UUID4
+  username: str
+  avatar_url: str | None

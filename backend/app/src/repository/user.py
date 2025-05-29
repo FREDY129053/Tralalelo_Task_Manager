@@ -7,7 +7,6 @@ from backend.app.src.db.models import User, BoardUser
 async def get_all_users() -> List[User]:
     return await User.all()
 
-
 async def get_user_info(uuid: UUID) -> Union[User, None]:
     return await User.get_or_none(id=uuid)
 
@@ -77,3 +76,8 @@ async def get_role(user_uuid: UUID, board_uuid: UUID) -> Union[str, None]:
         return board_info.role
     else:
         return None
+    
+async def search_users(query: str):
+    users = await User.filter(username__icontains=query).limit(20).values("id", "username", "avatar_url")
+
+    return users

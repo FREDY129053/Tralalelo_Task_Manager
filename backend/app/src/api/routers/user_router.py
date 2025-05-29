@@ -1,10 +1,10 @@
 from uuid import UUID
 from typing import Dict, List, Union
 
-from backend.app.src.schemas import RegUser, BaseUserInfo, FullInfo, Login
+from backend.app.src.schemas import RegUser, BaseUserInfo, FullInfo, Login, UserPreview
 import backend.app.src.services.user as UserService 
 
-from fastapi import APIRouter, HTTPException, status, Request, Response, Cookie
+from fastapi import APIRouter, HTTPException, Query, status, Request, Response, Cookie
 from fastapi.responses import JSONResponse
 
 user_router = APIRouter(prefix='/users', tags=["User Endpoints"])
@@ -16,6 +16,9 @@ async def get_all_users():
   """
   return await UserService.get_all_users()
 
+@user_router.get("/search", response_model=List[UserPreview])
+async def search_user(query: str = Query(min_length=1)):
+  return await UserService.search_users(query=query)
 
 @user_router.get('/{uuid}', response_model=FullInfo)
 async def get_user_by_uuid(uuid: UUID):
@@ -155,13 +158,13 @@ async def get_role_at_board(request: Request, board_uuid: UUID):
   # Получение роли в доске
   """
   cookie_data = request.cookies.get("user", None)
-
-  role = await UserService.get_user_role(cookie_data, board_uuid)
   if not cookie_data:
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
       detail="unauthorized!"
     )
+
+  role = await UserService.get_user_role(cookie_data, board_uuid)
 
   if not role:
     raise HTTPException(
@@ -173,4 +176,3 @@ async def get_role_at_board(request: Request, board_uuid: UUID):
     content={"message": role},
     status_code=status.HTTP_200_OK
   )
-  
