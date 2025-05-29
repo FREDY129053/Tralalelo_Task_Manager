@@ -3,8 +3,4 @@ from .priority import Priority
 from .role import UserRole
 from .status import Status
 
-__all__ = [
-  "UserRole",
-  "Status",
-  "Priority"
-]
+__all__ = ["UserRole", "Status", "Priority"]

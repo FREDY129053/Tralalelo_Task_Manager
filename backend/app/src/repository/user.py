@@ -1,33 +1,40 @@
-from typing import List, Union
+from typing import List, Optional
 from uuid import UUID
 
-from backend.app.src.db.models import User, BoardUser
+from tortoise.exceptions import IntegrityError
+
+from backend.app.src.db.models import BoardUser, User
 
 
 async def get_all_users() -> List[User]:
     return await User.all()
 
 
-async def get_user_info(uuid: UUID) -> Union[User, None]:
+async def get_user_info(uuid: UUID) -> Optional[User]:
     return await User.get_or_none(id=uuid)
 
-async def get_user_by_username(username: str) -> Union[User, None]:
+
+async def get_user_by_username(username: str) -> Optional[User]:
     return await User.get_or_none(username=username)
+
 
 async def create_user(
     username: str,
     email: str,
-    phone: str,
+    phone: Optional[str],
     avatar_url: str,
     password: str,
-) -> User:
-    return await User.create(
-        username=username,
-        email=email,
-        phone=phone,
-        avatar_url=avatar_url,
-        hashed_password=password,
-    )
+) -> Optional[User]:
+    try:
+        return await User.create(
+            username=username,
+            email=email,
+            phone=phone,
+            avatar_url=avatar_url,
+            hashed_password=password,
+        )
+    except IntegrityError:
+        return None
 
 
 async def update_pass(uuid: UUID, new_password: str):
@@ -67,13 +74,21 @@ async def delete_user(uuid: UUID) -> bool:
 
     return await user.delete() is None
 
-async def get_role(user_uuid: UUID, board_uuid: UUID) -> Union[str, None]:
-    board_info = await BoardUser.filter(
-        user_id=user_uuid,
-        board_id=board_uuid
-    ).first()
+
+async def get_role(user_uuid: UUID, board_uuid: UUID) -> Optional[str]:
+    board_info = await BoardUser.filter(user_id=user_uuid, board_id=board_uuid).first()
 
     if board_info:
         return board_info.role
     else:
         return None
+
+
+async def search_users(query: str):
+    users = (
+        await User.filter(username__icontains=query)
+        .limit(20)
+        .values("id", "username", "avatar_url")
+    )
+
+    return users

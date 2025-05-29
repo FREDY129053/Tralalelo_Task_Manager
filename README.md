@@ -34,7 +34,7 @@ Describe the tools needed to deploy a new project.
 
 ## Technologies
 
-_Name the technologies used in the project._ 
+_Name the technologies used in the project._
 * [Spring](https://spring.io/) - Framework Used.
 * [React](https://reactjs.org/) - UI Library.
 * [Hibernate](https://hibernate.org/) - ORM.
