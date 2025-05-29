@@ -20,7 +20,7 @@ from .board import (
     TaskOut,
     SubtaskUpdate,
 )
-from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser, UserPreview
+from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser, UserPreview, UpdatePass
 
 __all__ = [
     "CreateUser",
@@ -48,4 +48,5 @@ __all__ = [
     "TaskOut",
     "SubtaskUpdate",
     "UserPreview",
+    "UpdatePass",
 ]

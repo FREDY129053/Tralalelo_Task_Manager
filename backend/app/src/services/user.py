@@ -54,7 +54,7 @@ async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:
   return True if data else False
 
 
-async def update_pass(uuid: UUID, old_password: str, new_password: str):
+async def update_pass(uuid: UUID, old_password: str, new_password: str) -> bool:
   user = await UserRepo.get_user_info(uuid=uuid)
   if not user:
     return False

@@ -31,3 +31,7 @@ class UserPreview(BaseModel):
   id: UUID4
   username: str
   avatar_url: str | None
+
+class UpdatePass(BaseModel):
+  old_password: str
+  new_password: str

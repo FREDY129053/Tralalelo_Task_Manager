@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import Dict, List, Union
 
-from backend.app.src.schemas import RegUser, BaseUserInfo, FullInfo, Login, UserPreview
+from backend.app.src.schemas import RegUser, BaseUserInfo, FullInfo, Login, UserPreview, UpdatePass
 import backend.app.src.services.user as UserService 
 
 from fastapi import APIRouter, HTTPException, Query, status, Request, Response, Cookie
@@ -88,11 +88,11 @@ async def delete_user_by_uuid(uuid: UUID):
   )
 
 @user_router.patch('/{uuid}')
-async def update_user_password(uuid: UUID, old_pass: str, new_pass: str):
+async def update_user_password(uuid: UUID, data: UpdatePass):
   """
   # Обновляет пароль пользователя по uuid
   """
-  is_updated = await UserService.update_pass(uuid=uuid, old_password=old_pass, new_password=new_pass)
+  is_updated = await UserService.update_pass(uuid=uuid, old_password=data.old_password, new_password=data.new_password)
 
   if not is_updated:
     raise HTTPException(
