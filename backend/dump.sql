@@ -74,6 +74,18 @@ CREATE TABLE public.boards (
 
 ALTER TABLE public.boards OWNER TO postgres;
 
+
+CREATE TABLE public.board_comments (
+    id uuid NOT NULL,
+    board_id uuid,
+    user_id uuid,
+    content text NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.board_comments OWNER TO postgres;
+
 --
 -- Name: columns; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -263,6 +275,9 @@ ALTER TABLE ONLY public.comments
     ADD CONSTRAINT comments_pkey PRIMARY KEY (id);
 
 
+ALTER TABLE ONLY public.board_comments
+    ADD CONSTRAINT board_comments_pkey PRIMARY KEY (id);
+
 --
 -- Name: subtasks subtasks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -327,6 +342,9 @@ ALTER TABLE ONLY public.comments
     ADD CONSTRAINT comments_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.tasks(id) ON DELETE CASCADE;
 
 
+
+ALTER TABLE ONLY public.board_comments
+    ADD CONSTRAINT board_comments_board_id_fkey FOREIGN KEY (board_id) REFERENCES public.boards(id) ON DELETE CASCADE;
 --
 -- Name: comments comments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -334,7 +352,8 @@ ALTER TABLE ONLY public.comments
 ALTER TABLE ONLY public.comments
     ADD CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
-
+ALTER TABLE ONLY public.board_comments
+    ADD CONSTRAINT board_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 --
 -- Name: subtasks subtasks_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --

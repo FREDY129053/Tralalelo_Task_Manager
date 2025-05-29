@@ -18,6 +18,19 @@ class Board(models.Model):
         table = "boards"
 
 
+class BoardComment(models.Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    board = fields.ForeignKeyField("models.Board", related_name="comments", on_delete=fields.CASCADE)
+    user = fields.ForeignKeyField(
+        "models.User", related_name="comments", null=True, on_delete=fields.SET_NULL
+    )
+    content = fields.TextField()
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "board_comments"
+
+
 class BoardUser(models.Model):
     id = fields.IntField(pk=True)
     user = fields.ForeignKeyField("models.User", related_name="boards", on_delete=fields.CASCADE)
