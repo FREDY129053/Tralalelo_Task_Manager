@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 
 import backend.app.src.services.task as TaskService
-from backend.app.src.schemas import SubtaskCreate, CommentCreate, TaskUpdate
+from backend.app.src.schemas import SubtaskCreate, CommentCreate, TaskUpdate, TaskOut
 
 task_router = APIRouter(prefix='/tasks', tags=["Tasks Endpoints"])
 
@@ -30,6 +30,10 @@ async def write_comment(uuid: UUID, comment_info: CommentCreate, request: Reques
     status_code=status.HTTP_201_CREATED
   )
 
+@task_router.get("/{uuid}", response_model=TaskOut)
+async def get_task(uuid: UUID):
+  return await TaskService.get_full_task(uuid=uuid)
+
 @task_router.post("/{uuid}/subtasks")
 async def create_subtask(uuid: UUID, subtask_info: SubtaskCreate):
   is_created = await TaskService.create_subtask(uuid=uuid, subtask_data=subtask_info)
@@ -45,7 +49,7 @@ async def create_subtask(uuid: UUID, subtask_info: SubtaskCreate):
   )
 
 @task_router.patch("/{uuid}")
-async def update_task_info(uuid: UUID, col_id: UUID, position: int):
+async def update_task_position(uuid: UUID, col_id: UUID, position: int):
   res = await TaskService.update_task_data(task_id=uuid, col_id=col_id, position=position)
   if not res:
     raise HTTPException(

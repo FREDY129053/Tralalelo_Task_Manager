@@ -132,6 +132,8 @@ class TaskOut(BaseModel):
     status: Status
     color: Optional[str]
     responsible_id: Optional[UUID]
+    total_subtasks: int
+    completed_subtasks: int
 
     subtasks: List[SubtaskOut]
     comments: List[CommentOut]

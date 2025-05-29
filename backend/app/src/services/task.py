@@ -3,13 +3,15 @@ from uuid import UUID
 import backend.app.src.repository.task as TaskRepo
 import backend.app.src.repository.user as UserRepo
 import backend.app.src.repository.column as ColumnRepo
-from backend.app.src.schemas import SubtaskCreate, CommentCreate, TaskUpdate
+from backend.app.src.schemas import SubtaskCreate, CommentCreate, TaskUpdate, TaskOut
 from backend.app.src.helpers.jwt import decode_jwt_token
 
 async def delete_task(uuid: UUID) -> bool:
   return await TaskRepo.delete_task(uuid=uuid)
 
-# TODO: нормальные ошибки, а не bool!!!
+async def get_full_task(uuid: UUID) -> TaskOut | None:
+  return await TaskRepo.get_full_task(id=uuid)
+
 async def create_comment(uuid: UUID, comment_data: CommentCreate, token: str) -> bool:
   task = await TaskRepo.get_task(uuid=uuid)
   if not task:

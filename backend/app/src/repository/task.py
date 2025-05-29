@@ -3,9 +3,31 @@ from typing import Any, Optional, Dict
 from tortoise.exceptions import OperationalError
 
 from backend.app.src.db.models import Task, User, Comment, Subtask, Column
+from backend.app.src.schemas import TaskOut
 
 async def get_task(uuid: UUID) -> Optional[Task]:
   return await Task.get_or_none(id=uuid)
+
+async def get_full_task(id: UUID) -> Optional[TaskOut]:
+   task = await Task.get_or_none(id=id).prefetch_related("subtasks", "comments")
+   if not task:
+      return None
+   
+   return TaskOut(
+      id=task.id,
+      title=task.title,
+      description=task.description,
+      position=task.position,
+      due_date=task.due_date,
+      priority=task.priority,
+      status=task.status,
+      color=task.color,
+      responsible_id=task.responsible_id,
+      total_subtasks=len(task.subtasks),
+      completed_subtasks=sum(1 for s in task.subtasks if s.is_completed),
+      subtasks=task.subtasks,
+      comments=task.comments,
+   )
 
 async def delete_task(uuid: UUID) -> bool:
   task = await get_task(uuid=uuid)
