@@ -97,6 +97,10 @@ class CommentOut(BaseModel):
     class Config:
         from_attributes = True
 
+class SubtaskUpdate(BaseModel):
+    title: Optional[str] = None
+    is_completed: Optional[bool] = None
+
 class SubtaskOut(BaseModel):
     id: UUID
     title: str

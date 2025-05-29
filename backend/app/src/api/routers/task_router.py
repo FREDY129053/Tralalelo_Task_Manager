@@ -74,3 +74,16 @@ async def update_task_field(uuid: UUID, task_update: TaskUpdate):
   return JSONResponse(
     content={"message": "ok"},
   )
+
+@task_router.delete("/{uuid}")
+async def delete_task(uuid: UUID):
+  res = await TaskService.delete_task(uuid=uuid)
+  if not res:
+    raise HTTPException(
+      status_code=404,
+      detail="task not found"
+    )
+  
+  return JSONResponse(
+    content={"message": "task deleted"},
+  )

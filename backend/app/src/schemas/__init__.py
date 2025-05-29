@@ -17,7 +17,8 @@ from .board import (
     ColumnOut,
     TaskShortOut,
     BoardOut,
-    TaskOut
+    TaskOut,
+    SubtaskUpdate,
 )
 from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser
 
@@ -44,5 +45,6 @@ __all__ = [
     "ColumnOut",
     "TaskShortOut",
     "BoardOut",
-    "TaskOut"
+    "TaskOut",
+    "SubtaskUpdate",
 ]

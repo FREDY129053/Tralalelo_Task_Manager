@@ -53,12 +53,3 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn):
 @board_router.delete("/")
 async def delete_board():
   ...
-
-
-@board_router.delete('/subtasks')
-async def delete_subtask():
-  ...
-
-@board_router.delete('/comments')
-async def delete_comment():
-  ...
