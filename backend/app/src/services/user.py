@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 from uuid import UUID
 
 import backend.app.src.repository.user as UserRepo
@@ -13,7 +13,7 @@ async def get_all_users() -> List[FullInfo]:
   return await UserRepo.get_all_users()
 
 
-async def get_user_info(uuid: UUID) -> Union[FullInfo, None]:
+async def get_user_info(uuid: UUID) -> Optional[FullInfo]:
   user = await UserRepo.get_user_info(uuid=uuid)
   if not user:
     return None
@@ -24,11 +24,12 @@ async def get_user_info(uuid: UUID) -> Union[FullInfo, None]:
 async def create_user(user: RegUser) -> bool:
   new_pass = hash_pass(user.password)
   avatar = AvatarGenerator(user.username).generate_avatar_url()
+  phone = user.phone[4:] if user.phone else None
 
   data = await UserRepo.create_user(
     username=user.username,
     email=user.email,
-    phone=user.phone,
+    phone=phone,
     avatar_url=avatar,
     password=new_pass
   )

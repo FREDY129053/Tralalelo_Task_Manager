@@ -6,7 +6,7 @@ from pydantic_extra_types.phone_numbers import PhoneNumber
 class BaseUserInfo(BaseModel):
   username: str
   email: EmailStr
-  phone: PhoneNumber | None = None
+  phone: str | None = None
   avatar_url: str | None = None
   is_admin: bool = False
   hashed_password: str

@@ -17,7 +17,7 @@ async def get_user_by_username(username: str) -> Optional[User]:
 async def create_user(
     username: str,
     email: str,
-    phone: str,
+    phone: Optional[str],
     avatar_url: str,
     password: str,
 ) -> Optional[User]:
@@ -32,12 +32,10 @@ async def create_user(
     except IntegrityError:
         return None
 
-
 async def update_pass(uuid: UUID, new_password: str):
     user = await User.get(id=uuid)
     user.hashed_password = new_password
     await user.save()
-
 
 async def update_user(
     uuid: UUID,
@@ -61,7 +59,6 @@ async def update_user(
     user_on_server.hashed_password = password
 
     return await user_on_server.save() is None
-
 
 async def delete_user(uuid: UUID) -> bool:
     user = await User.get_or_none(id=uuid)
