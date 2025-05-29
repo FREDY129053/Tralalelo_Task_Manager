@@ -21,6 +21,7 @@ from .board import (
     SubtaskUpdate,
 )
 from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser, UserPreview, UpdatePass
+from .error import Error
 
 __all__ = [
     "CreateUser",
@@ -49,4 +50,5 @@ __all__ = [
     "SubtaskUpdate",
     "UserPreview",
     "UpdatePass",
+    "Error",
 ]
