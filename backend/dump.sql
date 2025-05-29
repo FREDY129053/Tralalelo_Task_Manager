@@ -237,7 +237,7 @@ COPY public.tasks (id, column_id, title, description, due_date, priority, status
 --
 
 COPY public.users (id, username, email, phone, avatar_url, registered_at, is_admin, hashed_password) FROM stdin;
-E63961D3-EC08-4218-A963-62B0B1807D51	alice	alice@example.com	1234567890	\N	2025-05-07 05:59:02	t	$2b$12$QoaDexl3tzBVmPGZnf5oOun4RzLo8KuSgULbhAsWZ5aw9ATBME7ZW
+E63961D3-EC08-4218-A963-62B0B1807D51	alice	alice@example.com	\N	\N	2025-05-07 05:59:02	t	$2b$12$QoaDexl3tzBVmPGZnf5oOun4RzLo8KuSgULbhAsWZ5aw9ATBME7ZW
 C6A107FD-EB99-4C18-8FCB-EC030685D942	bob	bob@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_bob
 87CB46FF-26F8-4ED5-94F7-6C70E00976FE	carol	carol@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_carol
 \.
@@ -301,7 +301,8 @@ ALTER TABLE ONLY public.tasks
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_email_key UNIQUE (email);
 
-
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
 --
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --

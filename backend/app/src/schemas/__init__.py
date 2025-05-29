@@ -13,7 +13,8 @@ from .board import (
     TaskCreate,
     UpdateColumnsPos,
     UpdateTaskInfo,
-    TaskUpdate
+    TaskUpdate,
+    ColumnOut
 )
 from .user import BaseUserInfo, CreateUser, FullInfo, Login, RegUser
 
@@ -37,4 +38,5 @@ __all__ = [
     "UpdateColumnsPos",
     "UpdateTaskInfo",
     "TaskUpdate",
+    "ColumnOut",
 ]

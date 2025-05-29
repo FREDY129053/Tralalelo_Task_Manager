@@ -4,7 +4,7 @@ from .boards import Comment, BoardUser
 
 class User(models.Model):
   id = fields.UUIDField(pk=True, default=uuid.uuid4)
-  username = fields.CharField(max_length=150)
+  username = fields.CharField(max_length=150, unique=True)
   email = fields.CharField(max_length=255, unique=True)
   phone = fields.CharField(max_length=20, null=True)
   avatar_url = fields.CharField(max_length=255, null=True)

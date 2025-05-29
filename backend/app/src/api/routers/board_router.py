@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
-from backend.app.src.schemas import FullBoardInfo, AbsoluteFullBoardInfo, CreateColumn
+from backend.app.src.schemas import FullBoardInfo, AbsoluteFullBoardInfo, CreateColumn, ColumnOut
 
 board_router = APIRouter(prefix='/boards', tags=["Boards Endpoints"])
 
@@ -25,6 +25,12 @@ async def get_board_data(uuid: UUID):
       status_code=status.HTTP_404_NOT_FOUND,
       detail="board not found"
     )
+  
+  return board_info
+
+@board_router.get('/{uuid}/columns', response_model=List[ColumnOut])
+async def get_board_columns_data(uuid: UUID):
+  board_info = await BoardService.get_board_column_data(uuid)
   
   return board_info
 
