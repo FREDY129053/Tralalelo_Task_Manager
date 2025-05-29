@@ -12,10 +12,7 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
   if board is None:
     return None
   
-  return AbsoluteFullBoardInfo(
-    board=board,
-    columns=board.columns,
-  )
+  return board
 
 async def get_board_column_data(uuid: UUID) -> List[ColumnOut]:
   board = await BoardRepo.get_full_board_data(uuid)
