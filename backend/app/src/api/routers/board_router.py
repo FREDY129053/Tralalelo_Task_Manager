@@ -5,10 +5,12 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 import backend.app.src.services.board as BoardService
+from backend.app.src.enums import UserRole
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
     ColumnOut,
     CommentCreate,
+    CreateBoard,
     CreateColumn,
     FullBoardInfo,
 )
@@ -21,8 +23,30 @@ async def get_all_boards():
     return await BoardService.get_all_boards()
 
 
-# @board_router.post("/")
-# async def create_board(): ...
+@board_router.post("/")
+async def create_board(request: Request, data: CreateBoard):
+    token = request.cookies.get("user", None)
+    if not token:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    await BoardService.create_board(token=token, board_data=data)
+
+    return JSONResponse(content={"message": "board created"}, status_code=201)
+
+
+@board_router.post("/add_member")
+async def add_member(user_id: UUID): ...
+
+
+@board_router.delete("/delete_member")
+async def delete_member(member_id: UUID): ...
+
+
+@board_router.get("/members")
+async def get_all_members(): ...
+
+
+@board_router.put("/change_role/{user_id}")
+async def change_role(user_id: UUID, role: UserRole): ...
 
 
 @board_router.get("/{uuid}", response_model=AbsoluteFullBoardInfo)
@@ -57,8 +81,8 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn):
     return JSONResponse(content={"message": "ok"}, status_code=status.HTTP_201_CREATED)
 
 
-# @board_router.delete("/{uuid}")
-# async def delete_board(uuid: UUID): ...
+@board_router.delete("/{uuid}")
+async def delete_board(uuid: UUID): ...
 
 
 @board_router.post("/{uuid}/comments")

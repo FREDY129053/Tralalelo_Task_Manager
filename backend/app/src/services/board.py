@@ -6,6 +6,7 @@ from backend.app.src.helpers.jwt import decode_jwt_token
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
     ColumnOut,
+    CreateBoard,
     CreateColumn,
     FullBoardInfo,
 )
@@ -21,6 +22,21 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
         return None
 
     return board
+
+
+async def create_board(token: str, board_data: CreateBoard) -> bool:
+    user_data = decode_jwt_token(token)
+    if not user_data:
+        return False
+    await BoardRepo.create_board(
+        title=board_data.title,
+        description=board_data.description,
+        color=board_data.color,
+        is_public=board_data.is_public,
+        creator_id=user_data.get("uuid", ""),
+    )
+
+    return True
 
 
 async def get_board_column_data(uuid: UUID) -> List[ColumnOut]:

@@ -1,7 +1,8 @@
 from typing import List, Optional
 from uuid import UUID
 
-from backend.app.src.db.models import Board, BoardComment, Column
+from backend.app.src.db.models import Board, BoardComment, BoardUser, Column
+from backend.app.src.enums import UserRole
 from backend.app.src.schemas import AbsoluteFullBoardInfo, ColumnOut, TaskShortOut
 
 
@@ -53,6 +54,21 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
 
 async def get_board(uuid: UUID) -> Optional[Board]:
     return await Board.get_or_none(id=uuid)
+
+
+async def create_board(
+    title: str,
+    description: Optional[str],
+    is_public: bool,
+    color: Optional[str],
+    creator_id: UUID,
+) -> bool:
+    board = await Board.create(
+        title=title, description=description, is_public=is_public, color=color
+    )
+    await BoardUser.create(user_id=creator_id, board_id=board.id, role=UserRole.creator)
+
+    return True
 
 
 async def create_column(
