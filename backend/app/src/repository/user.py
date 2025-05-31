@@ -1,6 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 
+from rapidfuzz import fuzz
 from tortoise.exceptions import IntegrityError
 
 from backend.app.src.db.models import BoardUser, User
@@ -85,10 +86,14 @@ async def get_role(user_uuid: UUID, board_uuid: UUID) -> Optional[str]:
 
 
 async def search_users(query: str):
-    users = (
-        await User.filter(username__icontains=query)
-        .limit(20)
-        .values("id", "username", "avatar_url")
-    )
+    users = await User.all().values("id", "username", "avatar_url")
+    results = []
+    for user in users:
+        similarity = fuzz.partial_ratio(
+            query.lower().strip(), user["username"].lower().strip()
+        )
+        if similarity >= 65:
+            results.append((similarity, user))
 
-    return users
+    results.sort(reverse=True, key=lambda x: x[0])
+    return [user for _, user in results[:20]]
