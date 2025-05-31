@@ -60,8 +60,12 @@ async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:
     return True if data else False
 
 
-async def update_pass(uuid: UUID, old_password: str, new_password: str) -> bool:
-    user = await UserRepo.get_user_info(uuid=uuid)
+async def update_pass(token: str, old_password: str, new_password: str) -> bool:
+    user_data = decode_jwt_token(token=token)
+    if not user_data:
+        return False
+    user_id = UUID(user_data.get("uuid", ""))
+    user = await UserRepo.get_user_info(uuid=user_id)
     if not user:
         return False
 
@@ -70,7 +74,7 @@ async def update_pass(uuid: UUID, old_password: str, new_password: str) -> bool:
         return False
 
     new_password = hash_pass(new_password)
-    await UserRepo.update_pass(uuid=uuid, new_password=new_password)
+    await UserRepo.update_pass(uuid=user_id, new_password=new_password)
 
     return True
 

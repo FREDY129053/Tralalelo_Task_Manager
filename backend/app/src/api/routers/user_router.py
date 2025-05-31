@@ -134,20 +134,27 @@ async def delete_user_by_uuid(uuid: UUID):
 
 
 @user_router.patch(
-    "/{uuid}",
+    "/change_password",
     responses={
         400: {
             "description": "Cannot update password",
             "content": {"application/json": {"schema": Error.model_json_schema()}},
-        }
+        },
+        401: {
+            "description": "Unauthorized",
+            "content": {"application/json": {"schema": Error.model_json_schema()}},
+        },
     },
 )
-async def update_user_password(uuid: UUID, data: UpdatePass):
+async def update_user_password(request: Request, data: UpdatePass):
     """
     # Обновляет пароль пользователя по uuid
     """
+    token = request.cookies.get("user")
+    if not token:
+        raise HTTPException(status_code=401, detail="unauthorized")
     is_updated = await UserService.update_pass(
-        uuid=uuid, old_password=data.old_password, new_password=data.new_password
+        token=token, old_password=data.old_password, new_password=data.new_password
     )
 
     if not is_updated:
