@@ -3,7 +3,12 @@ from uuid import UUID
 
 from backend.app.src.db.models import Board, BoardComment, BoardUser, Column
 from backend.app.src.enums import UserRole
-from backend.app.src.schemas import AbsoluteFullBoardInfo, ColumnOut, TaskShortOut
+from backend.app.src.schemas import (
+    AbsoluteFullBoardInfo,
+    BoardUserPreview,
+    ColumnOut,
+    TaskShortOut,
+)
 
 
 async def get_all_boards() -> List[Board]:
@@ -84,3 +89,48 @@ async def get_comments(id: UUID):
 
 async def create_comment(id: UUID, user_id: str, text: str) -> BoardComment:
     return await BoardComment.create(user_id=UUID(user_id), board_id=id, content=text)
+
+
+async def get_members(board_id: UUID) -> List[BoardUserPreview]:
+    members_data = await Board.get(id=board_id).prefetch_related(
+        "members", "members__user"
+    )
+    members = []
+    for member in members_data.members:
+        members.append(
+            BoardUserPreview(
+                id=member.user.id,
+                username=member.user.username,
+                avatar_url=member.user.avatar_url,
+                role=member.role,
+            )
+        )
+    return members
+
+
+async def add_member(board_id: UUID, user_id: UUID) -> BoardUser:
+    return await BoardUser.create(board_id=board_id, user_id=user_id)
+
+
+async def change_member_role(board_id: UUID, member_id: UUID, role: UserRole) -> bool:
+    board_member = await BoardUser.get(board_id=board_id, user_id=member_id)
+    board_member.role = role
+    await board_member.save()
+
+    return True
+
+
+async def delete_member(board_id: UUID, member_id: UUID) -> bool:
+    board_member = await BoardUser.get(board_id=board_id, user_id=member_id)
+    await board_member.delete()
+
+    return True
+
+
+async def delete_board(id: UUID) -> bool:
+    board = await Board.get_or_none(id=id)
+    if not board:
+        return False
+    await board.delete()
+
+    return True

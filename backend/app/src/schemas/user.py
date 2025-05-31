@@ -4,6 +4,8 @@ from uuid import uuid4
 from pydantic import UUID4, BaseModel, EmailStr
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
+from backend.app.src.enums import UserRole
+
 
 class BaseUserInfo(BaseModel):
     username: str
@@ -38,6 +40,10 @@ class UserPreview(BaseModel):
     id: UUID4
     username: str
     avatar_url: str | None
+
+
+class BoardUserPreview(UserPreview):
+    role: UserRole
 
 
 class UpdatePass(BaseModel):

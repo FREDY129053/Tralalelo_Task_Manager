@@ -33,20 +33,39 @@ async def create_board(request: Request, data: CreateBoard):
     return JSONResponse(content={"message": "board created"}, status_code=201)
 
 
-@board_router.post("/add_member")
-async def add_member(user_id: UUID): ...
+@board_router.post("/{uuid}/add_member")
+async def add_member(uuid: UUID, user_id: UUID):
+    res = await BoardService.add_member(board_id=uuid, user_id=user_id)
+    if not res:
+        raise HTTPException(status_code=404, detail="user or board not found")
+
+    return JSONResponse(content={"message": "user added"})
 
 
-@board_router.delete("/delete_member")
-async def delete_member(member_id: UUID): ...
+@board_router.delete("/{uuid}/delete_member")
+async def delete_member(uuid: UUID, member_id: UUID):
+    res = await BoardService.delete_member(
+        board_id=uuid,
+        user_id=member_id,
+    )
+    if not res:
+        raise HTTPException(status_code=404, detail="board or user not found")
+
+    return JSONResponse(content={"message": "member deleted!"})
 
 
-@board_router.get("/members")
-async def get_all_members(): ...
+@board_router.get("/{uuid}/members")
+async def get_all_members(uuid: UUID):
+    return await BoardService.get_members(id=uuid)
 
 
-@board_router.put("/change_role/{user_id}")
-async def change_role(user_id: UUID, role: UserRole): ...
+@board_router.put("/{uuid}/change_role/{user_id}")
+async def change_role(uuid: UUID, user_id: UUID, role: UserRole):
+    res = await BoardService.change_role(board_id=uuid, user_id=user_id, role=role)
+    if not res:
+        raise HTTPException(status_code=404, detail="board or user not found")
+
+    return JSONResponse(content={"message": "role changed!"})
 
 
 @board_router.get("/{uuid}", response_model=AbsoluteFullBoardInfo)
@@ -82,7 +101,14 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn):
 
 
 @board_router.delete("/{uuid}")
-async def delete_board(uuid: UUID): ...
+async def delete_board(uuid: UUID):
+    is_deleted = await BoardService.delete_board(uuid)
+    if is_deleted is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="board not found"
+        )
+
+    return JSONResponse(content={"message": "board deleted"})
 
 
 @board_router.post("/{uuid}/comments")

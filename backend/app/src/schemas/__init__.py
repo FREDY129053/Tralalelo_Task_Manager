@@ -23,6 +23,7 @@ from .board import (
 from .error import Error
 from .user import (
     BaseUserInfo,
+    BoardUserPreview,
     CreateUser,
     FullInfo,
     Login,
@@ -59,4 +60,5 @@ __all__ = [
     "UserPreview",
     "UpdatePass",
     "Error",
+    "BoardUserPreview",
 ]
