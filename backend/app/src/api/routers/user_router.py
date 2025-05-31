@@ -220,11 +220,8 @@ async def logout_user(request: Request, response: Response):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!"
         )
 
-    response.delete_cookie("user")
-
-    return JSONResponse(
-        content={"message": "logout successfully!"}, status_code=status.HTTP_200_OK
-    )
+    response.delete_cookie(key="user", path="/")
+    return True
 
 
 @user_router.get(
