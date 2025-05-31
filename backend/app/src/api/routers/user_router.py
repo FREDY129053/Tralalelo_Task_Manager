@@ -67,16 +67,20 @@ async def create_user(user_data: RegUser):
     """
     # Регистрация нового пользователя
     """
-    is_created = await UserService.create_user(user_data)
-    if not is_created:
+    token = await UserService.create_user(user_data)
+    if not token:
         raise HTTPException(
             detail="cannot create user!", status_code=status.HTTP_400_BAD_REQUEST
         )
 
-    return JSONResponse(
+    response = JSONResponse(
         content={"message": "user created successfully"},
         status_code=status.HTTP_201_CREATED,
     )
+
+    response.set_cookie(key="user", value=token, httponly=True)
+
+    return response
 
 
 @user_router.put(
@@ -183,7 +187,7 @@ async def login_user(data: Login):
     response = JSONResponse(
         content={"message": "login successfully"}, status_code=status.HTTP_200_OK
     )
-    response.set_cookie(key="user", value=token, httponly=True)
+    response.set_cookie(key="user", value=str(token), httponly=True)
 
     return response
 

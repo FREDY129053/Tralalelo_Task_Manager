@@ -21,7 +21,7 @@ async def get_user_info(uuid: UUID) -> Optional[FullInfo]:
     return user
 
 
-async def create_user(user: RegUser) -> bool:
+async def create_user(user: RegUser) -> Optional[str]:
     new_pass = hash_pass(user.password)
     avatar = AvatarGenerator(user.username).generate_avatar_url()
     phone = user.phone[4:] if user.phone else None
@@ -33,8 +33,14 @@ async def create_user(user: RegUser) -> bool:
         avatar_url=avatar,
         password=new_pass,
     )
+    if not data:
+        return None
 
-    return True if data else False
+    token = create_jwt_token(
+        {"uuid": str(data.id), "is_admin": "yes" if data.is_admin else "no"}
+    )
+
+    return token
 
 
 async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:

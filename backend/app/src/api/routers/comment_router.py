@@ -9,7 +9,7 @@ comment_router = APIRouter(prefix="/comments", tags=["Comments Endpoints"])
 
 
 @comment_router.delete("/{uuid}")
-async def delete_commnet(uuid: UUID):
+async def delete_comment(uuid: UUID):
     res = await CommentService.delete_comment(uuid=uuid)
     if not res:
         raise HTTPException(status_code=404, detail="subtask not found")
