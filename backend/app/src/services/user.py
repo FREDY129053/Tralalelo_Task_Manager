@@ -5,7 +5,7 @@ import backend.app.src.repository.user as UserRepo
 from backend.app.src.helpers.avatar_gen.avatar_gen import AvatarGenerator
 from backend.app.src.helpers.jwt import create_jwt_token, decode_jwt_token
 from backend.app.src.helpers.password import check_pass, hash_pass
-from backend.app.src.schemas import BaseUserInfo, CreateUser, FullInfo
+from backend.app.src.schemas import BaseUserInfo, FullInfo
 from backend.app.src.schemas.user import RegUser
 
 
@@ -21,7 +21,7 @@ async def get_user_info(uuid: UUID) -> Optional[FullInfo]:
     return user
 
 
-async def create_user(user: RegUser) -> bool:
+async def create_user(user: RegUser) -> Optional[str]:
     new_pass = hash_pass(user.password)
     avatar = AvatarGenerator(user.username).generate_avatar_url()
     phone = user.phone[4:] if user.phone else None
@@ -33,8 +33,14 @@ async def create_user(user: RegUser) -> bool:
         avatar_url=avatar,
         password=new_pass,
     )
+    if not data:
+        return None
 
-    return True if data else False
+    token = create_jwt_token(
+        {"uuid": str(data.id), "is_admin": "yes" if data.is_admin else "no"}
+    )
+
+    return token
 
 
 async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:
@@ -54,8 +60,12 @@ async def update_user(uuid: UUID, user: BaseUserInfo) -> bool:
     return True if data else False
 
 
-async def update_pass(uuid: UUID, old_password: str, new_password: str) -> bool:
-    user = await UserRepo.get_user_info(uuid=uuid)
+async def update_pass(token: str, old_password: str, new_password: str) -> bool:
+    user_data = decode_jwt_token(token=token)
+    if not user_data:
+        return False
+    user_id = UUID(user_data.get("uuid", ""))
+    user = await UserRepo.get_user_info(uuid=user_id)
     if not user:
         return False
 
@@ -64,7 +74,7 @@ async def update_pass(uuid: UUID, old_password: str, new_password: str) -> bool:
         return False
 
     new_password = hash_pass(new_password)
-    await UserRepo.update_pass(uuid=uuid, new_password=new_password)
+    await UserRepo.update_pass(uuid=user_id, new_password=new_password)
 
     return True
 

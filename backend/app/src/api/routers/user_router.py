@@ -67,16 +67,20 @@ async def create_user(user_data: RegUser):
     """
     # Регистрация нового пользователя
     """
-    is_created = await UserService.create_user(user_data)
-    if not is_created:
+    token = await UserService.create_user(user_data)
+    if not token:
         raise HTTPException(
             detail="cannot create user!", status_code=status.HTTP_400_BAD_REQUEST
         )
 
-    return JSONResponse(
+    response = JSONResponse(
         content={"message": "user created successfully"},
         status_code=status.HTTP_201_CREATED,
     )
+
+    response.set_cookie(key="user", value=token, httponly=True)
+
+    return response
 
 
 @user_router.put(
@@ -130,20 +134,27 @@ async def delete_user_by_uuid(uuid: UUID):
 
 
 @user_router.patch(
-    "/{uuid}",
+    "/change_password",
     responses={
         400: {
             "description": "Cannot update password",
             "content": {"application/json": {"schema": Error.model_json_schema()}},
-        }
+        },
+        401: {
+            "description": "Unauthorized",
+            "content": {"application/json": {"schema": Error.model_json_schema()}},
+        },
     },
 )
-async def update_user_password(uuid: UUID, data: UpdatePass):
+async def update_user_password(request: Request, data: UpdatePass):
     """
     # Обновляет пароль пользователя по uuid
     """
+    token = request.cookies.get("user")
+    if not token:
+        raise HTTPException(status_code=401, detail="unauthorized")
     is_updated = await UserService.update_pass(
-        uuid=uuid, old_password=data.old_password, new_password=data.new_password
+        token=token, old_password=data.old_password, new_password=data.new_password
     )
 
     if not is_updated:
@@ -183,7 +194,7 @@ async def login_user(data: Login):
     response = JSONResponse(
         content={"message": "login successfully"}, status_code=status.HTTP_200_OK
     )
-    response.set_cookie(key="user", value=token, httponly=True)
+    response.set_cookie(key="user", value=str(token), httponly=True)
 
     return response
 
@@ -209,11 +220,8 @@ async def logout_user(request: Request, response: Response):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!"
         )
 
-    response.delete_cookie("user")
-
-    return JSONResponse(
-        content={"message": "logout successfully!"}, status_code=status.HTTP_200_OK
-    )
+    response.delete_cookie(key="user", path="/")
+    return True
 
 
 @user_router.get(

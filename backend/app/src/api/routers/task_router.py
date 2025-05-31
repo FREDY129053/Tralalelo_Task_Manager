@@ -1,4 +1,3 @@
-from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -11,7 +10,7 @@ task_router = APIRouter(prefix="/tasks", tags=["Tasks Endpoints"])
 
 
 @task_router.post("/{uuid}/comments")
-async def write_comment(uuid: UUID, comment_info: CommentCreate, request: Request):
+async def write_comment(request: Request, uuid: UUID, comment_info: CommentCreate):
     token = request.cookies.get("user", None)
     if not token:
         raise HTTPException(

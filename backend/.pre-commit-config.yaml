@@ -31,3 +31,12 @@ repos:
             - --profile=black
             - --line-length=90
             - --settings-path=backend/setup.cfg
+
+-   repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+    -   id: autoflake
+        args:
+            - --in-place
+            - --remove-all-unused-imports
+            - --ignore-init-module-imports

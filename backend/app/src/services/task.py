@@ -2,7 +2,6 @@ from uuid import UUID
 
 import backend.app.src.repository.column as ColumnRepo
 import backend.app.src.repository.task as TaskRepo
-import backend.app.src.repository.user as UserRepo
 from backend.app.src.helpers.jwt import decode_jwt_token
 from backend.app.src.schemas import CommentCreate, SubtaskCreate, TaskOut, TaskUpdate
 
@@ -16,20 +15,12 @@ async def get_full_task(uuid: UUID) -> TaskOut | None:
 
 
 async def create_comment(uuid: UUID, comment_data: CommentCreate, token: str) -> bool:
-    task = await TaskRepo.get_task(uuid=uuid)
-    if not task:
-        return False
-
     user_data = decode_jwt_token(token=token)
     if not user_data:
         return False
 
-    user = await UserRepo.get_user_info(user_data.get("uuid", ""))
-    if not user:
-        return False
-
     comment = await TaskRepo.create_comment(
-        task=task, user=user, text=comment_data.content
+        task_id=uuid, user_id=user_data.get("uuid", ""), text=comment_data.content
     )
 
     return bool(comment)
