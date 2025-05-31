@@ -1,13 +1,14 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 import backend.app.src.services.board as BoardService
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
     ColumnOut,
+    CommentCreate,
     CreateColumn,
     FullBoardInfo,
 )
@@ -60,8 +61,15 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn):
 # async def delete_board(uuid: UUID): ...
 
 
-# @board_router.post("/{uuid}/comments")
-# async def write_comment(uuid: UUID): ...
+@board_router.post("/{uuid}/comments")
+async def write_comment(request: Request, uuid: UUID, comment_data: CommentCreate):
+    is_created = await BoardService.write_comment(
+        board_id=uuid, token=request.cookies.get("user", ""), text=comment_data.content
+    )
+    if not is_created:
+        raise HTTPException(status_code=400, detail="invalid data")
+
+    return JSONResponse(content={"message": "comment wrote"})
 
 
 @board_router.get("/{uuid}/comments")

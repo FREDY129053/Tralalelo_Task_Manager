@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 
-from backend.app.src.db.models import Board, Column
+from backend.app.src.db.models import Board, BoardComment, Column
 from backend.app.src.schemas import AbsoluteFullBoardInfo, ColumnOut, TaskShortOut
 
 
@@ -63,5 +63,8 @@ async def create_column(
 
 async def get_comments(id: UUID):
     board = await Board.get(id=id).prefetch_related("comments")
+    return await board.comments
 
-    return board.comments
+
+async def create_comment(id: UUID, user_id: str, text: str) -> BoardComment:
+    return await BoardComment.create(user_id=UUID(user_id), board_id=id, content=text)

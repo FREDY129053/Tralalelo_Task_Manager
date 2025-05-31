@@ -2,6 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 
 import backend.app.src.repository.board as BoardRepo
+from backend.app.src.helpers.jwt import decode_jwt_token
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
     ColumnOut,
@@ -45,3 +46,13 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn) -> Optional
 
 async def get_comments(uuid: UUID):
     return await BoardRepo.get_comments(id=uuid)
+
+
+async def write_comment(board_id: UUID, token: str, text: str) -> bool:
+    user_data = decode_jwt_token(token=token)
+    if not user_data:
+        return False
+
+    await BoardRepo.create_comment(id=board_id, user_id=user_data["uuid"], text=text)
+
+    return True

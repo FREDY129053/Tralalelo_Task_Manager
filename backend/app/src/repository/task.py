@@ -44,8 +44,8 @@ async def delete_task(uuid: UUID) -> bool:
         return False
 
 
-async def create_comment(task: Task, user: User, text: str) -> Comment:
-    return await Comment.create(task=task, user=user, content=text)
+async def create_comment(task_id: UUID, user_id: str, text: str) -> Comment:
+    return await Comment.create(task_id=task_id, user_id=UUID(user_id), content=text)
 
 
 async def create_subtask(task: Task, title: str, is_completed: bool) -> Subtask:
