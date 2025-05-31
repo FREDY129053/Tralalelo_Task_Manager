@@ -48,8 +48,8 @@ async def update_user(
     uuid: UUID,
     username: str,
     email: str,
-    phone: str,
-    avatar_url: str,
+    phone: Optional[str],
+    avatar_url: Optional[str],
     is_admin: bool,
     password: str,
 ) -> bool:

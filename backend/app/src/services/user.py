@@ -5,7 +5,7 @@ import backend.app.src.repository.user as UserRepo
 from backend.app.src.helpers.avatar_gen.avatar_gen import AvatarGenerator
 from backend.app.src.helpers.jwt import create_jwt_token, decode_jwt_token
 from backend.app.src.helpers.password import check_pass, hash_pass
-from backend.app.src.schemas import BaseUserInfo, CreateUser, FullInfo
+from backend.app.src.schemas import BaseUserInfo, FullInfo
 from backend.app.src.schemas.user import RegUser
 
 

@@ -2,7 +2,6 @@ from uuid import UUID
 
 import backend.app.src.repository.column as ColumnRepo
 import backend.app.src.repository.task as TaskRepo
-import backend.app.src.repository.user as UserRepo
 from backend.app.src.helpers.jwt import decode_jwt_token
 from backend.app.src.schemas import CommentCreate, SubtaskCreate, TaskOut, TaskUpdate
 

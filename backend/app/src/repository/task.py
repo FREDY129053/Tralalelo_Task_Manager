@@ -3,7 +3,7 @@ from uuid import UUID
 
 from tortoise.exceptions import OperationalError
 
-from backend.app.src.db.models import Column, Comment, Subtask, Task, User
+from backend.app.src.db.models import Column, Comment, Subtask, Task
 from backend.app.src.schemas import TaskOut
 
 

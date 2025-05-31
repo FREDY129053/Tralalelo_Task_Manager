@@ -1,6 +1,8 @@
 from typing import List, Optional
 from uuid import UUID
 
+from tortoise.exceptions import IntegrityError
+
 from backend.app.src.db.models import Board, BoardComment, BoardUser, Column
 from backend.app.src.enums import UserRole
 from backend.app.src.schemas import (
@@ -68,18 +70,28 @@ async def create_board(
     color: Optional[str],
     creator_id: UUID,
 ) -> bool:
-    board = await Board.create(
-        title=title, description=description, is_public=is_public, color=color
-    )
-    await BoardUser.create(user_id=creator_id, board_id=board.id, role=UserRole.creator)
+    try:
+        board = await Board.create(
+            title=title, description=description, is_public=is_public, color=color
+        )
+        await BoardUser.create(
+            user_id=creator_id, board_id=board.id, role=UserRole.creator
+        )
 
-    return True
+        return True
+    except IntegrityError:
+        return False
 
 
 async def create_column(
     board: Board, title: str, position: int, color: Optional[str]
-) -> Column:
-    return await Column.create(board=board, title=title, position=position, color=color)
+) -> Optional[Column]:
+    try:
+        return await Column.create(
+            board=board, title=title, position=position, color=color
+        )
+    except IntegrityError:
+        return None
 
 
 async def get_comments(id: UUID):
@@ -87,8 +99,11 @@ async def get_comments(id: UUID):
     return await board.comments
 
 
-async def create_comment(id: UUID, user_id: str, text: str) -> BoardComment:
-    return await BoardComment.create(user_id=UUID(user_id), board_id=id, content=text)
+async def create_comment(id: UUID, user_id: str, text: str) -> Optional[BoardComment]:
+    try:
+        return await BoardComment.create(user_id=UUID(user_id), board_id=id, content=text)
+    except IntegrityError:
+        return None
 
 
 async def get_members(board_id: UUID) -> List[BoardUserPreview]:
@@ -108,12 +123,17 @@ async def get_members(board_id: UUID) -> List[BoardUserPreview]:
     return members
 
 
-async def add_member(board_id: UUID, user_id: UUID) -> BoardUser:
-    return await BoardUser.create(board_id=board_id, user_id=user_id)
+async def add_member(board_id: UUID, user_id: UUID) -> Optional[BoardUser]:
+    try:
+        return await BoardUser.create(board_id=board_id, user_id=user_id)
+    except IntegrityError:
+        return None
 
 
 async def change_member_role(board_id: UUID, member_id: UUID, role: UserRole) -> bool:
-    board_member = await BoardUser.get(board_id=board_id, user_id=member_id)
+    board_member = await BoardUser.get_or_none(board_id=board_id, user_id=member_id)
+    if not board_member:
+        return False
     board_member.role = role
     await board_member.save()
 
@@ -121,7 +141,9 @@ async def change_member_role(board_id: UUID, member_id: UUID, role: UserRole) ->
 
 
 async def delete_member(board_id: UUID, member_id: UUID) -> bool:
-    board_member = await BoardUser.get(board_id=board_id, user_id=member_id)
+    board_member = await BoardUser.get_or_none(board_id=board_id, user_id=member_id)
+    if not board_member:
+        return False
     await board_member.delete()
 
     return True
