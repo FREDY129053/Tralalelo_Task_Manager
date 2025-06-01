@@ -11,7 +11,7 @@ type Props = {
   updateBoard: () => void;
 };
 
-export default function SortableColumn({ column, updateBoard }: Props) {
+function SortableColumn({ column, updateBoard }: Props) {
   const {
     attributes,
     listeners,
@@ -85,3 +85,5 @@ export default function SortableColumn({ column, updateBoard }: Props) {
     </div>
   );
 }
+
+export default React.memo(SortableColumn);

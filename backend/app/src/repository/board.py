@@ -46,6 +46,7 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
                     subtasks=subtasks,
                 )
             )
+            tasks.sort(key=lambda x: x.position)
         columns_out.append(
             ColumnOut(
                 id=column.id,
