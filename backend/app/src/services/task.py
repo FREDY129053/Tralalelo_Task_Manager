@@ -1,9 +1,10 @@
+from typing import List
 from uuid import UUID
 
-import backend.app.src.repository.column as ColumnRepo
 import backend.app.src.repository.task as TaskRepo
 from backend.app.src.helpers.jwt import decode_jwt_token
 from backend.app.src.schemas import CommentCreate, SubtaskCreate, TaskOut, TaskUpdate
+from backend.app.src.schemas.board import UpdateTaskPos
 
 
 async def delete_task(uuid: UUID) -> bool:
@@ -38,11 +39,13 @@ async def create_subtask(uuid: UUID, subtask_data: SubtaskCreate) -> bool:
     return bool(subtask)
 
 
-async def update_task_data(task_id: UUID, col_id: UUID, position: int) -> bool:
-    column = await ColumnRepo.get_column(uuid=col_id)
-    if not column:
-        return False
-    await TaskRepo.update_task(task_uuid=task_id, column=column, position=position)
+async def update_task_data(tasks_data: List[UpdateTaskPos]) -> bool:
+    for new_task in tasks_data:
+        await TaskRepo.update_task_pos(
+            task_uuid=new_task.task_id,
+            column_id=new_task.col_id,
+            position=new_task.position,
+        )
 
     return True
 

@@ -37,7 +37,9 @@ type DraggedColumn = { type: "column"; column: IColumn };
 export default function BoardPage() {
   const router = useRouter();
   const [boardData, setBoardData] = useState<IBoardFullInfo | null>(null);
-  const [activeItem, setActiveItem] = useState<DraggedTask | DraggedColumn | null>(null);
+  const [activeItem, setActiveItem] = useState<
+    DraggedTask | DraggedColumn | null
+  >(null);
   const [uuid, setUuid] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,7 +61,8 @@ export default function BoardPage() {
     })
   );
 
-  const updateBoard = () => getBoardData(uuid!).then(setBoardData).catch(console.error);
+  const updateBoard = () =>
+    getBoardData(uuid!).then(setBoardData).catch(console.error);
 
   if (!boardData) return <div>Loading...</div>;
 
@@ -69,6 +72,14 @@ export default function BoardPage() {
     const position = boardData!.columns.length + 1;
     await createColumn(uuid!, title, position).then().catch(console.error);
     updateBoard();
+  }
+
+  function getTasksPositionsPayload(column: IColumn) {
+    return column.tasks.map((task, idx) => ({
+      col_id: column.id,
+      task_id: task.id,
+      position: idx + 1,
+    }));
   }
 
   function findColumnByTaskId(taskId: string): string | undefined {
@@ -199,7 +210,8 @@ export default function BoardPage() {
       col.tasks.some((t) => t.id === activeId)
     );
     if (isTask) {
-      updateTaskData(activeId, targetColumnId, newIndex);
+      console.log(getTasksPositionsPayload(targetColumn))
+      updateTaskData(getTasksPositionsPayload(targetColumn));
     }
   }
 
@@ -217,7 +229,11 @@ export default function BoardPage() {
       >
         <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
           {boardData.columns.map((col) => (
-            <SortableColumn key={col.id} column={col} updateBoard={updateBoard} />
+            <SortableColumn
+              key={col.id}
+              column={col}
+              updateBoard={updateBoard}
+            />
           ))}
           <div className="flex items-center">
             <button

@@ -67,6 +67,12 @@ class UpdateColumnsPos(BaseModel):
     new_pos: int
 
 
+class UpdateTaskPos(BaseModel):
+    col_id: UUID
+    task_id: UUID
+    position: int
+
+
 class UpdateTaskInfo(BaseModel):
     task_id: UUID
     col_id: UUID

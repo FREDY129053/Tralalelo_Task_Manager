@@ -5,6 +5,12 @@ interface IUpdateCols {
   new_pos: number;
 }
 
+interface IUpdateTasks {
+  col_id: string,
+  task_id: string,
+  position: number
+}
+
 export async function getBoards(): Promise<IBoardShortInfo[]> {
   const res = await fetch(`http://localhost:8080/api/boards`, {
     method: "GET",
@@ -58,18 +64,17 @@ export async function updateColumnsPositions(
 }
 
 export async function updateTaskData(
-  taskUUID: string,
-  colUUID: string,
-  position: number
+  tasksData: IUpdateTasks[]
 ): Promise<void> {
   const res = await fetch(
-    `http://localhost:8080/api/tasks/${taskUUID}?col_id=${colUUID}&position=${position}`,
+    `http://localhost:8080/api/tasks/positions`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
+      body: JSON.stringify(tasksData)
     }
   );
 
