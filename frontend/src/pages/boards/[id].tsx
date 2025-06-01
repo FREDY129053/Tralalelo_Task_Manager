@@ -106,157 +106,130 @@ export default function BoardPage() {
   }
 
   function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!active || !over) return;
+  const { active, over } = event;
+  if (!active || !over) return;
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+  const activeId = active.id as string;
+  const overId   = over.id   as string;
 
-    const activeColumnId = findColumnByTaskId(activeId);
-    const overColumnId = boardData!.columns.find((col) => col.id === overId)
-      ? overId
-      : findColumnByTaskId(overId);
+  /* если перетаскиваем КОЛОНКУ – здесь ничего не делаем */
+  if (boardData!.columns.some(c => c.id === activeId)) return;
 
-    if (!activeColumnId || !overColumnId) return;
+  const sourceColId = findColumnByTaskId(activeId);
+  const targetColId = boardData!.columns.some(c => c.id === overId)
+    ? overId
+    : findColumnByTaskId(overId);
 
-    const activeColumn = boardData!.columns.find(
-      (col) => col.id === activeColumnId
+  if (!sourceColId || !targetColId) return;
+
+  const sourceCol = boardData!.columns.find(c => c.id === sourceColId)!;
+  const targetCol = boardData!.columns.find(c => c.id === targetColId)!;
+
+  const sourceIdx = sourceCol.tasks.findIndex(t => t.id === activeId);
+  const overIdx   = targetCol.tasks.findIndex(t => t.id === overId);
+
+  /* 👉 1. внутри одной колонки */
+  if (sourceColId === targetColId) {
+    const newTasks = arrayMove(
+      sourceCol.tasks,
+      sourceIdx,
+      overIdx === -1 ? sourceCol.tasks.length - 1 : overIdx
     );
-    const overColumn = boardData!.columns.find(
-      (col) => col.id === overColumnId
+
+    const nextColumns = boardData!.columns.map(col =>
+      col.id === sourceColId ? { ...col, tasks: newTasks } : col
     );
-
-    if (!activeColumn || !overColumn) return;
-
-    const activeTaskIndex = activeColumn.tasks.findIndex(
-      (t) => t.id === activeId
-    );
-    const overTaskIndex = overColumn.tasks.findIndex((t) => t.id === overId);
-
-    if (activeTaskIndex === -1) return;
-
-    const newIndex =
-      overTaskIndex >= 0 ? overTaskIndex : overColumn.tasks.length;
-
-    const alreadyInPlace =
-      activeColumnId === overColumnId && activeTaskIndex === newIndex;
-
-    if (alreadyInPlace) return;
-
-    const taskToMove = activeColumn.tasks[activeTaskIndex];
-    if (!taskToMove) return;
-
-    const nextColumns = boardData!.columns.map((col) => {
-      if (col.id === activeColumnId) {
-        return {
-          ...col,
-          tasks: col.tasks.filter((t) => t.id !== activeId),
-        };
-      }
-
-      if (col.id === overColumnId) {
-        const newTasks = [...col.tasks];
-        newTasks.splice(newIndex, 0, taskToMove);
-        return {
-          ...col,
-          tasks: newTasks,
-        };
-      }
-
-      return col;
-    });
-
-    const sameStructure =
-      JSON.stringify(boardData!.columns) === JSON.stringify(nextColumns);
-    if (!sameStructure) {
-      setBoardData({ board: boardData!.board, columns: nextColumns });
-    }
+    setBoardData({ board: boardData!.board, columns: nextColumns });
+    return;
   }
+
+  /* 👉 2. между колонками */
+  const task      = sourceCol.tasks[sourceIdx];
+  const newSrc    = [...sourceCol.tasks];
+  newSrc.splice(sourceIdx, 1);
+
+  const insertAt  = overIdx === -1 ? targetCol.tasks.length : overIdx;
+  const newTgt    = [...targetCol.tasks];
+  newTgt.splice(insertAt, 0, task);
+
+  const nextColumns = boardData!.columns.map(col => {
+    if (col.id === sourceColId)  return { ...col, tasks: newSrc };
+    if (col.id === targetColId)  return { ...col, tasks: newTgt };
+    return col;
+  });
+  setBoardData({ board: boardData!.board, columns: nextColumns });
+}
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!active || !over) return;
+  const { active, over } = event;
+  if (!active || !over) return;
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+  const activeId = active.id as string;
+  const overId   = over.id   as string;
 
-    const activeColIndex = boardData!.columns.findIndex(
-      (col) => col.id === activeId
+  /* 1.  Перемещаем КОЛОНКИ -------------------------------- */
+  const srcColIdx = boardData!.columns.findIndex(c => c.id === activeId);
+  const dstColIdx = boardData!.columns.findIndex(c => c.id === overId);
+
+  if (srcColIdx !== -1 && dstColIdx !== -1 && srcColIdx !== dstColIdx) {
+    const newCols = arrayMove(boardData!.columns, srcColIdx, dstColIdx);
+    setBoardData({ board: boardData!.board, columns: newCols });
+
+    updateColumnsPositions(
+      newCols.map((c,i) => ({ col_id: c.id, new_pos: i }))
     );
-    const overColIndex = boardData!.columns.findIndex(
-      (col) => col.id === overId
-    );
-
-    const isActiveColumn = activeColIndex !== -1;
-    const isOverColumn = overColIndex !== -1;
-
-    if (isActiveColumn && isOverColumn && activeColIndex !== overColIndex) {
-      const newColumns = arrayMove(
-        boardData!.columns,
-        activeColIndex,
-        overColIndex
-      );
-
-      setBoardData({ board: boardData!.board, columns: newColumns });
-
-      const colsData = newColumns.map((col, index) => ({
-        col_id: col.id,
-        new_pos: index,
-      }));
-
-      updateColumnsPositions(colsData);
-      return;
-    }
-
-    const sourceColId = findColumnByTaskId(activeId)!;
-    const targetColId = boardData!.columns.some((c) => c.id === overId)
-      ? overId
-      : findColumnByTaskId(overId)!;
-
-    const sourceCol = boardData?.columns.find((c) => c.id === sourceColId);
-    if (!sourceCol) return;
-    const targetCol = boardData?.columns.find((c) => c.id === targetColId);
-    if (!targetCol) return;
-
-    const sourceIndex = sourceCol.tasks.findIndex((t) => t.id === activeId);
-    const overIndex = targetCol.tasks.findIndex((t) => t.id === overId);
-
-    const insertIndex = overIndex === -1 ? targetCol.tasks.length : overIndex;
-
-    const movedTask = sourceCol.tasks[sourceIndex];
-
-    const newColumns = boardData!.columns.map((col) => {
-      /* Перенос внутри колонки */
-      if (col.id === sourceCol.id && col.id === targetCol.id) {
-        return {
-          ...col,
-          tasks: arrayMove(col.tasks, sourceIndex, insertIndex),
-        };
-      }
-
-      /* Перенос между колонками */
-      if (col.id === sourceCol.id) {
-        const t = [...col.tasks];
-        t.splice(sourceIndex, 1);
-        return { ...col, tasks: t };
-      }
-      if (col.id === targetCol.id) {
-        const t = [...col.tasks];
-        t.splice(insertIndex, 0, movedTask);
-        return { ...col, tasks: t };
-      }
-      return col;
-    });
-
-    setBoardData({ board: boardData!.board, columns: newColumns });
-
-    [sourceColId, targetColId].forEach((id) => {
-      const col = newColumns.find((c) => c.id === id)!;
-      updateTaskData(getTasksPositionsPayload(col));
-    });
-
     setActiveItem(null);
+    return;
   }
+
+  /* 2.  Перемещаем ЗАДАЧИ -------------------------------- */
+  const sourceColId = findColumnByTaskId(activeId)!;
+  const targetColId = boardData!.columns.some(c => c.id === overId)
+    ? overId
+    : findColumnByTaskId(overId)!;
+
+  if (!sourceColId || !targetColId) return;
+
+  const sourceCol = boardData!.columns.find(c => c.id === sourceColId)!;
+  const targetCol = boardData!.columns.find(c => c.id === targetColId)!;
+
+  const srcIdx = sourceCol.tasks.findIndex(t => t.id === activeId);
+  const overIdx = targetCol.tasks.findIndex(t => t.id === overId);
+  const insertIdx = overIdx === -1 ? targetCol.tasks.length : overIdx;
+
+  let nextColumns;
+  if (sourceColId === targetColId) {
+    /* внутри одной колонки */
+    const newTasks = arrayMove(sourceCol.tasks, srcIdx, insertIdx);
+    nextColumns = boardData!.columns.map(c =>
+      c.id === sourceColId ? { ...c, tasks: newTasks } : c
+    );
+  } else {
+    /* между колонками */
+    const task = sourceCol.tasks[srcIdx];
+    const newSrc = [...sourceCol.tasks];
+    newSrc.splice(srcIdx, 1);
+
+    const newTgt = [...targetCol.tasks];
+    newTgt.splice(insertIdx, 0, task);
+
+    nextColumns = boardData!.columns.map(c => {
+      if (c.id === sourceColId) return { ...c, tasks: newSrc };
+      if (c.id === targetColId) return { ...c, tasks: newTgt };
+      return c;
+    });
+  }
+
+  setBoardData({ board: boardData!.board, columns: nextColumns });
+
+  /* обновляем позиции только тех колонок, где изменился порядок */
+  [sourceColId, targetColId].forEach(id => {
+    const col = nextColumns.find(c => c.id === id)!;
+    updateTaskData(getTasksPositionsPayload(col));
+  });
+
+  setActiveItem(null);
+}
 
   return (
     <DndContext
