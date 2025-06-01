@@ -4,6 +4,7 @@ from uuid import UUID
 import backend.app.src.repository.column as ColumnRepo
 import backend.app.src.repository.user as UserRepo
 from backend.app.src.schemas import TaskCreate, UpdateColumnsPos
+from backend.app.src.schemas.board import UpdateColumn
 
 
 async def delete_column(uuid: UUID) -> bool:
@@ -44,5 +45,13 @@ async def update_cols_positions(data: List[UpdateColumnsPos]) -> bool:
         await ColumnRepo.update_col_position(
             col_id=col_data.col_id, new_pos=col_data.new_pos
         )
+
+    return True
+
+
+async def update_column_fields(column_id: UUID, fields: UpdateColumn) -> bool:
+    data_to_update = fields.model_dump(exclude_unset=True)
+
+    await ColumnRepo.update_fields(column_id, data_to_update)
 
     return True

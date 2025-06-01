@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
 import backend.app.src.services.column as ColumnService
-from backend.app.src.schemas import TaskCreate, UpdateColumnsPos
+from backend.app.src.schemas import TaskCreate, UpdateColumn, UpdateColumnsPos
 
 column_router = APIRouter(prefix="/columns", tags=["Columns Endpoints"])
 
@@ -46,4 +46,16 @@ async def update_columns_positions(data: List[UpdateColumnsPos]):
 
     return JSONResponse(
         content={"message": "updated successfully"}, status_code=status.HTTP_200_OK
+    )
+
+
+@column_router.patch("/{uuid}/info")
+async def update_column_info(uuid: UUID, data: UpdateColumn):
+    res = await ColumnService.update_column_fields(uuid, data)
+
+    if not res:
+        raise HTTPException(status_code=400, detail="troubles")
+
+    return JSONResponse(
+        content={"message": "ok"},
     )

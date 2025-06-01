@@ -56,6 +56,8 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
             )
         )
 
+    columns_out.sort(key=lambda x: x.position)
+
     return AbsoluteFullBoardInfo(board=board, columns=columns_out)
 
 

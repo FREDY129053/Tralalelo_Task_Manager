@@ -17,6 +17,7 @@ from .board import (
     TaskOut,
     TaskShortOut,
     TaskUpdate,
+    UpdateColumn,
     UpdateColumnsPos,
     UpdateTaskInfo,
 )
@@ -62,4 +63,5 @@ __all__ = [
     "Error",
     "BoardUserPreview",
     "ServiceMessage",
+    "UpdateColumn",
 ]
