@@ -30,7 +30,7 @@ export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
   });
 
   if (!res.ok) {
-    throw new Error(`Ошибка при получении пользователя: ${res.statusText}`);
+    throw new Error(`Ошибка при получении доски: ${res.statusText}`);
   }
 
   const board: IBoardFullInfo = await res.json();
@@ -139,7 +139,7 @@ export async function getBoardColumns(boardId: string): Promise<IColumn[]> {
   });
 
   if (!res.ok) {
-    throw new Error(`Ошибка при получении пользователя: ${res.statusText}`);
+    throw new Error(`Ошибка при получении колонок: ${res.statusText}`);
   }
 
   const columns: IColumn[] = await res.json();

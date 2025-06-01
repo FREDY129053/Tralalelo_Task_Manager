@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BsArrowLeftShort, BsFillImageFill, BsPerson } from "react-icons/bs";
+import { BsArrowLeftShort, BsKanbanFill, BsPerson } from "react-icons/bs";
 import {
   AiFillEnvironment,
-  AiOutlineFileText,
   AiOutlineLogout,
 } from "react-icons/ai";
+import { FaUsers } from "react-icons/fa";
 
 export default function Sidebar() {
   const [open, setOpen] = useState<boolean>(true);
@@ -52,8 +52,8 @@ export default function Sidebar() {
 
   const Menus = [
     { title: "Профиль", icon: <BsPerson />, spacing: true },
-    { title: "Мои доски", icon: <AiOutlineFileText />, spacing: true },
-    { title: "Доступные доски", icon: <BsFillImageFill /> },
+    { title: "Мои доски", icon: <BsKanbanFill />, spacing: true },
+    { title: "Доступные доски", icon: <FaUsers /> },
     {
       title: "Выход",
       icon: <AiOutlineLogout />,
