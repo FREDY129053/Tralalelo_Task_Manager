@@ -1,4 +1,4 @@
-import { IBoardFullInfo, IBoardShortInfo } from "@/interfaces/Board";
+import { IBoardFullInfo, IBoardShortInfo, IColumn } from "@/interfaces/Board";
 
 interface IUpdateCols {
   col_id: string;
@@ -128,4 +128,20 @@ export async function createTask(
   if (!res.ok) {
     throw new Error(`Ошибка при создании задачи: ${res.statusText}`);
   }
+}
+
+export async function getBoardColumns(boardId: string): Promise<IColumn[]> {
+  const res = await fetch(`http://localhost:8080/api/boards/${boardId}/columns`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Ошибка при получении пользователя: ${res.statusText}`);
+  }
+
+  const columns: IColumn[] = await res.json();
+  return columns;
 }
