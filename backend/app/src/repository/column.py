@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 from tortoise.exceptions import OperationalError
@@ -51,3 +51,12 @@ async def create_task(
 
 async def update_col_position(col_id: UUID, new_pos: int):
     return await Column.filter(id=col_id).update(position=new_pos)
+
+
+async def update_fields(column_id: UUID, fields: Dict[str, Any]):
+    column = await Column.get(id=column_id)
+
+    for key, val in fields.items():
+        setattr(column, key, val)
+
+    return await column.save(update_fields=list(fields.keys()))

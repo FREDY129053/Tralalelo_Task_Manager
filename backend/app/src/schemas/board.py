@@ -81,6 +81,13 @@ class CreateColumn(BaseModel):
     )
 
 
+class UpdateColumn(BaseModel):
+    title: Optional[str] = None
+    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
+        default=None, description="Hex color, e.g. #000000"
+    )
+
+
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
