@@ -91,20 +91,24 @@ export default function BoardPage() {
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
     const activeId = active.id as string;
+
     const column = boardData!.columns.find((col) => col.id === activeId);
     if (column) {
       setActiveItem({ type: "column", column });
-    } else {
-      const task = boardData!.columns
-        .flatMap((col) => col.tasks)
-        .find((t) => t.id === activeId);
-      if (task) setActiveItem({ type: "task", task });
+      return;
+    }
+
+    const allTasks = boardData!.columns.flatMap((col) => col.tasks);
+    const task = allTasks.find((t) => t.id === activeId);
+    if (task) {
+      setActiveItem({ type: "task", task: { ...task } });
     }
   }
 
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!active || !over) return;
+
     const activeId = active.id as string;
     const overId = over.id as string;
 
@@ -113,46 +117,66 @@ export default function BoardPage() {
       ? overId
       : findColumnByTaskId(overId);
 
-    if (!activeColumnId || !overColumnId || activeColumnId === overColumnId)
-      return;
+    if (!activeColumnId || !overColumnId) return;
 
     const activeColumn = boardData!.columns.find(
       (col) => col.id === activeColumnId
-    )!;
+    );
     const overColumn = boardData!.columns.find(
       (col) => col.id === overColumnId
-    )!;
+    );
+
+    if (!activeColumn || !overColumn) return;
 
     const activeTaskIndex = activeColumn.tasks.findIndex(
       (t) => t.id === activeId
     );
     const overTaskIndex = overColumn.tasks.findIndex((t) => t.id === overId);
 
+    if (activeTaskIndex === -1) return;
+
     const newIndex =
       overTaskIndex >= 0 ? overTaskIndex : overColumn.tasks.length;
 
-    if (activeColumnId === overColumnId && activeTaskIndex === newIndex) {
-      return;
-    }
+    const alreadyInPlace =
+      activeColumnId === overColumnId && activeTaskIndex === newIndex;
+
+    if (alreadyInPlace) return;
+
+    const taskToMove = activeColumn.tasks[activeTaskIndex];
+    if (!taskToMove) return;
 
     const nextColumns = boardData!.columns.map((col) => {
       if (col.id === activeColumnId) {
-        return { ...col, tasks: col.tasks.filter((t) => t.id !== activeId) };
+        return {
+          ...col,
+          tasks: col.tasks.filter((t) => t.id !== activeId),
+        };
       }
+
       if (col.id === overColumnId) {
         const newTasks = [...col.tasks];
-        newTasks.splice(newIndex, 0, activeColumn.tasks[activeTaskIndex]);
-        return { ...col, tasks: newTasks };
+        newTasks.splice(newIndex, 0, taskToMove);
+        return {
+          ...col,
+          tasks: newTasks,
+        };
       }
+
       return col;
     });
 
-    setBoardData({ board: boardData!.board, columns: nextColumns });
+    const sameStructure =
+      JSON.stringify(boardData!.columns) === JSON.stringify(nextColumns);
+    if (!sameStructure) {
+      setBoardData({ board: boardData!.board, columns: nextColumns });
+    }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!active || !over) return;
+
     const activeId = active.id as string;
     const overId = over.id as string;
 
@@ -163,16 +187,16 @@ export default function BoardPage() {
       (col) => col.id === overId
     );
 
-    if (
-      activeColIndex !== -1 &&
-      overColIndex !== -1 &&
-      activeColIndex !== overColIndex
-    ) {
+    const isActiveColumn = activeColIndex !== -1;
+    const isOverColumn = overColIndex !== -1;
+
+    if (isActiveColumn && isOverColumn && activeColIndex !== overColIndex) {
       const newColumns = arrayMove(
         boardData!.columns,
         activeColIndex,
         overColIndex
       );
+
       setBoardData({ board: boardData!.board, columns: newColumns });
 
       const colsData = newColumns.map((col, index) => ({
@@ -184,35 +208,54 @@ export default function BoardPage() {
       return;
     }
 
-    let targetColumnId: string | undefined;
-    if (boardData!.columns.some((col) => col.id === overId)) {
-      targetColumnId = overId;
-    } else {
-      targetColumnId = findColumnByTaskId(overId);
-    }
-    if (!targetColumnId) return;
+    const sourceColId = findColumnByTaskId(activeId)!;
+    const targetColId = boardData!.columns.some((c) => c.id === overId)
+      ? overId
+      : findColumnByTaskId(overId)!;
 
-    const targetColumn = boardData!.columns.find(
-      (col) => col.id === targetColumnId
-    )!;
-    let newIndex: number;
+    const sourceCol = boardData?.columns.find((c) => c.id === sourceColId);
+    if (!sourceCol) return;
+    const targetCol = boardData?.columns.find((c) => c.id === targetColId);
+    if (!targetCol) return;
 
-    if (targetColumn.id === overId || activeId === overId) {
-      newIndex = targetColumn.tasks.length;
-    } else {
-      newIndex = targetColumn.tasks.findIndex((t) => t.id === overId);
-      if (newIndex === -1) {
-        newIndex = targetColumn.tasks.length;
+    const sourceIndex = sourceCol.tasks.findIndex((t) => t.id === activeId);
+    const overIndex = targetCol.tasks.findIndex((t) => t.id === overId);
+
+    const insertIndex = overIndex === -1 ? targetCol.tasks.length : overIndex;
+
+    const movedTask = sourceCol.tasks[sourceIndex];
+
+    const newColumns = boardData!.columns.map((col) => {
+      /* Перенос внутри колонки */
+      if (col.id === sourceCol.id && col.id === targetCol.id) {
+        return {
+          ...col,
+          tasks: arrayMove(col.tasks, sourceIndex, insertIndex),
+        };
       }
-    }
 
-    const isTask = boardData!.columns.some((col) =>
-      col.tasks.some((t) => t.id === activeId)
-    );
-    if (isTask) {
-      console.log(getTasksPositionsPayload(targetColumn))
-      updateTaskData(getTasksPositionsPayload(targetColumn));
-    }
+      /* Перенос между колонками */
+      if (col.id === sourceCol.id) {
+        const t = [...col.tasks];
+        t.splice(sourceIndex, 1);
+        return { ...col, tasks: t };
+      }
+      if (col.id === targetCol.id) {
+        const t = [...col.tasks];
+        t.splice(insertIndex, 0, movedTask);
+        return { ...col, tasks: t };
+      }
+      return col;
+    });
+
+    setBoardData({ board: boardData!.board, columns: newColumns });
+
+    [sourceColId, targetColId].forEach((id) => {
+      const col = newColumns.find((c) => c.id === id)!;
+      updateTaskData(getTasksPositionsPayload(col));
+    });
+
+    setActiveItem(null);
   }
 
   return (
@@ -224,7 +267,8 @@ export default function BoardPage() {
       onDragStart={handleDragStart}
     >
       <SortableContext
-        items={boardData.columns}
+        items={boardData.columns.map(col => col.id)}
+        // items={boardData.columns}
         strategy={horizontalListSortingStrategy}
       >
         <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
