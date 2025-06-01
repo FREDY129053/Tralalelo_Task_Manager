@@ -1,3 +1,7 @@
+import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { produce } from "immer";
+import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   DndContext,
   KeyboardSensor,
@@ -14,24 +18,20 @@ import {
 import {
   arrayMove,
   horizontalListSortingStrategy,
-  verticalListSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { FaPlus } from "react-icons/fa";
-import React, { useEffect, useState } from "react";
-import { MdDragIndicator } from "react-icons/md";
-import { CSS } from "@dnd-kit/utilities";
-import { useSortable } from "@dnd-kit/sortable";
 import { IBoardFullInfo, IColumn, ITask } from "@/interfaces/Board";
 import {
   createColumn,
-  createTask,
   getBoardData,
   updateColumnsPositions,
   updateTaskData,
 } from "../api/board";
-import { useRouter } from "next/router";
+import SortableColumn from "@/components/SoloBoard/SortableColumn";
+import OverlayColumn from "@/components/SoloBoard/OverlayColumn";
+import OverlayTask from "@/components/SoloBoard/OverlayTask";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
@@ -63,169 +63,180 @@ export default function BoardPage() {
     })
   );
 
-  const updateBoard = () => getBoardData(uuid!).then(setBoardData).catch(console.error);
+  const findColumnByTaskId = useCallback((taskId: string): string | undefined => {
+    return boardData!.columns.find((col) =>
+      col.tasks.some((t) => t.id === taskId)
+    )?.id;
+  }, [boardData])
 
-  if (!boardData) return <div>Loading...</div>;
+  const updateBoard = useCallback(() => {
+    getBoardData(uuid!).then(setBoardData).catch(console.error);
+  }, [uuid]);
+
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!active || !over) return;
+
+      const activeId = active.id as string;
+      const overId = over.id as string;
+
+      if (boardData!.columns.some((c) => c.id === activeId)) return;
+
+      const sourceColId = findColumnByTaskId(activeId);
+      const targetColId = boardData!.columns.some((c) => c.id === overId)
+        ? overId
+        : findColumnByTaskId(overId);
+
+      if (!sourceColId || !targetColId) return;
+
+      const sourceIdx = boardData!.columns
+        .find((c) => c.id === sourceColId)!
+        .tasks.findIndex((t) => t.id === activeId);
+      const overIdx = boardData!.columns
+        .find((c) => c.id === targetColId)!
+        .tasks.findIndex((t) => t.id === overId);
+
+      const insertAt =
+        overIdx === -1
+          ? boardData!.columns.find((c) => c.id === targetColId)!.tasks.length
+          : overIdx;
+
+      // Если таска уже в нужной позиции, не делаем ничего
+      if (sourceColId === targetColId && sourceIdx === insertAt) return;
+
+      const next = produce(boardData!, (draft) => {
+        const sourceCol = draft.columns.find((c) => c.id === sourceColId)!;
+        const targetCol = draft.columns.find((c) => c.id === targetColId)!;
+
+        const [movedTask] = sourceCol.tasks.splice(sourceIdx, 1);
+        targetCol.tasks.splice(insertAt, 0, movedTask);
+      });
+
+      setBoardData(next);
+    },
+    [boardData, findColumnByTaskId]
+  );
 
   async function handleAddColumn() {
     const title = prompt("Введите название колонки");
     if (!title) return;
     const position = boardData!.columns.length + 1;
-
     await createColumn(uuid!, title, position).then().catch(console.error);
-    getBoardData(uuid!).then(setBoardData).catch(console.error);
+    updateBoard();
   }
 
-  function findColumnByTaskId(taskId: string): string | undefined {
-    return boardData!.columns.find((col) =>
-      col.tasks.some((t) => t.id === taskId)
-    )?.id;
+  function getTasksPositionsPayload(column: IColumn) {
+    return column.tasks.map((task, idx) => ({
+      col_id: column.id,
+      task_id: task.id,
+      position: idx + 1,
+    }));
   }
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
     const activeId = active.id as string;
+
     const column = boardData!.columns.find((col) => col.id === activeId);
     if (column) {
       setActiveItem({ type: "column", column });
-    } else {
-      const task = boardData!.columns
-        .flatMap((col) => col.tasks)
-        .find((t) => t.id === activeId);
-      if (task) setActiveItem({ type: "task", task });
-    }
-  }
-
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!active || !over) return;
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    const activeColumnId = findColumnByTaskId(activeId);
-    const overColumnId = boardData!.columns.find((col) => col.id === overId)
-      ? overId
-      : findColumnByTaskId(overId);
-
-    if (!activeColumnId || !overColumnId || activeColumnId === overColumnId)
-      return;
-
-    const activeColumn = boardData!.columns.find(
-      (col) => col.id === activeColumnId
-    )!;
-    const overColumn = boardData!.columns.find(
-      (col) => col.id === overColumnId
-    )!;
-
-    const activeTaskIndex = activeColumn.tasks.findIndex(
-      (t) => t.id === activeId
-    );
-    const overTaskIndex = overColumn.tasks.findIndex((t) => t.id === overId);
-
-    const newIndex =
-      overTaskIndex >= 0 ? overTaskIndex : overColumn.tasks.length;
-
-    // Не обновлять, если задача уже на нужном месте
-    if (activeColumnId === overColumnId && activeTaskIndex === newIndex) {
       return;
     }
 
-    const nextColumns = boardData!.columns.map((col) => {
-      if (col.id === activeColumnId) {
-        return { ...col, tasks: col.tasks.filter((t) => t.id !== activeId) };
-      }
-      if (col.id === overColumnId) {
-        const newTasks = [...col.tasks];
-        newTasks.splice(newIndex, 0, activeColumn.tasks[activeTaskIndex]);
-        return { ...col, tasks: newTasks };
-      }
-      return col;
-    });
-
-    setBoardData({ board: boardData!.board, columns: nextColumns });
+    const allTasks = boardData!.columns.flatMap((col) => col.tasks);
+    const task = allTasks.find((t) => t.id === activeId);
+    if (task) {
+      setActiveItem({ type: "task", task: { ...task } });
+    }
   }
+
+  
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!active || !over) return;
+
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Проверяем: если оба id — это колонки, значит dnd колонок
-    const activeColIndex = boardData!.columns.findIndex(
-      (col) => col.id === activeId
-    );
-    const overColIndex = boardData!.columns.findIndex(
-      (col) => col.id === overId
-    );
+    // Перемещение колонок
+    const srcColIdx = boardData!.columns.findIndex((c) => c.id === activeId);
+    const dstColIdx = boardData!.columns.findIndex((c) => c.id === overId);
 
-    if (
-      activeColIndex !== -1 &&
-      overColIndex !== -1 &&
-      activeColIndex !== overColIndex
-    ) {
-      // DnD колонок
-      const newColumns = arrayMove(
-        boardData!.columns,
-        activeColIndex,
-        overColIndex
-      );
-      setBoardData({ board: boardData!.board, columns: newColumns });
+    if (srcColIdx !== -1 && dstColIdx !== -1 && srcColIdx !== dstColIdx) {
+      const newCols = arrayMove(boardData!.columns, srcColIdx, dstColIdx);
 
-      const colsData = newColumns.map((col, index) => ({
-        col_id: col.id,
-        new_pos: index,
+      setBoardData((prev) => ({
+        ...prev!,
+        columns: newCols,
       }));
 
-      updateColumnsPositions(colsData);
+      updateColumnsPositions(
+        newCols.map((c, i) => ({ col_id: c.id, new_pos: i }))
+      );
+
+      setActiveItem(null);
       return;
     }
 
-    // DnD задачи (activeId — задача)
-    // Определяем колонку, куда перенесли задачу
-    let targetColumnId: string | undefined;
-    if (boardData!.columns.some((col) => col.id === overId)) {
-      targetColumnId = overId;
-    } else {
-      targetColumnId = findColumnByTaskId(overId);
-    }
-    if (!targetColumnId) return;
+    const sourceColId = findColumnByTaskId(activeId)!;
+    const targetColId = boardData!.columns.some((c) => c.id === overId)
+      ? overId
+      : findColumnByTaskId(overId)!;
 
-    // Определяем позицию задачи в новой колонке
-    const targetColumn = boardData!.columns.find(
-      (col) => col.id === targetColumnId
-    )!;
-    let newIndex = targetColumn.tasks.findIndex((t) => t.id === overId);
-    if (newIndex === -1) {
-      newIndex = targetColumn.tasks.length;
+    if (!sourceColId || !targetColId) return;
+
+    const next = produce(boardData!, (draft) => {
+      const sourceCol = draft.columns.find((c) => c.id === sourceColId)!;
+      const targetCol = draft.columns.find((c) => c.id === targetColId)!;
+
+      const srcIdx = sourceCol.tasks.findIndex((t) => t.id === activeId);
+      const overIdx = targetCol.tasks.findIndex((t) => t.id === overId);
+      const insertIdx = overIdx === -1 ? targetCol.tasks.length : overIdx;
+
+      // если таска не переместилась — ничего не делаем
+      if (sourceColId === targetColId && srcIdx === insertIdx) return;
+
+      const [movedTask] = sourceCol.tasks.splice(srcIdx, 1);
+      targetCol.tasks.splice(insertIdx, 0, movedTask);
+    });
+
+    setBoardData(next);
+
+    // Обновляем бэкенд только по затронутым колонкам
+    const affectedColIds = new Set([sourceColId, targetColId]);
+    for (const colId of affectedColIds) {
+      const col = next.columns.find((c) => c.id === colId)!;
+      updateTaskData(getTasksPositionsPayload(col));
     }
 
-    // Проверяем, что activeId действительно задача (а не колонка)
-    const isTask = boardData!.columns.some((col) =>
-      col.tasks.some((t) => t.id === activeId)
-    );
-    if (isTask) {
-      updateTaskData(activeId, targetColumnId, newIndex);
-    }
+    setActiveItem(null);
   }
+
+  if (!boardData) return <div>Loading...</div>;
 
   return (
     <DndContext
       collisionDetection={closestCorners}
       sensors={sensors}
+      modifiers={[restrictToWindowEdges]}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDragStart={handleDragStart}
     >
       <SortableContext
-        items={boardData.columns}
+        items={boardData.columns.map((col) => col.id)}
         strategy={horizontalListSortingStrategy}
       >
         <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
           {boardData.columns.map((col) => (
-            <SortableColumn key={col.id} column={col} updateBoard={updateBoard} />
+            <SortableColumn
+              key={col.id}
+              column={col}
+              updateBoard={updateBoard}
+            />
           ))}
-          {/* Кнопка "Добавить колонку" — маленькая, рядом с последней колонкой */}
           <div className="flex items-center">
             <button
               onClick={handleAddColumn}
@@ -251,163 +262,5 @@ export default function BoardPage() {
         ) : null}
       </DragOverlay>
     </DndContext>
-  );
-}
-
-type SortableColumnProps = {
-  column: IColumn;
-  updateBoard: () => void
-};
-
-function SortableColumn({ column, updateBoard }: SortableColumnProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: column.id,
-    data: { type: "column" },
-  });
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.2 : 1,
-  };
-
-  async function handleAddTask() {
-    const title = prompt("Введите название задачи");
-    if (!title) return;
-    const position = column.tasks.length + 1;
-
-    await createTask(column.id, title, position).then().catch(console.error);
-    updateBoard()
-  }
-
-  return (
-   <div
-      ref={setNodeRef}
-      style={style}
-      className="relative flex flex-col min-w-[260px] w-2xs max-w-xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
-    >
-      <div
-        {...listeners}
-        {...attributes}
-        className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] ${
-          isDragging ? "cursor-grabbing" : "cursor-grab"
-        }`}
-      >
-        {column.title}
-      </div>
-      <div className="flex-1 flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
-        {column.tasks.length === 0 ? (
-          <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
-            List is empty
-          </div>
-        ) : (
-          <SortableContext
-            items={column.tasks}
-            strategy={verticalListSortingStrategy}
-          >
-            {column.tasks.map((task) => (
-              <SortableTask key={task.id} task={task} />
-            ))}
-          </SortableContext>
-        )}
-      </div>
-      {/* Кнопка всегда внизу */}
-      <div className="flex justify-center py-4 z-20 bg-gradient-to-t from-sky-400 via-sky-400/80 to-transparent">
-        <button
-          onClick={handleAddTask}
-          className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
-          title="Добавить задачу"
-          style={{ minWidth: "48px" }}
-        >
-          <FaPlus className="text-2xl sm:text-xl" />
-          <span className="hidden sm:inline font-semibold text-base ml-2">
-            Добавить задачу
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-type SortableTaskProps = {
-  task: ITask;
-};
-
-function SortableTask({ task }: SortableTaskProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: task.id,
-    data: { type: "task" },
-  });
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.2 : 1,
-    backgroundColor: task.color ?? "#fff"
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex w-full h-16 text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black`}
-    >
-      <MdDragIndicator
-        className={`h-6 w-6 ${
-          isDragging ? "cursor-grabbing" : "cursor-grab"
-        } text-sky-300 focus:outline-2 focus:outline-transparent focus:outline-offset-2`}
-        {...listeners}
-        {...attributes}
-      />
-      <span>{task?.title}</span>
-    </div>
-  );
-}
-
-function OverlayColumn({ column }: { column: IColumn }) {
-  return (
-    <div className="flex flex-col gap-2 w-2xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10">
-      <div className="flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] cursor-grabbing">
-        {column.title}
-      </div>
-      <div className="flex flex-col items-center gap-2 w-full p-4 max-h-[400px] overflow-y-auto">
-        {column.tasks.length === 0 ? (
-          <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
-            List is empty
-          </div>
-        ) : (
-          column.tasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 gap-2 font-black opacity-70"
-            >
-              <MdDragIndicator className="h-6 w-6 text-sky-300" />
-              <span>{task.title}</span>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function OverlayTask({ task }: { task: ITask }) {
-  return (
-    <div className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg bg-sky-600 p-3 z-10 gap-2 font-black">
-      <MdDragIndicator className="h-6 w-6 cursor-grabbing text-sky-300 focus:outline-2 focus:outline-transparent focus:outline-offset-2" />
-      <span>{task?.title}</span>
-    </div>
   );
 }

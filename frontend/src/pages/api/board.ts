@@ -1,8 +1,14 @@
-import { IBoardFullInfo, IBoardShortInfo } from "@/interfaces/Board";
+import { IBoardFullInfo, IBoardShortInfo, IColumn } from "@/interfaces/Board";
 
 interface IUpdateCols {
   col_id: string;
   new_pos: number;
+}
+
+interface IUpdateTasks {
+  col_id: string,
+  task_id: string,
+  position: number
 }
 
 export async function getBoards(): Promise<IBoardShortInfo[]> {
@@ -30,7 +36,7 @@ export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
   });
 
   if (!res.ok) {
-    throw new Error(`Ошибка при получении пользователя: ${res.statusText}`);
+    throw new Error(`Ошибка при получении доски: ${res.statusText}`);
   }
 
   const board: IBoardFullInfo = await res.json();
@@ -58,18 +64,17 @@ export async function updateColumnsPositions(
 }
 
 export async function updateTaskData(
-  taskUUID: string,
-  colUUID: string,
-  position: number
+  tasksData: IUpdateTasks[]
 ): Promise<void> {
   const res = await fetch(
-    `http://localhost:8080/api/tasks/${taskUUID}?col_id=${colUUID}&position=${position}`,
+    `http://localhost:8080/api/tasks/positions`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
+      body: JSON.stringify(tasksData)
     }
   );
 
@@ -128,4 +133,20 @@ export async function createTask(
   if (!res.ok) {
     throw new Error(`Ошибка при создании задачи: ${res.statusText}`);
   }
+}
+
+export async function getBoardColumns(boardId: string): Promise<IColumn[]> {
+  const res = await fetch(`http://localhost:8080/api/boards/${boardId}/columns`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Ошибка при получении колонок: ${res.statusText}`);
+  }
+
+  const columns: IColumn[] = await res.json();
+  return columns;
 }

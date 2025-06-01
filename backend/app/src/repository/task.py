@@ -3,7 +3,7 @@ from uuid import UUID
 
 from tortoise.exceptions import OperationalError
 
-from backend.app.src.db.models import Column, Comment, Subtask, Task
+from backend.app.src.db.models import Comment, Subtask, Task
 from backend.app.src.schemas import TaskOut
 
 
@@ -56,9 +56,9 @@ async def create_subtask(task: Task, title: str, is_completed: bool) -> Subtask:
     )
 
 
-async def update_task(task_uuid: UUID, column: Column, position: int):
+async def update_task_pos(task_uuid: UUID, column_id: UUID, position: int):
     task = await Task.get(id=task_uuid)
-    task.column = column
+    task.column_id = column_id
     task.position = position
     await task.save()
 

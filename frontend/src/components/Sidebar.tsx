@@ -1,132 +1,157 @@
-'use client';
+"use client";
 
-import React, { useState } from "react";
-import {
-  BsArrowLeftShort,
-  BsChevronDown,
-  BsFillImageFill,
-  BsPerson,
-  BsReverseLayoutTextSidebarReverse,
-  // BsSearch,
-} from "react-icons/bs";
+import React, { useEffect, useState } from "react";
+import { BsArrowLeftShort, BsKanbanFill, BsPerson } from "react-icons/bs";
 import {
   AiFillEnvironment,
-  // AiOutlineBarChart,
-  AiOutlineFileText,
   AiOutlineLogout,
-  // AiOutlineMail,
-  AiOutlineSetting,
 } from "react-icons/ai";
-import { RiDashboardFill } from "react-icons/ri";
+import { FaUsers } from "react-icons/fa";
 
 export default function Sidebar() {
-  const [open, setOpen] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("isOpenSidebar")
-      return saved ? JSON.parse(saved) : false
+  const [open, setOpen] = useState<boolean>(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [showText, setShowText] = useState(open);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      if (window.innerWidth <= 480) {
+        setIsMobile(true);
+        setOpen(false);
+      } else {
+        setIsMobile(false);
+        const saved = localStorage.getItem("isOpenSidebar");
+        setOpen(saved !== null ? JSON.parse(saved) : true);
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    setIsReady(true);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      const timeout = setTimeout(() => setShowText(true), 200);
+      return () => clearTimeout(timeout);
+    } else {
+      setShowText(false);
     }
-    return false
-  });
-  const [submenuOpen, setSubmenuOpen] = useState<boolean>(false);
+  }, [open]);
 
   const handleToggle = () => {
     setOpen((prev) => {
-      localStorage.setItem("isOpenSidebar", JSON.stringify(!prev))
+      if (!isMobile)
+        localStorage.setItem("isOpenSidebar", JSON.stringify(!prev));
       return !prev;
-    })
-  }
+    });
+  };
+
+  if (!isReady) return null;
 
   const Menus = [
-    { title: "Dashboard", icon: <RiDashboardFill /> },
-    { title: "Pages", icon: <AiOutlineFileText /> },
-    { title: "Media", spacing: true, icon: <BsFillImageFill /> },
+    { title: "Профиль", icon: <BsPerson />, spacing: true },
+    { title: "Мои доски", icon: <BsKanbanFill />, spacing: true },
+    { title: "Доступные доски", icon: <FaUsers /> },
     {
-      title: "Projects",
-      icon: <BsReverseLayoutTextSidebarReverse />,
-      submenu: true,
-      submenuItems: [
-        { title: "Submenu 1" },
-        { title: "Submenu 2" },
-        { title: "Submenu 3" },
-      ],
+      title: "Выход",
+      icon: <AiOutlineLogout />,
+      spacing: true,
+      hover: "hover:bg-red-400 hover:text-white",
     },
-    // { title: "Analytics", icon: <AiOutlineBarChart /> },
-    // { title: "Inbox", icon: <AiOutlineMail /> },
-    { title: "Profile", icon: <BsPerson />, spacing: true },
-    { title: "Setting", icon: <AiOutlineSetting /> },
-    { title: "Logout", icon: <AiOutlineLogout /> },
   ];
 
-  return (
-    <div
-      className={`bg-sidebar-bg h-screen p-5 pt-8 ${
-        open ? "w-66" : "w-20"
-      } relative duration-300`}
+  const MobileArrowButton = (
+    <button
+      className="fixed top-4 left-4 z-50 bg-white rounded-full border border-sidebar-bg p-2 shadow-lg transition-all duration-300"
+      onClick={handleToggle}
+      aria-label={open ? "Закрыть меню" : "Открыть меню"}
+      style={{
+        width: 40,
+        height: 40,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
       <BsArrowLeftShort
-        className={`bg-white border border-sidebar-bg text-sidebar-bg text-3xl rounded-full absolute -right-3.5 top-9 cursor-pointer ${
-          !open && "rotate-180"
+        className={` text-sidebar-bg rounded-full text-3xl transition-all duration-300 ${
+          open ? "" : "rotate-180"
         }`}
-        onClick={(e) => handleToggle()}
       />
+    </button>
+  );
 
-      <div className="inline-flex">
-        <AiFillEnvironment
-          className={`bg-amber-300 text-4xl rounded cursor-pointer block float-left mr-2 duration-500 ${
-            !open && "rotate-360"
-          }`}
-        />
-        <h1
-          className={`${
-            !open && "scale-0"
-          } text-sidebar-text origin-left font-medium text-2xl duration-300`}
-        >
-          Tralalelo
-        </h1>
-      </div>
+  return (
+    <>
+      {isMobile && MobileArrowButton}
+      <div
+        className={`
+        ${
+          isMobile
+            ? `fixed top-0 left-0 w-screen h-screen bg-sidebar-bg z-40 flex flex-col p-5 pt-8 transition-all duration-300 ${
+                open
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none"
+              }`
+            : `bg-sidebar-bg h-screen ${open && "mr-0"} p-5 pt-8 ${
+                open ? "w-66" : "w-20"
+              } relative transition-all duration-300 z-10`
+        }
+        `}
+        style={isMobile ? { minWidth: 0, maxWidth: "100vw" } : {}}
+      >
+        {!isMobile && (
+          <BsArrowLeftShort
+            className={`bg-white border border-sidebar-bg text-sidebar-bg text-3xl rounded-full absolute -right-3.5 top-9 cursor-pointer ${
+              !open && "rotate-180"
+            }`}
+            onClick={handleToggle}
+          />
+        )}
 
-      <ul className="pt-2">
-        {Menus.map((menu, index) => (
-          <React.Fragment key={index}>
-            <li
-              // key={index}
-              className={`text-sidebar-text flex items-center gap-x-4 cursor-pointer p-2 hover:bg-sidebar-hover rounded-md ${
-                menu.spacing ? "mt-7" : "mt-2"
-              }`}
-              onClick={
-                menu.submenu ? () => setSubmenuOpen(!submenuOpen) : () => {}
-              }
-            >
-              <span className="text-2xl block float-left">{menu.icon} </span>
-              <span
-                className={`duration-300 text-base font-medium flex-1 ${
-                  !open && "hidden"
-                }`}
+        <div className="flex flex-col gap-4 items-center justify-center mt-8 mb-2">
+          <AiFillEnvironment
+            className={`bg-amber-300 text-4xl rounded cursor-pointer block float-left mr-2 duration-500 ${
+              !open && "rotate-360"
+            }`}
+          />
+          <h1
+            className={`${
+              !open && "scale-0"
+            } text-sidebar-text origin-left font-medium text-2xl duration-300`}
+          >
+            Tralalelo
+          </h1>
+        </div>
+
+        <ul className="pt-2">
+          {Menus.map((menu, index) => (
+            <React.Fragment key={index}>
+              <li
+                className={`text-sidebar-text flex items-center gap-x-4 cursor-pointer p-2  rounded-md ${
+                  menu.spacing ? "mt-7" : "mt-2"
+                } ${menu.hover ? menu.hover : "hover:bg-sidebar-hover"}`}
               >
-                {menu.title}
-              </span>
-              {menu.submenu && open && (
-                <BsChevronDown
-                  className={`duration-300 ${submenuOpen && "rotate-180"}`}
-                />
-              )}
-            </li>
-
-            {menu.submenu && submenuOpen && open && (
-              <ul>
-                {menu.submenuItems.map((submenuItem, subIndex) => (
-                  <li
-                    key={subIndex}
-                    className="text-sidebar-text text-sm flex items-center gap-x-4 cursor-pointer p-2 px-5 rounded-md hover:bg-sidebar-hover"
-                  >
-                    {submenuItem.title}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </React.Fragment>
-        ))}
-      </ul>
-    </div>
+                <span className="text-2xl block float-left">{menu.icon} </span>
+                <span
+                  className={`duration-200 text-base whitespace-nowrap font-medium flex-1 transition-all ${
+                    open && showText
+                      ? "opacity-100 max-w-[200px] ml-0"
+                      : "opacity-0 max-w-0 ml-[-8px] pointer-events-none"
+                  }`}
+                  style={{
+                    transitionProperty: "opacity,max-width,margin",
+                  }}
+                >
+                  {showText && menu.title}
+                </span>
+              </li>
+            </React.Fragment>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }
