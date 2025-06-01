@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { FaPlus } from "react-icons/fa";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable, verticalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { IColumn } from "@/interfaces/Board";
+import { IColumn, ITask } from "@/interfaces/Board";
 import SortableTask from "./SortableTask";
 import { createTask } from "@/pages/api/board";
 
@@ -38,6 +38,11 @@ function SortableColumn({ column, updateBoard }: Props) {
     updateBoard();
   }
 
+  const renderTask = useCallback(
+  (task: ITask) => <SortableTask key={task.id} task={task} />,
+  []
+);
+
   return (
     <div
       ref={setNodeRef}
@@ -63,9 +68,7 @@ function SortableColumn({ column, updateBoard }: Props) {
             items={column.tasks}
             strategy={verticalListSortingStrategy}
           >
-            {column.tasks.map((task) => (
-              <SortableTask key={task.id} task={task} />
-            ))}
+            {column.tasks.map(renderTask)}
           </SortableContext>
         )}
       </div>

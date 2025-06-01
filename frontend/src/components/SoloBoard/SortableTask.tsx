@@ -8,7 +8,7 @@ type Props = {
   task: ITask;
 };
 
-export default function SortableTask({ task }: Props) {
+function SortableTask({ task }: Props) {
   const {
     attributes,
     listeners,
@@ -25,14 +25,14 @@ export default function SortableTask({ task }: Props) {
     transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.2 : 1,
-    backgroundColor: task.color ?? "#fff"
+    backgroundColor: task.color ?? "#fff",
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex w-full h-16 text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black`}
+      className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black"
     >
       <MdDragIndicator
         className={`h-6 w-6 ${
@@ -45,3 +45,5 @@ export default function SortableTask({ task }: Props) {
     </div>
   );
 }
+
+export default React.memo(SortableTask);

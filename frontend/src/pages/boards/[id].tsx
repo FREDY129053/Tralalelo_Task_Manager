@@ -1,9 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { produce } from "immer";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   DndContext,
@@ -66,11 +63,60 @@ export default function BoardPage() {
     })
   );
 
+  const findColumnByTaskId = useCallback((taskId: string): string | undefined => {
+    return boardData!.columns.find((col) =>
+      col.tasks.some((t) => t.id === taskId)
+    )?.id;
+  }, [boardData])
+
   const updateBoard = useCallback(() => {
     getBoardData(uuid!).then(setBoardData).catch(console.error);
   }, [uuid]);
 
-  if (!boardData) return <div>Loading...</div>;
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!active || !over) return;
+
+      const activeId = active.id as string;
+      const overId = over.id as string;
+
+      if (boardData!.columns.some((c) => c.id === activeId)) return;
+
+      const sourceColId = findColumnByTaskId(activeId);
+      const targetColId = boardData!.columns.some((c) => c.id === overId)
+        ? overId
+        : findColumnByTaskId(overId);
+
+      if (!sourceColId || !targetColId) return;
+
+      const sourceIdx = boardData!.columns
+        .find((c) => c.id === sourceColId)!
+        .tasks.findIndex((t) => t.id === activeId);
+      const overIdx = boardData!.columns
+        .find((c) => c.id === targetColId)!
+        .tasks.findIndex((t) => t.id === overId);
+
+      const insertAt =
+        overIdx === -1
+          ? boardData!.columns.find((c) => c.id === targetColId)!.tasks.length
+          : overIdx;
+
+      // Если таска уже в нужной позиции, не делаем ничего
+      if (sourceColId === targetColId && sourceIdx === insertAt) return;
+
+      const next = produce(boardData!, (draft) => {
+        const sourceCol = draft.columns.find((c) => c.id === sourceColId)!;
+        const targetCol = draft.columns.find((c) => c.id === targetColId)!;
+
+        const [movedTask] = sourceCol.tasks.splice(sourceIdx, 1);
+        targetCol.tasks.splice(insertAt, 0, movedTask);
+      });
+
+      setBoardData(next);
+    },
+    [boardData, findColumnByTaskId]
+  );
 
   async function handleAddColumn() {
     const title = prompt("Введите название колонки");
@@ -86,12 +132,6 @@ export default function BoardPage() {
       task_id: task.id,
       position: idx + 1,
     }));
-  }
-
-  function findColumnByTaskId(taskId: string): string | undefined {
-    return boardData!.columns.find((col) =>
-      col.tasks.some((t) => t.id === taskId)
-    )?.id;
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -111,69 +151,7 @@ export default function BoardPage() {
     }
   }
 
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!active || !over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    if (boardData!.columns.some((c) => c.id === activeId)) return;
-
-    const sourceColId = findColumnByTaskId(activeId);
-    const targetColId = boardData!.columns.some((c) => c.id === overId)
-      ? overId
-      : findColumnByTaskId(overId);
-
-    if (!sourceColId || !targetColId) return;
-
-    const sourceCol = boardData!.columns.find((c) => c.id === sourceColId)!;
-    const targetCol = boardData!.columns.find((c) => c.id === targetColId)!;
-
-    const sourceIdx = sourceCol.tasks.findIndex((t) => t.id === activeId);
-    const overIdx = targetCol.tasks.findIndex((t) => t.id === overId);
-
-    if (sourceColId === targetColId) {
-      const newTasks = arrayMove(
-        sourceCol.tasks,
-        sourceIdx,
-        overIdx === -1 ? sourceCol.tasks.length - 1 : overIdx
-      );
-
-      const nextColumns = boardData!.columns.map((col) =>
-        col.id === sourceColId ? { ...col, tasks: newTasks } : col
-      );
-      setBoardData({ board: boardData!.board, columns: nextColumns });
-      return;
-    }
-
-    const task = sourceCol.tasks[sourceIdx];
-    const newSrc = [...sourceCol.tasks];
-    newSrc.splice(sourceIdx, 1);
-
-    const insertAt = overIdx === -1 ? targetCol.tasks.length : overIdx;
-    const newTgt = [...targetCol.tasks];
-    newTgt.splice(insertAt, 0, task);
-
-    const nextColumns = boardData!.columns.map((col) => {
-      if (col.id === sourceColId) return { ...col, tasks: newSrc };
-      if (col.id === targetColId) return { ...col, tasks: newTgt };
-      return col;
-    });
-    const hasChanged = nextColumns.some((col, i) => {
-      return (
-        col.id !== boardData!.columns[i]?.id ||
-        col.tasks.length !== boardData!.columns[i].tasks.length ||
-        col.tasks.some(
-          (task, j) => task.id !== boardData!.columns[i].tasks[j]?.id
-        )
-      );
-    });
-
-    if (hasChanged) {
-      setBoardData({ board: boardData!.board, columns: nextColumns });
-    }
-  }
+  
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -182,16 +160,22 @@ export default function BoardPage() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
+    // Перемещение колонок
     const srcColIdx = boardData!.columns.findIndex((c) => c.id === activeId);
     const dstColIdx = boardData!.columns.findIndex((c) => c.id === overId);
 
     if (srcColIdx !== -1 && dstColIdx !== -1 && srcColIdx !== dstColIdx) {
       const newCols = arrayMove(boardData!.columns, srcColIdx, dstColIdx);
-      setBoardData({ board: boardData!.board, columns: newCols });
+
+      setBoardData((prev) => ({
+        ...prev!,
+        columns: newCols,
+      }));
 
       updateColumnsPositions(
         newCols.map((c, i) => ({ col_id: c.id, new_pos: i }))
       );
+
       setActiveItem(null);
       return;
     }
@@ -203,43 +187,34 @@ export default function BoardPage() {
 
     if (!sourceColId || !targetColId) return;
 
-    const sourceCol = boardData!.columns.find((c) => c.id === sourceColId)!;
-    const targetCol = boardData!.columns.find((c) => c.id === targetColId)!;
+    const next = produce(boardData!, (draft) => {
+      const sourceCol = draft.columns.find((c) => c.id === sourceColId)!;
+      const targetCol = draft.columns.find((c) => c.id === targetColId)!;
 
-    const srcIdx = sourceCol.tasks.findIndex((t) => t.id === activeId);
-    const overIdx = targetCol.tasks.findIndex((t) => t.id === overId);
-    const insertIdx = overIdx === -1 ? targetCol.tasks.length : overIdx;
+      const srcIdx = sourceCol.tasks.findIndex((t) => t.id === activeId);
+      const overIdx = targetCol.tasks.findIndex((t) => t.id === overId);
+      const insertIdx = overIdx === -1 ? targetCol.tasks.length : overIdx;
 
-    let nextColumns;
-    if (sourceColId === targetColId) {
-      const newTasks = arrayMove(sourceCol.tasks, srcIdx, insertIdx);
-      nextColumns = boardData!.columns.map((c) =>
-        c.id === sourceColId ? { ...c, tasks: newTasks } : c
-      );
-    } else {
-      const task = sourceCol.tasks[srcIdx];
-      const newSrc = [...sourceCol.tasks];
-      newSrc.splice(srcIdx, 1);
+      // если таска не переместилась — ничего не делаем
+      if (sourceColId === targetColId && srcIdx === insertIdx) return;
 
-      const newTgt = [...targetCol.tasks];
-      newTgt.splice(insertIdx, 0, task);
-
-      nextColumns = boardData!.columns.map((c) => {
-        if (c.id === sourceColId) return { ...c, tasks: newSrc };
-        if (c.id === targetColId) return { ...c, tasks: newTgt };
-        return c;
-      });
-    }
-
-    setBoardData({ board: boardData!.board, columns: nextColumns });
-
-    [sourceColId, targetColId].forEach((id) => {
-      const col = nextColumns.find((c) => c.id === id)!;
-      updateTaskData(getTasksPositionsPayload(col));
+      const [movedTask] = sourceCol.tasks.splice(srcIdx, 1);
+      targetCol.tasks.splice(insertIdx, 0, movedTask);
     });
+
+    setBoardData(next);
+
+    // Обновляем бэкенд только по затронутым колонкам
+    const affectedColIds = new Set([sourceColId, targetColId]);
+    for (const colId of affectedColIds) {
+      const col = next.columns.find((c) => c.id === colId)!;
+      updateTaskData(getTasksPositionsPayload(col));
+    }
 
     setActiveItem(null);
   }
+
+  if (!boardData) return <div>Loading...</div>;
 
   return (
     <DndContext
