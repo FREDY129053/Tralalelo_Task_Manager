@@ -16,56 +16,45 @@ async function apiFetch<T = unknown>(
   options?: RequestInit,
   errorMsg?: string
 ): Promise<T> {
-  const res = await fetch(url, options)
+  const res = await fetch(url, options);
 
   if (!res.ok) {
-    throw new Error(errorMsg || `Ошибка в запросе: ${res.statusText}`)
+    throw new Error(`${errorMsg}: ${res.statusText}`);
   }
 
-  if (options?. method !== "DELETE" && options?.method !== "PATCH") {
-    return res.json()
+  if (options?.method !== "DELETE" && options?.method !== "PATCH") {
+    return res.json();
   }
 
-  return undefined as T
+  return undefined as T;
 }
 
 export async function getBoards(): Promise<IBoardShortInfo[]> {
-  const res = await fetch(`http://localhost:8080/api/boards`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при получении досок: ${res.statusText}`);
-  }
-
-  const boards: IBoardShortInfo[] = await res.json();
-  return boards;
+  return apiFetch<IBoardShortInfo[]>(
+    "http://localhost:8080/api/boards",
+    { method: "GET", headers: { Accept: "application/json" } },
+    "ошибка при получении досок"
+  );
 }
 
 export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
-  const res = await fetch(`http://localhost:8080/api/boards/${boardId}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
+  return apiFetch<IBoardFullInfo>(
+    `http://localhost:8080/api/boards/${boardId}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
     },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при получении доски: ${res.statusText}`);
-  }
-
-  const board: IBoardFullInfo = await res.json();
-  return board;
+    "Ошибка при получении доски"
+  );
 }
 
 export async function updateColumnsPositions(
   colsInfo: IUpdateCols[]
 ): Promise<void> {
-  const res = await fetch(
-    `http://localhost:8080/api/columns/update_positions`,
+  return apiFetch(
+    "http://localhost:8080/api/columns/update_positions",
     {
       method: "PATCH",
       headers: {
@@ -73,27 +62,24 @@ export async function updateColumnsPositions(
         Accept: "application/json",
       },
       body: JSON.stringify(colsInfo),
-    }
+    },
+    "Ошибка при обновлении позиций колонок"
   );
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при обновлении позиций колонок: ${res.statusText}`);
-  }
 }
 
 export async function updateTaskData(tasksData: IUpdateTasks[]): Promise<void> {
-  const res = await fetch(`http://localhost:8080/api/tasks/positions`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+  return apiFetch(
+    "http://localhost:8080/api/tasks/positions",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(tasksData),
     },
-    body: JSON.stringify(tasksData),
-  });
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при обновлении задачи: ${res.statusText}`);
-  }
+    "Ошибка при обновлении задачи"
+  );
 }
 
 export async function createColumn(
@@ -102,7 +88,7 @@ export async function createColumn(
   position: number,
   color: string | null = null
 ): Promise<void> {
-  const res = await fetch(
+  return apiFetch(
     `http://localhost:8080/api/boards/${boardUUID}/columns`,
     {
       method: "POST",
@@ -115,26 +101,23 @@ export async function createColumn(
         position,
         color,
       }),
-    }
+    },
+    "Ошибка при создании колонки"
   );
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при создании колонки: ${res.statusText}`);
-  }
 }
 
 export async function deleteColumn(columnUUID: string): Promise<void> {
-  const res = await fetch(`http://localhost:8080/api/columns/${columnUUID}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
+  return apiFetch(
+    `http://localhost:8080/api/columns/${columnUUID}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
     },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при удалении колонки: ${res.statusText}`);
-  }
+    "Ошибка при удалении колонки"
+  );
 }
 
 export async function updateColumn(
@@ -142,7 +125,7 @@ export async function updateColumn(
   field: string,
   value: string
 ): Promise<void> {
-  const res = await fetch(
+  return apiFetch(
     `http://localhost:8080/api/columns/${columnUUID}/info`,
     {
       method: "PATCH",
@@ -151,12 +134,9 @@ export async function updateColumn(
         Accept: "application/json",
       },
       body: JSON.stringify({ [field]: value }),
-    }
+    },
+    "Ошибка при обновлении колонки"
   );
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при обновлении колонки: ${res.statusText}`);
-  }
 }
 
 export async function createTask(
@@ -164,7 +144,7 @@ export async function createTask(
   title: string,
   position: number
 ): Promise<void> {
-  const res = await fetch(
+  return apiFetch(
     `http://localhost:8080/api/columns/${columnUUID}/tasks`,
     {
       method: "POST",
@@ -176,29 +156,20 @@ export async function createTask(
         title,
         position,
       }),
-    }
+    },
+    "Ошибка при создании задачи"
   );
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при создании задачи: ${res.statusText}`);
-  }
 }
 
 export async function getBoardColumns(boardId: string): Promise<IColumn[]> {
-  const res = await fetch(
+  return apiFetch<IColumn[]>(
     `http://localhost:8080/api/boards/${boardId}/columns`,
     {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
-    }
+    },
+    "Ошибка при получении колонок"
   );
-
-  if (!res.ok) {
-    throw new Error(`Ошибка при получении колонок: ${res.statusText}`);
-  }
-
-  const columns: IColumn[] = await res.json();
-  return columns;
 }
