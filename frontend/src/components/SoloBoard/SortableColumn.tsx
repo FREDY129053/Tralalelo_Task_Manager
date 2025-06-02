@@ -1,10 +1,16 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { CSS } from "@dnd-kit/utilities";
-import { useSortable, verticalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import {
+  useSortable,
+  verticalListSortingStrategy,
+  SortableContext,
+} from "@dnd-kit/sortable";
 import { IColumn, ITask } from "@/interfaces/Board";
 import SortableTask from "./SortableTask";
-import { createTask } from "@/pages/api/board";
+import { createTask, deleteColumn, updateColumn } from "@/pages/api/board";
+import DropdownMenu from "../DropdownMenu";
+import { SlOptions } from "react-icons/sl";
 
 type Props = {
   column: IColumn;
@@ -12,6 +18,38 @@ type Props = {
 };
 
 function SortableColumn({ column, updateBoard }: Props) {
+  const [editing, setEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(column.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Фокус на инпут при начале редактирования
+  useEffect(() => {
+    if (editing) {
+      setInputValue(column.title);
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [editing, column.title]);
+
+  const handleTitleClick = () => {
+    setEditing(true);
+  };
+
+  const finishEdit = async () => {
+    setEditing(false);
+    if (inputValue.trim() !== "" && inputValue !== column.title) {
+      await updateColumn(column.id, "title", inputValue)
+      updateBoard()
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      finishEdit();
+    } else if (e.key === "Escape") {
+      setEditing(false);
+    }
+  };
+
   const {
     attributes,
     listeners,
@@ -38,10 +76,15 @@ function SortableColumn({ column, updateBoard }: Props) {
     updateBoard();
   }
 
+  async function handleDeleteColumn(colID: string) {
+    await deleteColumn(colID).then().catch(console.error);
+    updateBoard();
+  }
+
   const renderTask = useCallback(
-  (task: ITask) => <SortableTask key={task.id} task={task} />,
-  []
-);
+    (task: ITask) => <SortableTask key={task.id} task={task} />,
+    []
+  );
 
   return (
     <div
@@ -49,16 +92,64 @@ function SortableColumn({ column, updateBoard }: Props) {
       style={style}
       className="relative flex flex-col min-w-[260px] w-2xs max-w-xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
     >
-      <div
-        {...listeners}
-        {...attributes}
-        className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] ${
-          isDragging ? "cursor-grabbing" : "cursor-grab"
-        }`}
-      >
-        {column.title}
+      <div className="relative flex items-center justify-center">
+        <div
+          {...attributes}
+          className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          } min-h-12`}
+          {...(!editing ? listeners : {})}
+        ></div>
+        <div className="absolute top-0 z-10 flex items-center justify-center p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-transparent">
+          {editing ? (
+            <input
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onBlur={finishEdit}
+              onKeyDown={handleInputKeyDown}
+              className="bg-white text-sky-900 rounded px-2 py-1 text-xl font-bold outline-none"
+              style={{ minWidth: 0 }}
+            />
+          ) : (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTitleClick();
+              }}
+              className="cursor-pointer select-none text-center"
+            >
+              {column.title}
+            </span>
+          )}
+        </div>
+        <DropdownMenu
+          handleClass="absolute right-4 top-3 z-10"
+          button={
+            <div className="text-2xl">
+              <SlOptions />
+            </div>
+          }
+          options={[
+            {
+              label: "Удалить колонку",
+              onClick: () => handleDeleteColumn(column.id),
+            },
+            {
+              label: "Фильтровать пиво",
+              submenu: [
+                { label: "Светлое", onClick: () => alert("Опция 1") },
+                { label: "Темное", onClick: () => alert("Опция 2") },
+                {
+                  label: "Нефильтрованное",
+                  onClick: () => alert("Опция сосал"),
+                },
+              ],
+            },
+          ]}
+        />
       </div>
-      <div className="flex-1 flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
+      <div className="-z-1 flex-1 flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
         {column.tasks.length === 0 ? (
           <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
             List is empty
