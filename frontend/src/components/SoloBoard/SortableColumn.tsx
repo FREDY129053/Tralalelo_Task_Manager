@@ -37,8 +37,8 @@ function SortableColumn({ column, updateBoard }: Props) {
   const finishEdit = async () => {
     setEditing(false);
     if (inputValue.trim() !== "" && inputValue !== column.title) {
-      await updateColumn(column.id, "title", inputValue)
-      updateBoard()
+      await updateColumn(column.id, "title", inputValue);
+      updateBoard();
     }
   };
 
@@ -100,7 +100,7 @@ function SortableColumn({ column, updateBoard }: Props) {
           } min-h-12`}
           {...(!editing ? listeners : {})}
         ></div>
-        <div className="absolute top-0 z-10 flex items-center justify-center p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-transparent">
+        <div className="absolute top-0 z-10 flex items-center justify-center m-2 text-2xl leading-8 font-black rounded-t-[6px] bg-transparent">
           {editing ? (
             <input
               ref={inputRef}
@@ -113,11 +113,10 @@ function SortableColumn({ column, updateBoard }: Props) {
             />
           ) : (
             <span
-              onClick={(e) => {
-                e.stopPropagation();
-                handleTitleClick();
-              }}
-              className="cursor-pointer select-none text-center"
+              onClick={
+                handleTitleClick}
+              className="cursor-pointer select-none text-center max-w-[210px] truncate block"
+              title={column.title}
             >
               {column.title}
             </span>
