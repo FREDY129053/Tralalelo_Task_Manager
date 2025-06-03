@@ -6,11 +6,12 @@ import {
   verticalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { IColumn, ITask } from "@/interfaces/Board";
+import { IColumn, ITask, IFullTask } from "@/interfaces/Board";
 import SortableTask from "./SortableTask";
 import { createTask, deleteColumn, updateColumn } from "@/pages/api/board";
 import DropdownMenu from "../DropdownMenu";
 import { SlOptions } from "react-icons/sl";
+import TaskSidebar from "./TaskSidebar";
 
 type Props = {
   column: IColumn;
@@ -21,6 +22,7 @@ function SortableColumn({ column, updateBoard }: Props) {
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState(column.title);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(null);
 
   // Фокус на инпут при начале редактирования
   useEffect(() => {
@@ -82,7 +84,9 @@ function SortableColumn({ column, updateBoard }: Props) {
   }
 
   const renderTask = useCallback(
-    (task: ITask) => <SortableTask key={task.id} task={task} />,
+    (task: ITask) => (
+      <SortableTask key={task.id} task={task} openSidebar={setSidebarTask} />
+    ),
     []
   );
 
@@ -175,6 +179,7 @@ function SortableColumn({ column, updateBoard }: Props) {
           </span>
         </button>
       </div>
+      <TaskSidebar task={sidebarTask} onClose={() => setSidebarTask(null)} />
     </div>
   );
 }

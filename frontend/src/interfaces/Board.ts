@@ -19,8 +19,8 @@ export interface IComment {
   user_id: string
 }
 
-type Status = "TODO" | "IN_PROGRESS" | "DONE" | "REJECT"
-type Priority = "LOW" | "MEDIUM" | "HIGH"
+export type Status = "TODO" | "IN_PROGRESS" | "DONE" | "REJECT"
+export type Priority = "LOW" | "MEDIUM" | "HIGH"
 export interface ITask {
   id: string
   title: string
@@ -29,7 +29,13 @@ export interface ITask {
   status: Status
   color: string | null
   responsible_id: string | null
+  total_subtasks: number
+  completed_subtasks: number
   subtasks: ISubtask[]
+}
+
+export interface IFullTask extends ITask {
+  comments: IComment[]
 }
 
 export interface IColumn {

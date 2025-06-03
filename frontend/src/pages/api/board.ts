@@ -1,4 +1,4 @@
-import { IBoardFullInfo, IBoardShortInfo, IColumn } from "@/interfaces/Board";
+import { IBoardFullInfo, IBoardShortInfo, IColumn, IFullTask } from "@/interfaces/Board";
 
 interface IUpdateCols {
   col_id: string;
@@ -172,4 +172,18 @@ export async function getBoardColumns(boardId: string): Promise<IColumn[]> {
     },
     "Ошибка при получении колонок"
   );
+}
+
+export async function getTask(taskID: string): Promise<IFullTask> {
+  return apiFetch(
+    `http://localhost:8080/api/tasks/${taskID}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    },
+    "Ошибка при получении задачи"
+  )
 }
