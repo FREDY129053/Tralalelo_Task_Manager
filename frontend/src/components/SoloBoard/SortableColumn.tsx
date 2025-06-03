@@ -179,7 +179,7 @@ function SortableColumn({ column, updateBoard }: Props) {
           </span>
         </button>
       </div>
-      <TaskSidebar task={sidebarTask} onClose={() => setSidebarTask(null)} />
+      <TaskSidebar task={sidebarTask} onClose={() => setSidebarTask(null)} onBoardUpdate={updateBoard}/>
     </div>
   );
 }

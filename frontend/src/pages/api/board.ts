@@ -187,3 +187,18 @@ export async function getTask(taskID: string): Promise<IFullTask> {
     "Ошибка при получении задачи"
   )
 }
+
+export async function createSubTask(taskID: string, title: string, is_completed: boolean = false): Promise<IFullTask> {
+  return apiFetch(
+    `http://localhost:8080/api/tasks/${taskID}/subtasks`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({title, is_completed})
+    },
+    "Ошибка при получении задачи"
+  )
+}
