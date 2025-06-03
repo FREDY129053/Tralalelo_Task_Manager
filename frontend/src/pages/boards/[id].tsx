@@ -151,8 +151,6 @@ export default function BoardPage() {
     }
   }
 
-  
-
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!active || !over) return;

@@ -1,14 +1,19 @@
 import React from "react";
-import { MdDragIndicator } from "react-icons/md";
+import { MdDragIndicator, MdOutlineDownloadDone } from "react-icons/md";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ITask } from "@/interfaces/Board";
+import { IFullTask, ITask, Priority, Status } from "@/interfaces/Board";
+import { FaFlag } from "react-icons/fa6";
+import { GrInProgress } from "react-icons/gr";
+import { IoMdClose } from "react-icons/io";
+import { getTask } from "@/pages/api/board";
 
 type Props = {
   task: ITask;
+  openSidebar: (task: IFullTask) => void;
 };
 
-function SortableTask({ task }: Props) {
+function SortableTask({ task, openSidebar }: Props) {
   const {
     attributes,
     listeners,
@@ -28,11 +33,29 @@ function SortableTask({ task }: Props) {
     backgroundColor: task.color ?? "#fff",
   };
 
+  const priorityFlags: Record<Priority, React.ReactNode> = {
+    LOW: <span className="text-gray-600"><FaFlag /></span>,
+    MEDIUM: <span className="text-blue-600"><FaFlag /></span>,
+    HIGH: <span className="text-red-600"><FaFlag /></span>,
+  };
+
+  const statusIcon: Record<Status, React.ReactNode> = {
+    TODO : <></>,
+    IN_PROGRESS: <><GrInProgress /></>,
+    DONE: <><MdOutlineDownloadDone /></>,
+    REJECT: <><IoMdClose /></>
+  }
+
+  const openFullTask = (taskID: string) => {
+    getTask(taskID).then(openSidebar).catch(console.error);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex w-full h-16 text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black"
+      className="flex w-full text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black cursor-pointer"
+      onClick={() => openFullTask(task.id)}
     >
       <MdDragIndicator
         className={`h-6 w-6 ${
@@ -41,7 +64,14 @@ function SortableTask({ task }: Props) {
         {...listeners}
         {...attributes}
       />
-      <span>{task?.title}</span>
+      <div className="flex flex-col gap-4">
+        <span>{task.title}</span>
+        <div className="flex gap-2">
+          <span>{priorityFlags[task.priority]}</span>
+        <span>{statusIcon[task.status]}</span>
+        </div>
+        <span>{task.completed_subtasks} / {task.total_subtasks}</span>
+      </div>
     </div>
   );
 }
