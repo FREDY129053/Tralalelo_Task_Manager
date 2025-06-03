@@ -2,9 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IFullTask } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
-import { createSubTask, deleteSubTask, getTask } from "@/pages/api/board";
+import {
+  createSubTask,
+  deleteSubTask,
+  getTask,
+  updateTask,
+} from "@/pages/api/board";
 import { FaTrashAlt } from "react-icons/fa";
 import returnDate from "@/helpers/NormalDate";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type Props = {
   task: IFullTask | null;
@@ -15,10 +22,12 @@ type Props = {
 export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(task);
+  const [newDueDate, setNewDueDate] = useState<Date | null>(null);
 
   // Сброс локального состояния при открытии новой задачи
   useEffect(() => {
     setSidebarTask(task);
+    setNewDueDate(task?.due_date ? new Date(task.due_date) : null);
   }, [task]);
 
   useEffect(() => {
@@ -41,7 +50,6 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
   const updateEvent = async () => {
     const updatedTask = await getTask(sidebarTask.id);
     setSidebarTask(updatedTask);
-    // Обновляем доску
     onBoardUpdate();
   };
 
@@ -49,13 +57,23 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
     const title = prompt("Введите название");
     if (!title) return;
     await createSubTask(sidebarTask.id, title);
-    // Обновляем данные задачи в панели
     await updateEvent();
   };
 
   const handleDeleteSubtask = async (subtaskID: string) => {
     await deleteSubTask(subtaskID);
     await updateEvent();
+  };
+
+  const getAPIDateFormat = async (date: Date | null) => {
+    if (!date) {
+      setNewDueDate(null);
+      await updateTask(task!.id, "due_date", null);
+      return;
+    }
+    const dateForAPI = date.toISOString();
+    setNewDueDate(date);
+    await updateTask(task!.id, "due_date", dateForAPI);
   };
 
   return createPortal(
@@ -98,7 +116,16 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
         </div>
         <div className="mb-2">
           <span className="font-semibold">Срок: </span>
-          <span>{sidebarTask.due_date}</span>
+          <DatePicker
+            showIcon
+            selected={newDueDate}
+            onChange={getAPIDateFormat}
+            placeholderText="Выберите дату"
+            className="border border-gray-300 rounded px-2 py-1 w-full focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none transition"
+            calendarClassName="!z-[100001]"
+            dateFormat="dd.MM.yyyy"
+            isClearable
+          />
         </div>
         <div className="mb-2">
           <span className="font-semibold">Цвет: </span>

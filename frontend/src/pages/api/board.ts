@@ -216,3 +216,18 @@ export async function deleteSubTask(subtaskID: string): Promise<void> {
     "Ошибка при удалении задачи"
   )
 }
+
+export async function updateTask(taskID: string, field: string, value: string | null): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/tasks/${taskID}/fields`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({[field]: value})
+    },
+    "Ошибка при удалении задачи"
+  )
+}
