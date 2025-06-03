@@ -118,6 +118,8 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
           <span className="font-semibold">Срок: </span>
           <DatePicker
             showIcon
+            showDisabledMonthNavigation={true}
+            minDate={new Date()}
             selected={newDueDate}
             onChange={getAPIDateFormat}
             placeholderText="Выберите дату"
