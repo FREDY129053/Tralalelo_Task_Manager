@@ -4,6 +4,7 @@ import { IFullTask } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
 import { createSubTask, deleteSubTask, getTask } from "@/pages/api/board";
 import { FaTrashAlt } from "react-icons/fa";
+import returnDate from "@/helpers/NormalDate";
 
 type Props = {
   task: IFullTask | null;
@@ -42,20 +43,20 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
     setSidebarTask(updatedTask);
     // Обновляем доску
     onBoardUpdate();
-  }
+  };
 
   const handleAddSubtask = async () => {
     const title = prompt("Введите название");
     if (!title) return;
     await createSubTask(sidebarTask.id, title);
     // Обновляем данные задачи в панели
-    await updateEvent()
+    await updateEvent();
   };
 
   const handleDeleteSubtask = async (subtaskID: string) => {
-    await deleteSubTask(subtaskID)
-    await updateEvent()
-  }
+    await deleteSubTask(subtaskID);
+    await updateEvent();
+  };
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-none">
@@ -122,10 +123,16 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
           <span className="font-semibold">Список подзадач:</span>
           <div className="ml-6 space-y-4">
             {sidebarTask.subtasks.map((sub) => (
-              <div key={sub.id} className={`border border-amber-400 ${sub.is_completed ? "line-through text-gray-400" : ""}`}>
+              <div
+                key={sub.id}
+                className={`border border-amber-400 ${sub.is_completed ? "line-through text-gray-400" : ""}`}
+              >
                 <div className="flex justify-between items-center">
                   {sub.title}
-                  <button className="cursor-pointer" onClick={() => handleDeleteSubtask(sub.id)}>
+                  <button
+                    className="cursor-pointer"
+                    onClick={() => handleDeleteSubtask(sub.id)}
+                  >
                     <FaTrashAlt />
                   </button>
                 </div>
@@ -136,10 +143,14 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
         <div>
           <span className="font-semibold">Комментарии:</span>
           <ul className="mt-2 space-y-2">
-            {sidebarTask.comments.length === 0 && <li className="text-gray-400">Нет комментариев</li>}
+            {sidebarTask.comments.length === 0 && (
+              <li className="text-gray-400">Нет комментариев</li>
+            )}
             {sidebarTask.comments.map((c) => (
               <li key={c.id} className="border-b pb-2">
-                <div className="text-xs text-gray-500 mb-1">{c.created_at}</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  {returnDate(c.created_at)}
+                </div>
                 <div>{c.content}</div>
               </li>
             ))}
