@@ -36,6 +36,7 @@ export interface ITask {
 
 export interface IFullTask extends ITask {
   comments: IComment[]
+  due_date: string
 }
 
 export interface IColumn {

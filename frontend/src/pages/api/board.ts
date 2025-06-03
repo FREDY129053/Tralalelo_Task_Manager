@@ -188,7 +188,7 @@ export async function getTask(taskID: string): Promise<IFullTask> {
   )
 }
 
-export async function createSubTask(taskID: string, title: string, is_completed: boolean = false): Promise<IFullTask> {
+export async function createSubTask(taskID: string, title: string, is_completed: boolean = false): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/tasks/${taskID}/subtasks`,
     {
@@ -200,5 +200,19 @@ export async function createSubTask(taskID: string, title: string, is_completed:
       body: JSON.stringify({title, is_completed})
     },
     "Ошибка при получении задачи"
+  )
+}
+
+export async function deleteSubTask(subtaskID: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/subtasks/${subtaskID}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    },
+    "Ошибка при удалении задачи"
   )
 }

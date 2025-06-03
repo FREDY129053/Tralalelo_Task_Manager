@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IFullTask } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
-import { createSubTask, getTask } from "@/pages/api/board";
+import { createSubTask, deleteSubTask, getTask } from "@/pages/api/board";
+import { FaTrashAlt } from "react-icons/fa";
 
 type Props = {
   task: IFullTask | null;
@@ -36,16 +37,25 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
 
   if (!sidebarTask) return null;
 
+  const updateEvent = async () => {
+    const updatedTask = await getTask(sidebarTask.id);
+    setSidebarTask(updatedTask);
+    // Обновляем доску
+    onBoardUpdate();
+  }
+
   const handleAddSubtask = async () => {
     const title = prompt("Введите название");
     if (!title) return;
     await createSubTask(sidebarTask.id, title);
     // Обновляем данные задачи в панели
-    const updatedTask = await getTask(sidebarTask.id);
-    setSidebarTask(updatedTask);
-    // Обновляем доску
-    onBoardUpdate();
+    await updateEvent()
   };
+
+  const handleDeleteSubtask = async (subtaskID: string) => {
+    await deleteSubTask(subtaskID)
+    await updateEvent()
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-none">
@@ -86,6 +96,10 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
           <span>{sidebarTask.responsible_id ?? "—"}</span>
         </div>
         <div className="mb-2">
+          <span className="font-semibold">Срок: </span>
+          <span>{sidebarTask.due_date}</span>
+        </div>
+        <div className="mb-2">
           <span className="font-semibold">Цвет: </span>
           <span>
             {sidebarTask.color ? (
@@ -106,13 +120,18 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
         </div>
         <div className="mb-4">
           <span className="font-semibold">Список подзадач:</span>
-          <ul className="list-disc ml-6">
+          <div className="ml-6 space-y-4">
             {sidebarTask.subtasks.map((sub) => (
-              <li key={sub.id} className={sub.is_completed ? "line-through text-gray-400" : ""}>
-                {sub.title}
-              </li>
+              <div key={sub.id} className={`border border-amber-400 ${sub.is_completed ? "line-through text-gray-400" : ""}`}>
+                <div className="flex justify-between items-center">
+                  {sub.title}
+                  <button className="cursor-pointer" onClick={() => handleDeleteSubtask(sub.id)}>
+                    <FaTrashAlt />
+                  </button>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
         <div>
           <span className="font-semibold">Комментарии:</span>
