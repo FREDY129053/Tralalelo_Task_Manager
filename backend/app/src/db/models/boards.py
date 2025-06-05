@@ -82,6 +82,7 @@ class Task(models.Model):
 
     subtasks: fields.ReverseRelation["Subtask"]
     comments: fields.ReverseRelation["Comment"]
+    responsibles: fields.ReverseRelation["TaskResponsible"]
 
     class Meta:
         table = "tasks"
@@ -112,3 +113,32 @@ class Comment(models.Model):
 
     class Meta:
         table = "comments"
+
+
+class TaskResponsible(models.Model):
+    id = fields.IntField(pk=True)  # автоинкремент
+
+    task = fields.ForeignKeyField(
+        "models.Task", related_name="responsibles", on_delete=fields.CASCADE
+    )
+    user = fields.ForeignKeyField(
+        "models.User", related_name="task_responsibilities", on_delete=fields.CASCADE
+    )
+
+    class Meta:
+        table = "task_responsibles"
+
+
+class Notification(models.Model):
+    id = fields.IntField(pk=True)
+    title = fields.CharField(max_length=255)
+    text = fields.TextField()
+    is_read = fields.BooleanField(default=False)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    user = fields.ForeignKeyField(
+        "models.User", related_name="notifications", on_delete=fields.CASCADE
+    )
+
+    class Meta:
+        table = "notifications"

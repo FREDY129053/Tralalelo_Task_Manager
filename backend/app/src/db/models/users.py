@@ -2,7 +2,7 @@ import uuid
 
 from tortoise import fields, models
 
-from .boards import BoardUser, Comment
+from .boards import BoardUser, Comment, Notification, TaskResponsible
 
 
 class User(models.Model):
@@ -17,6 +17,8 @@ class User(models.Model):
 
     boards: fields.ReverseRelation["BoardUser"]
     comments: fields.ReverseRelation["Comment"]
+    notifications: fields.ReverseRelation["Notification"]
+    task_responsibilities: fields.ReverseRelation["TaskResponsible"]
 
     class Meta:
         table = "users"
