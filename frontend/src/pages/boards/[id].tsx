@@ -22,27 +22,41 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { FaPlus } from "react-icons/fa";
-import { IBoardFullInfo, IColumn, ITask } from "@/interfaces/Board";
 import {
+  IBoardFullInfo,
+  IColumn,
+  IMember,
+  ITask,
+  Role,
+} from "@/interfaces/Board";
+import {
+  addMember,
+  changeRole,
   createColumn,
+  deleteMember,
   getBoardData,
+  getBoardMembers,
   updateColumnsPositions,
   updateTaskData,
 } from "../api/board";
 import SortableColumn from "@/components/SoloBoard/SortableColumn";
 import OverlayColumn from "@/components/SoloBoard/OverlayColumn";
 import OverlayTask from "@/components/SoloBoard/OverlayTask";
+import { IoPersonAdd } from "react-icons/io5";
+import BoardUsers from "@/components/BoardUsers";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
+  const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const [boardData, setBoardData] = useState<IBoardFullInfo | null>(null);
   const [activeItem, setActiveItem] = useState<
     DraggedTask | DraggedColumn | null
   >(null);
   const [uuid, setUuid] = useState<string | null>(null);
+  const [members, setMembers] = useState<IMember[]>([]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -63,14 +77,21 @@ export default function BoardPage() {
     })
   );
 
-  const findColumnByTaskId = useCallback((taskId: string): string | undefined => {
-    return boardData!.columns.find((col) =>
-      col.tasks.some((t) => t.id === taskId)
-    )?.id;
-  }, [boardData])
+  const findColumnByTaskId = useCallback(
+    (taskId: string): string | undefined => {
+      return boardData!.columns.find((col) =>
+        col.tasks.some((t) => t.id === taskId)
+      )?.id;
+    },
+    [boardData]
+  );
 
   const updateBoard = useCallback(() => {
     getBoardData(uuid!).then(setBoardData).catch(console.error);
+  }, [uuid]);
+
+  const getMembers = useCallback(() => {
+    getBoardMembers(uuid!).then(setMembers).catch(console.error);
   }, [uuid]);
 
   const handleDragOver = useCallback(
@@ -124,6 +145,19 @@ export default function BoardPage() {
     const position = boardData!.columns.length + 1;
     await createColumn(uuid!, title, position).then().catch(console.error);
     updateBoard();
+  }
+
+  async function handleAddMember(userID: string) {
+    await addMember(uuid!, userID).then().catch(console.error);
+    getMembers();
+  }
+  async function handleChangeMemberRole(userID: string, role: Role) {
+    await changeRole(uuid!, userID, role).then().catch(console.error);
+    getMembers();
+  }
+  async function handleDeleteMember(userID: string) {
+    await deleteMember(uuid!, userID).then().catch(console.error);
+    getMembers();
   }
 
   function getTasksPositionsPayload(column: IColumn) {
@@ -215,50 +249,72 @@ export default function BoardPage() {
   if (!boardData) return <div>Loading...</div>;
 
   return (
-    <DndContext
-      collisionDetection={closestCorners}
-      sensors={sensors}
-      modifiers={[restrictToWindowEdges]}
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDragStart={handleDragStart}
-    >
-      <SortableContext
-        items={boardData.columns.map((col) => col.id)}
-        strategy={horizontalListSortingStrategy}
+    <>
+      <div>
+        <button
+          className="cursor-pointer"
+          onClick={() => {
+            setIsOpen(true);
+            getMembers();
+          }}
+        >
+          <IoPersonAdd />
+        </button>
+        {isOpen && (
+          <BoardUsers
+            onClose={() => setIsOpen(false)}
+            members={members}
+            addMembers={handleAddMember}
+            deleteMember={handleDeleteMember}
+            changeRole={handleChangeMemberRole}
+          />
+        )}
+      </div>
+      <DndContext
+        collisionDetection={closestCorners}
+        sensors={sensors}
+        modifiers={[restrictToWindowEdges]}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragStart={handleDragStart}
       >
-        <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
-          {boardData.columns.map((col) => (
-            <SortableColumn
-              key={col.id}
-              column={col}
-              updateBoard={updateBoard}
-            />
-          ))}
-          <div className="flex items-center">
-            <button
-              onClick={handleAddColumn}
-              className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
-              title="Добавить колонку"
-              style={{ minWidth: "48px" }}
-            >
-              <FaPlus className="text-2xl sm:text-xl" />
-              <span className="hidden sm:inline font-semibold text-base ml-2">
-                Добавить колонку
-              </span>
-            </button>
+        <SortableContext
+          items={boardData.columns.map((col) => col.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
+            {boardData.columns.map((col) => (
+              <SortableColumn
+                key={col.id}
+                column={col}
+                updateBoard={updateBoard}
+              />
+            ))}
+            <div className="flex items-center">
+              <button
+                onClick={handleAddColumn}
+                className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
+                title="Добавить колонку"
+                style={{ minWidth: "48px" }}
+              >
+                <FaPlus className="text-2xl sm:text-xl" />
+                <span className="hidden sm:inline font-semibold text-base ml-2">
+                  Добавить колонку
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
-      </SortableContext>
-      <DragOverlay>
-        {activeItem ? (
-          activeItem.type === "task" ? (
-            <OverlayTask task={activeItem.task} />
-          ) : (
-            <OverlayColumn column={activeItem.column} />
-          )
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        </SortableContext>
+        <DragOverlay>
+          {activeItem ? (
+            activeItem.type === "task" ? (
+              <OverlayTask task={activeItem.task} />
+            ) : (
+              <OverlayColumn column={activeItem.column} />
+            )
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </>
   );
 }

@@ -19,6 +19,7 @@ export interface IComment {
   user_id: string
 }
 
+export type Role = "CREATOR" | "MODERATOR" | "MEMBER"
 export type Status = "TODO" | "IN_PROGRESS" | "DONE" | "REJECT"
 export type Priority = "LOW" | "MEDIUM" | "HIGH"
 export interface ITask {
@@ -52,8 +53,12 @@ export interface IBoardFullInfo {
   columns: IColumn[]
 }
 
-interface IUserShortInfo {
+export interface IUserShortInfo {
   id: string
   username: string
   avatar_url: string | null
+}
+
+export interface IMember extends IUserShortInfo {
+  role: Role
 }

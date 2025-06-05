@@ -82,5 +82,5 @@ async def update_fields(task_id: UUID, fields: Dict[str, Any]):
             await TaskResponsible.create(task_id=task_id, user_id=val)
         else:
             setattr(task, key, val)
-    fields.pop("responsible")
+    fields.pop("responsible", None)
     return await task.save(update_fields=list(fields.keys()))
