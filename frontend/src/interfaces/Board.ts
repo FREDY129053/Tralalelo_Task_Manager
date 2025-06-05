@@ -52,7 +52,7 @@ export interface IBoardFullInfo {
   columns: IColumn[]
 }
 
-interface IUserShortInfo {
+export interface IUserShortInfo {
   id: string
   username: string
   avatar_url: string | null

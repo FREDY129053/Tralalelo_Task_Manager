@@ -32,11 +32,14 @@ import {
 import SortableColumn from "@/components/SoloBoard/SortableColumn";
 import OverlayColumn from "@/components/SoloBoard/OverlayColumn";
 import OverlayTask from "@/components/SoloBoard/OverlayTask";
+import { IoPersonAdd } from "react-icons/io5";
+import BoardUsers from "@/components/BoardUsers";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
+  const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const [boardData, setBoardData] = useState<IBoardFullInfo | null>(null);
   const [activeItem, setActiveItem] = useState<
@@ -215,6 +218,11 @@ export default function BoardPage() {
   if (!boardData) return <div>Loading...</div>;
 
   return (
+    <>
+    <div>
+      <button className="cursor-pointer" onClick={() => setIsOpen(true)}><IoPersonAdd /></button>
+      {isOpen && <BoardUsers onClose={() => setIsOpen(false)} />}
+    </div>
     <DndContext
       collisionDetection={closestCorners}
       sensors={sensors}
@@ -259,6 +267,6 @@ export default function BoardPage() {
           )
         ) : null}
       </DragOverlay>
-    </DndContext>
+    </DndContext></>
   );
 }
