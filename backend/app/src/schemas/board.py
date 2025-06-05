@@ -53,6 +53,12 @@ BoardUserInfo = typing.NewType(
 )
 
 
+class UserShortInfo(BaseModel):
+    id: UUID
+    username: str
+    avatar_url: str | None
+
+
 class CreateBoard(BaseModel):
     title: str
     description: str | None = None
@@ -159,7 +165,7 @@ class TaskShortOut(BaseModel):
     priority: Priority
     status: Status
     color: Optional[str]
-    responsible_id: Optional[UUID]
+    responsibles: List[UserShortInfo]
     total_subtasks: int
     completed_subtasks: int
 

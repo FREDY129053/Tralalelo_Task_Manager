@@ -3,7 +3,7 @@ from uuid import UUID
 
 from tortoise.exceptions import OperationalError
 
-from backend.app.src.db.models import Comment, Subtask, Task
+from backend.app.src.db.models import Comment, Subtask, Task, TaskResponsible
 from backend.app.src.schemas import TaskOut
 
 
@@ -67,6 +67,9 @@ async def update_fields(task_id: UUID, fields: Dict[str, Any]):
     task = await Task.get(id=task_id)
 
     for key, val in fields.items():
-        setattr(task, key, val)
-
+        if key == "responsible":
+            await TaskResponsible.create(task_id=task_id, user_id=val)
+        else:
+            setattr(task, key, val)
+    fields.pop("responsible")
     return await task.save(update_fields=list(fields.keys()))

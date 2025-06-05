@@ -3,13 +3,21 @@ from uuid import UUID
 
 from tortoise.exceptions import IntegrityError
 
-from backend.app.src.db.models import Board, BoardComment, BoardUser, Column
+from backend.app.src.db.models import (
+    Board,
+    BoardComment,
+    BoardUser,
+    Column,
+    TaskResponsible,
+    User,
+)
 from backend.app.src.enums import UserRole
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
     BoardUserPreview,
     ColumnOut,
     TaskShortOut,
+    UserShortInfo,
 )
 
 
@@ -32,6 +40,15 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
             subtasks = task.subtasks
             total = len(subtasks)
             completed = sum(1 for s in subtasks if s.is_completed)
+            responsibles = await TaskResponsible.filter(task_id=task.id)
+            responsibles_out = []
+            for resp in responsibles:
+                user = await User.get(id=resp.user_id)
+                responsibles_out.append(
+                    UserShortInfo(
+                        id=user.id, username=user.username, avatar_url=user.avatar_url
+                    )
+                )
             tasks.append(
                 TaskShortOut(
                     id=task.id,
@@ -41,8 +58,8 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
                     status=task.status.value,
                     color=task.color,
                     completed_subtasks=completed,
+                    responsibles=responsibles_out,
                     total_subtasks=total,
-                    responsible_id=task.responsible_id,
                     subtasks=subtasks,
                 )
             )
