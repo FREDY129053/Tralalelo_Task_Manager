@@ -76,9 +76,6 @@ class Task(models.Model):
     priority = fields.CharEnumField(Priority, default=Priority.low)
     status = fields.CharEnumField(Status, default=Status.to_do)
     color = fields.CharField(max_length=20, null=True)
-    # responsible = fields.ForeignKeyField(
-    #     "models.User", related_name="responsible_tasks", null=True
-    # )
 
     subtasks: fields.ReverseRelation["Subtask"]
     comments: fields.ReverseRelation["Comment"]

@@ -184,7 +184,7 @@ class TaskOut(BaseModel):
     priority: Priority
     status: Status
     color: Optional[str]
-    responsible_id: Optional[UUID]
+    responsibles: List[UserShortInfo]
     total_subtasks: int
     completed_subtasks: int
 
