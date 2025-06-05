@@ -3,8 +3,8 @@ from uuid import UUID
 
 from tortoise.exceptions import OperationalError
 
-from backend.app.src.db.models import Comment, Subtask, Task
-from backend.app.src.schemas import TaskOut
+from backend.app.src.db.models import Comment, Subtask, Task, TaskResponsible
+from backend.app.src.schemas import TaskOut, UserShortInfo
 
 
 async def get_task(uuid: UUID) -> Optional[Task]:
@@ -12,9 +12,20 @@ async def get_task(uuid: UUID) -> Optional[Task]:
 
 
 async def get_full_task(id: UUID) -> Optional[TaskOut]:
-    task = await Task.get_or_none(id=id).prefetch_related("subtasks", "comments")
+    task = await Task.get_or_none(id=id).prefetch_related(
+        "subtasks", "comments", "responsibles__user"
+    )
     if not task:
         return None
+
+    responsibles_data = [
+        UserShortInfo(
+            id=responsible.user.id,
+            username=responsible.user.username,
+            avatar_url=responsible.user.avatar_url,
+        )
+        for responsible in task.responsibles
+    ]
 
     return TaskOut(
         id=task.id,
@@ -25,7 +36,7 @@ async def get_full_task(id: UUID) -> Optional[TaskOut]:
         priority=task.priority,
         status=task.status,
         color=task.color,
-        responsible_id=task.responsible_id,
+        responsibles=responsibles_data,
         total_subtasks=len(task.subtasks),
         completed_subtasks=sum(1 for s in task.subtasks if s.is_completed),
         subtasks=task.subtasks,
@@ -67,6 +78,9 @@ async def update_fields(task_id: UUID, fields: Dict[str, Any]):
     task = await Task.get(id=task_id)
 
     for key, val in fields.items():
-        setattr(task, key, val)
-
+        if key == "responsible":
+            await TaskResponsible.create(task_id=task_id, user_id=val)
+        else:
+            setattr(task, key, val)
+    fields.pop("responsible")
     return await task.save(update_fields=list(fields.keys()))

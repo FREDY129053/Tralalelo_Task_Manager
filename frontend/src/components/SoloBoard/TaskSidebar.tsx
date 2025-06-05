@@ -112,7 +112,9 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
         </div>
         <div className="mb-2">
           <span className="font-semibold">Ответственный: </span>
-          <span>{sidebarTask.responsible_id ?? "—"}</span>
+          <span>{sidebarTask.responsibles.map((res) => (
+            <p key={res.id}>{res.username}</p>
+          ))}</span>
         </div>
         <div className="mb-2">
           <span className="font-semibold">Срок: </span>

@@ -28,7 +28,7 @@ export interface ITask {
   priority: Priority
   status: Status
   color: string | null
-  responsible_id: string | null
+  responsibles: IUserShortInfo[]
   total_subtasks: number
   completed_subtasks: number
   subtasks: ISubtask[]
@@ -50,4 +50,10 @@ export interface IColumn {
 export interface IBoardFullInfo {
   board: IBoardShortInfo
   columns: IColumn[]
+}
+
+interface IUserShortInfo {
+  id: string
+  username: string
+  avatar_url: string | null
 }

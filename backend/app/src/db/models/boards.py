@@ -76,12 +76,10 @@ class Task(models.Model):
     priority = fields.CharEnumField(Priority, default=Priority.low)
     status = fields.CharEnumField(Status, default=Status.to_do)
     color = fields.CharField(max_length=20, null=True)
-    responsible = fields.ForeignKeyField(
-        "models.User", related_name="responsible_tasks", null=True
-    )
 
     subtasks: fields.ReverseRelation["Subtask"]
     comments: fields.ReverseRelation["Comment"]
+    responsibles: fields.ReverseRelation["TaskResponsible"]
 
     class Meta:
         table = "tasks"
@@ -112,3 +110,32 @@ class Comment(models.Model):
 
     class Meta:
         table = "comments"
+
+
+class TaskResponsible(models.Model):
+    id = fields.IntField(pk=True)
+
+    task = fields.ForeignKeyField(
+        "models.Task", related_name="responsibles", on_delete=fields.CASCADE
+    )
+    user = fields.ForeignKeyField(
+        "models.User", related_name="task_responsibilities", on_delete=fields.CASCADE
+    )
+
+    class Meta:
+        table = "task_responsibles"
+
+
+class Notification(models.Model):
+    id = fields.IntField(pk=True)
+    title = fields.CharField(max_length=255)
+    text = fields.TextField()
+    is_read = fields.BooleanField(default=False)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    user = fields.ForeignKeyField(
+        "models.User", related_name="notifications", on_delete=fields.CASCADE
+    )
+
+    class Meta:
+        table = "notifications"

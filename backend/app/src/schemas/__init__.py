@@ -21,6 +21,7 @@ from .board import (
     UpdateColumnsPos,
     UpdateTaskInfo,
     UpdateTaskPos,
+    UserShortInfo,
 )
 from .error import Error, ServiceMessage
 from .user import (
@@ -66,4 +67,5 @@ __all__ = [
     "ServiceMessage",
     "UpdateColumn",
     "UpdateTaskPos",
+    "UserShortInfo",
 ]

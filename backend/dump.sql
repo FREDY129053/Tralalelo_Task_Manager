@@ -136,7 +136,7 @@ ALTER TABLE public.subtasks OWNER TO postgres;
 --
 
 CREATE TABLE public.tasks (
-    id uuid NOT NULL,
+    id uuid NOT NULL UNIQUE,
     column_id uuid,
     title text NOT NULL,
     description text,
@@ -159,7 +159,7 @@ ALTER TABLE public.tasks OWNER TO postgres;
 --
 
 CREATE TABLE public.users (
-    id uuid NOT NULL,
+    id uuid NOT NULL UNIQUE,
     username text NOT NULL,
     email text NOT NULL,
     phone text,
@@ -241,6 +241,87 @@ E63961D3-EC08-4218-A963-62B0B1807D51	alice	alice@example.com	\N	\N	2025-05-07 05
 C6A107FD-EB99-4C18-8FCB-EC030685D942	bob	bob@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_bob
 87CB46FF-26F8-4ED5-94F7-6C70E00976FE	carol	carol@example.com	\N	\N	2025-05-07 05:59:02	f	hashed_pass_carol
 \.
+
+
+--
+-- Name: notifications; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notifications (
+    id integer NOT NULL,
+    title text NOT NULL,
+    text text NOT NULL,
+    is_read boolean DEFAULT false,
+    user_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+ALTER TABLE public.notifications OWNER TO postgres;
+
+--
+-- Create sequence for notifications.id
+--
+CREATE SEQUENCE public.notifications_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.notifications_id_seq OWNER TO postgres;
+
+ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
+
+ALTER TABLE ONLY public.notifications
+    ALTER COLUMN id SET DEFAULT nextval('public.notifications_id_seq'::regclass);
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: task_responsibles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.task_responsibles (
+    id integer NOT NULL,
+    task_id uuid NOT NULL,
+    user_id uuid NOT NULL
+);
+
+ALTER TABLE public.task_responsibles OWNER TO postgres;
+
+--
+-- Create sequence for task_responsibles.id
+--
+CREATE SEQUENCE public.task_responsibles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.task_responsibles_id_seq OWNER TO postgres;
+
+ALTER SEQUENCE public.task_responsibles_id_seq OWNED BY public.task_responsibles.id;
+
+ALTER TABLE ONLY public.task_responsibles
+    ALTER COLUMN id SET DEFAULT nextval('public.task_responsibles_id_seq'::regclass);
+
+ALTER TABLE ONLY public.task_responsibles
+    ADD CONSTRAINT task_responsibles_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.task_responsibles
+    ADD CONSTRAINT task_responsibles_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.tasks(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.task_responsibles
+    ADD CONSTRAINT task_responsibles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
 
 
 --
