@@ -1,4 +1,5 @@
 import { IBoardFullInfo, IBoardShortInfo, IColumn, IFullTask } from "@/interfaces/Board";
+import { apiFetch } from "./abstractFunctions";
 
 interface IUpdateCols {
   col_id: string;
@@ -11,28 +12,10 @@ interface IUpdateTasks {
   position: number;
 }
 
-async function apiFetch<T = unknown>(
-  url: string,
-  options?: RequestInit,
-  errorMsg?: string
-): Promise<T> {
-  const res = await fetch(url, options);
-
-  if (!res.ok) {
-    throw new Error(`${errorMsg}: ${res.statusText}`);
-  }
-
-  if (options?.method !== "DELETE" && options?.method !== "PATCH") {
-    return res.json();
-  }
-
-  return undefined as T;
-}
-
 export async function getBoards(): Promise<IBoardShortInfo[]> {
   return apiFetch<IBoardShortInfo[]>(
     "http://localhost:8080/api/boards",
-    { method: "GET", headers: { Accept: "application/json" } },
+    { method: "GET" },
     "ошибка при получении досок"
   );
 }
@@ -42,9 +25,6 @@ export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
     `http://localhost:8080/api/boards/${boardId}`,
     {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
     },
     "Ошибка при получении доски"
   );
@@ -57,10 +37,6 @@ export async function updateColumnsPositions(
     "http://localhost:8080/api/columns/update_positions",
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify(colsInfo),
     },
     "Ошибка при обновлении позиций колонок"
@@ -72,10 +48,6 @@ export async function updateTaskData(tasksData: IUpdateTasks[]): Promise<void> {
     "http://localhost:8080/api/tasks/positions",
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify(tasksData),
     },
     "Ошибка при обновлении задачи"
@@ -92,10 +64,6 @@ export async function createColumn(
     `http://localhost:8080/api/boards/${boardUUID}/columns`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify({
         title,
         position,
@@ -111,10 +79,6 @@ export async function deleteColumn(columnUUID: string): Promise<void> {
     `http://localhost:8080/api/columns/${columnUUID}`,
     {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
     },
     "Ошибка при удалении колонки"
   );
@@ -129,10 +93,6 @@ export async function updateColumn(
     `http://localhost:8080/api/columns/${columnUUID}/info`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify({ [field]: value }),
     },
     "Ошибка при обновлении колонки"
@@ -148,10 +108,6 @@ export async function createTask(
     `http://localhost:8080/api/columns/${columnUUID}/tasks`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify({
         title,
         position,
@@ -166,9 +122,6 @@ export async function getBoardColumns(boardId: string): Promise<IColumn[]> {
     `http://localhost:8080/api/boards/${boardId}/columns`,
     {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
     },
     "Ошибка при получении колонок"
   );
@@ -179,10 +132,6 @@ export async function getTask(taskID: string): Promise<IFullTask> {
     `http://localhost:8080/api/tasks/${taskID}`,
     {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
     },
     "Ошибка при получении задачи"
   )
@@ -193,10 +142,6 @@ export async function createSubTask(taskID: string, title: string, is_completed:
     `http://localhost:8080/api/tasks/${taskID}/subtasks`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify({title, is_completed})
     },
     "Ошибка при получении задачи"
@@ -208,10 +153,6 @@ export async function deleteSubTask(subtaskID: string): Promise<void> {
     `http://localhost:8080/api/subtasks/${subtaskID}`,
     {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
     },
     "Ошибка при удалении задачи"
   )
@@ -222,10 +163,6 @@ export async function updateTask(taskID: string, field: string, value: string | 
     `http://localhost:8080/api/tasks/${taskID}/fields`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify({[field]: value})
     },
     "Ошибка при удалении задачи"
