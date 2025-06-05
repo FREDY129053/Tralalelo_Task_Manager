@@ -1,4 +1,4 @@
-import { IBoardFullInfo, IBoardShortInfo, IColumn, IFullTask } from "@/interfaces/Board";
+import { IBoardFullInfo, IBoardShortInfo, IColumn, IFullTask, IMember, Role } from "@/interfaces/Board";
 import { apiFetch } from "./abstractFunctions";
 
 interface IUpdateCols {
@@ -29,6 +29,39 @@ export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
     "Ошибка при получении доски"
   );
 }
+
+export async function getBoardMembers(boardID: string): Promise<IMember[]> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${boardID}/members`,
+    {method: "GET"},
+    "Ошибка при получении участников"
+  )
+}
+
+export async function addMember(boardID: string, userID: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${boardID}/add_member?user_id=${userID}`,
+    {method: "POST"},
+    "Ошибка при добавлении участника"
+  )
+}
+
+export async function changeRole(boardID: string, userID: string, role: Role) {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${boardID}/change_role/${userID}?role=${role}`,
+    {method: "PUT"},
+    "Ошибка при обновлении роли"
+  )
+}
+
+export async function deleteMember(boardID: string, userID: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${boardID}/delete_member?member_id=${userID}`,
+    {method: "DELETE"},
+    "Ошибка при удалении участника"
+  )
+}
+
 
 export async function updateColumnsPositions(
   colsInfo: IUpdateCols[]
