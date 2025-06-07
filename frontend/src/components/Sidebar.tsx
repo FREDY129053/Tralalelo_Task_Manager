@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BsArrowLeftShort, BsKanbanFill, BsPerson } from "react-icons/bs";
-import {
-  AiFillEnvironment,
-  AiOutlineLogout,
-} from "react-icons/ai";
-import { FaUsers } from "react-icons/fa";
+import { BsArrowLeftShort, BsKanbanFill } from "react-icons/bs";
+import { AiFillEnvironment, AiOutlineLogout } from "react-icons/ai";
+import { FaUser, FaUsers } from "react-icons/fa";
+import { IoMdNotifications } from "react-icons/io";
+import { useRouter } from "next/router";
 
 export default function Sidebar() {
   const [open, setOpen] = useState<boolean>(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [showText, setShowText] = useState(open);
+  const router = useRouter();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -51,9 +51,32 @@ export default function Sidebar() {
   if (!isReady) return null;
 
   const Menus = [
-    { title: "Профиль", icon: <BsPerson />, spacing: true },
-    { title: "Мои доски", icon: <BsKanbanFill />, spacing: true },
-    { title: "Доступные доски", icon: <FaUsers /> },
+    {
+      title: "Профиль",
+      icon: <FaUser />,
+      spacing: true,
+      hover: "hover:bg-hover",
+      isHighLight: router.pathname === "/profile",
+    },
+    {
+      title: "Уведомления",
+      icon: <IoMdNotifications />,
+      hover: "hover:bg-hover",
+      isHighLight: router.pathname === "/notifications",
+    },
+    {
+      title: "Мои доски",
+      icon: <BsKanbanFill />,
+      spacing: true,
+      hover: "hover:bg-hover",
+      isHighLight: router.pathname === "/main",
+    },
+    {
+      title: "Доступные доски",
+      icon: <FaUsers />,
+      hover: "hover:bg-hover",
+      isHighLight: router.pathname === "/boards",
+    },
     {
       title: "Выход",
       icon: <AiOutlineLogout />,
@@ -120,7 +143,7 @@ export default function Sidebar() {
           <h1
             className={`${
               !open && "scale-0"
-            } text-sidebar-text origin-left font-medium text-2xl duration-300`}
+            } text-text-inverted origin-left font-medium text-2xl duration-300`}
           >
             Tralalelo
           </h1>
@@ -130,9 +153,9 @@ export default function Sidebar() {
           {Menus.map((menu, index) => (
             <React.Fragment key={index}>
               <li
-                className={`text-sidebar-text flex items-center gap-x-4 cursor-pointer p-2  rounded-md ${
+                className={`text-text-inverted flex items-center gap-x-4 cursor-pointer p-2  rounded-md ${
                   menu.spacing ? "mt-7" : "mt-2"
-                } ${menu.hover ? menu.hover : "hover:bg-sidebar-hover"}`}
+                } ${menu.hover ? menu.hover : "hover:bg-hover"} ${menu.isHighLight && "bg-hover!"}`}
               >
                 <span className="text-2xl block float-left">{menu.icon} </span>
                 <span

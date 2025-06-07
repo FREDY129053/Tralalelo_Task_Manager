@@ -6,67 +6,62 @@
 }
 
 @theme inline {
-  --color-dark-purple: #081a51;
-  --color-light-white: rgba(255, 255, 255, 0.18);
+  /* Основные цвета */
+  --color-primary: #2176AE;       /* Глубокий морской синий — основной цвет интерфейса */
+  --color-secondary: #57A0D3;     /* Светло-голубой — второстепенные элементы */
+  --color-accent: #FFD166;        /* Тёплый жёлто-оранжевый — акцентные кнопки, CTA */
+  --color-neutral: #F7F7F7;       /* Светлый нейтральный фон — общий фон интерфейса */
+  
+  /* Статусные цвета */
+  --color-success: #4CAF50;       /* Статус: Успех — спокойный зелёный */
+  --color-warning: #FFB703;       /* Статус: Предупреждение — мягкий янтарный */
+  --color-error: #EF476F;         /* Статус: Ошибка — малиново-красный */
 
-  /* Основные цвета интерфейса */
-  --color-bg-base: #f9fafb; /* основной фон контентной части */
-  --color-bg-elevated: #ffffff; /* фон карточек, панелей */
-  --color-bg-muted: #f1f5f9; /* нейтральный фон, например, при ховере */
-  --color-text-primary: #1f2937; /* основной текст */
-  --color-text-secondary: #6b7280; /* вторичный текст */
-  --color-border: #e5e7eb; /* границы, бордеры */
-
-  /* Боковая панель и шапка */
-  --color-sidebar-bg: #1f2937; /* тёмно-серый фон боковой панели */
-  --color-sidebar-text: #f3f4f6; /* текст в боковой панели */
-  --color-sidebar-hover: #374151; /* ховер по элементам боковой панели */
-
-  /* Инпуты и формы */
-  --color-input-bg: #ffffff;
-  --color-input-border: #d1d5db;
-  --color-input-focus: #60a5fa;
-  --color-input-placeholder: #9ca3af;
-
-  /* Кнопки */
-  --color-button-primary-bg: #3b82f6;
-  --color-button-primary-text: #ffffff;
-  --color-button-primary-hover: #2563eb;
-
-  --color-button-muted-bg: #e5e7eb;
-  --color-button-muted-text: #374151;
-  --color-button-muted-hover: #d1d5db;
+  /* Интерфейсные элементы */
+  --color-input-bg: #FFFFFF;          /* Фон поля ввода */
+  --color-main-bg: #EAF1F8;
+  --color-input-border: #D1D5DB;      /* Рамка поля ввода */
+  --color-button-bg: #2176AE;         /* Кнопки — фон по умолчанию */
+  --color-button-text: #FFFFFF;       /* Кнопки — цвет текста */
+  --color-sidebar-bg: #1B4965;        /* Тёмно-синий для боковой панели */
+  --color-modal-bg: #FFFFFF;          /* Фон модального окна */
+  /*--color-board-bg: #EDF6F9;   */       /* Очень светлый голубой фон доски */
+  --color-column-bg: #F0F4F8;         /* Мягкий серо-голубой фон колонок */
+  --color-task-bg: #FFFFFF;           /* Фон задач — нейтральный белый */
+  --color-border: #CBD5E1;             /* Границы (мягкие) */
+  --color-board-bg: #F0F4F8;         /* Фон карточки доски */
 
   /* Состояния */
-  --color-success: #4ade80;
-  --color-warning: #facc15;
-  --color-error: #f87171;
-  --color-info: #38bdf8;
+  --color-hover: #1E6091;             /* Наведение — слегка затемнённый primary */
+  --color-focus: #3A86FF;             /* Фокус — яркий голубой обводки */
+  --color-active: #145374;            /* Активное состояние — насыщенный синий */
+  --color-disabled: #A9A9A9;          /* Неактивное — серо-синий */
 
-  /* Тени и разделители */
-  --color-shadow-light: rgba(0, 0, 0, 0.05);
-  --color-shadow-medium: rgba(0, 0, 0, 0.1);
+  /* Текст */
+  --color-text-primary: #1E293B;      /* Очень тёмно-синий (почти чёрный) — основной текст */
+  --color-text-secondary: #475569;    /* Серо-синий — второстепенный текст */
+  --color-text-muted: #64748B;        /* Более мягкий серо-синий — метки, время, подписи */
+  --color-text-inverted: #FFFFFF;     /* Белый текст — на тёмных фонах (кнопки, sidebar) */
+  --color-text-accent: #2176AE;       /* Акцентный синий — ссылки, выделения */
+  --color-text-error: #EF476F;        /* Ошибки — красный */
+  --color-text-success: #4CAF50;      /* Подтверждение — зелёный */
+  --color-text-disabled: #94A3B8;     /* Неактивный/заблокированный текст */
 
-  /* Цвета для колонок/задач — пастельные, светлые */
-  --tag-color-blue: #cfe8fc;
-  --tag-color-green: #d3f9d8;
-  --tag-color-yellow: #fef9c3;
-  --tag-color-orange: #ffe4b5;
-  --tag-color-pink: #fcd3e1;
-  --tag-color-purple: #e4d9fa;
-  --tag-color-teal: #ccfbf1;
-  --tag-color-lavender: #ede9fe;
-  --tag-color-mint: #dcfce7;
-  --tag-color-gray: #e5e7eb;
+  /* Теги */
+  --color-success-bg: #D1FAE5;           /* Зелёный фон */
+  --color-success-text: #065F46;         /* Текст на зелёном фоне */
+  --color-error-bg: #FEE2E2;             /* Красный фон */
+  --color-error-text: #991B1B;           /* Текст на красном фоне */
 
-  /* Цвета прогресс-бара */
-  --progress-bg: #e5e7eb;
-  --progress-fill: #3b82f6;
-
-  /* Панель редактирования задачи */
-  --color-panel-bg: #ffffff;
-  --color-panel-shadow: rgba(0, 0, 0, 0.08);
+  /* Цвета для разделения элементов (мягкие оттенки для досок/колонок/карточек) */
+  --color-board-tint-1: #F9FAFB;      /* Почти белый с лёгким холодком */
+  --color-board-tint-2: #E3EEF3;      /* Светлый бирюзовый туман */
+  --color-board-tint-3: #FAF3E0;      /* Тёплый светло-бежевый */
+  --color-board-tint-4: #F0F7F9;      /* Мягкий голубой дымка */
+  --color-board-tint-5: #E8EDF1;      /* Светлый графитовый */
+  --color-board-tint-6: #FDF6F0;      /* Светлый персиковый туман */
 }
+
 
 @layer utilities {
   .touch-action-none {

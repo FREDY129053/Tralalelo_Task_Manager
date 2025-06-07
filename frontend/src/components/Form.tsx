@@ -43,53 +43,61 @@ const Form: FC<FormProps> = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-md space-y-6 p-8 bg-white rounded-xl shadow-xl text-[var(--color-text)]"
+      className="w-full max-w-md space-y-6 p-8 bg-neutral rounded-xl shadow-xl text-text-primary"
     >
       <h2 className="text-2xl font-bold mb-6 text-center">
         {isRegistering ? "Регистрация" : "Вход в аккаунт"}
       </h2>
 
       <div className="relative">
-        <FaUser className="absolute top-3 left-3 text-[var(--color-accent)]" />
+        <FaUser className="absolute top-3 left-3 text-" />
         <input
           {...register("username", { required: "Введите имя пользователя" })}
           type="text"
           placeholder="Username"
-          className="pl-10 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          className="pl-10 py-2 w-full border border-input-border rounded-lg bg-input-bg focus:outline-none focus:ring-2 focus:ring-input-border"
         />
-        {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
+        {errors.username && (
+          <p className="text-text-error text-sm">{errors.username.message}</p>
+        )}
       </div>
 
       <div className="relative">
-        <FaLock className="absolute top-3 left-3 text-[var(--color-accent)]" />
+        <FaLock className="absolute top-3 left-3 text-" />
         <input
           {...register("password", { required: "Введите пароль" })}
           type="password"
           placeholder="Password"
-          className="pl-10 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          className="pl-10 py-2 w-full border border-input-border rounded-lg bg-input-bg focus:outline-none focus:ring-2 focus:ring-input-border"
         />
-        {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+        {errors.password && (
+          <p className="text-text-error text-sm">{errors.password.message}</p>
+        )}
       </div>
 
       {isRegistering && (
         <>
           <div className="relative">
-            <FaLock className="absolute top-3 left-3 text-[var(--color-accent)]" />
+            <FaLock className="absolute top-3 left-3 text-" />
             <input
               {...register("repeatPassword", {
                 required: "Повторите пароль",
-                validate: value =>
+                validate: (value) =>
                   value === password || "Пароли не совпадают",
               })}
               type="password"
               placeholder="Repeat Password"
-              className="pl-10 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              className="pl-10 py-2 w-full border border-input-border rounded-lg bg-input-bg focus:outline-none focus:ring-2 focus:ring-input-border"
             />
-            {errors.repeatPassword && <p className="text-red-500 text-sm">{errors.repeatPassword.message}</p>}
+            {errors.repeatPassword && (
+              <p className="text-text-error text-sm">
+                {errors.repeatPassword.message}
+              </p>
+            )}
           </div>
 
           <div className="relative">
-            <FaEnvelope className="absolute top-3 left-3 text-[var(--color-accent)]" />
+            <FaEnvelope className="absolute top-3 left-3 text-" />
             <input
               {...register("email", {
                 required: "Введите email",
@@ -100,13 +108,15 @@ const Form: FC<FormProps> = ({
               })}
               type="email"
               placeholder="Email"
-              className="pl-10 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              className="pl-10 py-2 w-full border border-input-border rounded-lg bg-input-bg focus:outline-none focus:ring-2 focus:ring-input-border"
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-text-error text-sm">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="relative">
-            <FaPhone className="absolute top-3 left-3 text-[var(--color-accent)]" />
+            <FaPhone className="absolute top-3 left-3 text-" />
             <input
               {...register("phone", {
                 pattern: {
@@ -116,9 +126,11 @@ const Form: FC<FormProps> = ({
               })}
               type="tel"
               placeholder="Phone (optional)"
-              className="pl-10 py-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              className="pl-10 py-2 w-full border border-input-border rounded-lg bg-input-bg focus:outline-none focus:ring-2 focus:ring-input-border"
             />
-            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+            {errors.phone && (
+              <p className="text-text-error text-sm">{errors.phone.message}</p>
+            )}
           </div>
         </>
       )}
@@ -126,16 +138,18 @@ const Form: FC<FormProps> = ({
       <button
         type="submit"
         disabled={isSendingData}
-        className="w-full py-2 px-4 bg-sky-500 text-white rounded-lg hover:bg-opacity-90 transition disabled:bg-sky-300 disabled:cursor-not-allowed"
+        className="cursor-pointer w-full py-2 px-4 bg-button-bg text-button-text rounded-lg hover:bg-hover transition disabled:bg-disabled disabled:cursor-not-allowed"
       >
         {isRegistering ? "Зарегистрироваться" : "Войти"}
       </button>
 
       <p
         onClick={toggleRegister}
-        className="text-sm text-center text-[var(--color-accent)] underline cursor-pointer mt-4"
+        className="text-sm text-center underline cursor-pointer mt-4 hover:text-hover"
       >
-        {isRegistering ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться"}
+        {isRegistering
+          ? "Уже есть аккаунт? Войти"
+          : "Нет аккаунта? Зарегистрироваться"}
       </p>
     </form>
   );

@@ -7,14 +7,19 @@ import Form, { FormValues } from "@/components/Form";
 export default function AuthPage() {
   const router = useRouter();
   const [isRegistering, setIsRegistering] = useState(false);
+  const [displayedRegistering, setDisplayedRegistering] = useState(false);
   const [isSendingData, setIsSendingData] = useState(false);
 
   const handleFormSubmit = async (data: FormValues) => {
     setIsSendingData(true);
-
     try {
-      if (isRegistering) {
-        await registerUser(data.username, data.password, data.email!, data.phone || "");
+      if (displayedRegistering) {
+        await registerUser(
+          data.username,
+          data.password,
+          data.email!,
+          data.phone || ""
+        );
       } else {
         await loginUser(data.username, data.password);
       }
@@ -26,17 +31,24 @@ export default function AuthPage() {
     }
   };
 
+  const handleToggleRegister = () => {
+    setIsRegistering((prev) => !prev);
+    setTimeout(() => {
+      setDisplayedRegistering((prev) => !prev);
+    }, 200);
+  };
+
   return (
-    <div className="w-screen h-screen overflow-hidden relative bg-[var(--color-bg)]">
+    <div className="w-screen h-screen overflow-hidden relative bg-primary">
       <div
-        className="absolute top-0 h-full w-1/3 md:w-1/3 sm:w-full z-20 transition-transform duration-700 ease-in-out transform"
+        className="absolute top-0 h-full w-1/3 md:w-1/3 sm:w-full z-20 transition-transform duration-800 ease-in-out transform"
         style={{
           transform: isRegistering ? "translateX(200%)" : "translateX(0%)",
         }}
       >
         <div className="relative w-full h-full">
           <Image
-            src="https://avatars.mds.yandex.net/i?id=ba15c7a410cb6045fae33e4bdbcb6a503abebf16-5110698-images-thumbs&n=13"
+            src="/eblan.jpg"
             alt="Side Illustration"
             fill
             className="object-cover"
@@ -51,9 +63,9 @@ export default function AuthPage() {
           }`}
         >
           <Form
-            isRegistering={isRegistering}
+            isRegistering={displayedRegistering}
             isSendingData={isSendingData}
-            toggleRegister={() => setIsRegistering(!isRegistering)}
+            toggleRegister={handleToggleRegister}
             onSubmit={handleFormSubmit}
           />
         </div>
