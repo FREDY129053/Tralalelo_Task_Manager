@@ -24,6 +24,7 @@ from .board import (
     UserShortInfo,
 )
 from .error import Error, ServiceMessage
+from .notifications import CreateNotification, NotificationInfo
 from .user import (
     BaseUserInfo,
     BoardUserPreview,
@@ -68,4 +69,6 @@ __all__ = [
     "UpdateColumn",
     "UpdateTaskPos",
     "UserShortInfo",
+    "CreateNotification",
+    "NotificationInfo",
 ]
