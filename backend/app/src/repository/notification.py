@@ -15,6 +15,24 @@ async def create_notification(title: str, text: str, user_id: UUID) -> Notificat
     return await Notification.create(title=title, text=text, user_id=user_id)
 
 
+async def get_all_users_notifications(user_id: UUID) -> List[Notification]:
+    return await Notification.filter(user_id=user_id)
+
+
+async def update_fields(notification_id: int, fields: Dict[str, Any]):
+    notification = await Notification.get(id=notification_id)
+
+    for key, val in fields.items():
+        setattr(notification, key, val)
+
+    return await notification.save(update_fields=list(fields.keys()))
+
+
+async def delete_notification(id: int):
+    notification = await Notification.get(id=id)
+    await notification.delete()
+
+
 async def check_due_dates() -> Dict[int, List[Dict[str, Any]]]:
     print(f"\033[034mCRON:\033[0m\t  {datetime.now(timezone.utc)}")
     today = datetime.now(timezone.utc).date()

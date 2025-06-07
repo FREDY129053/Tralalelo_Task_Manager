@@ -24,7 +24,7 @@ from .board import (
     UserShortInfo,
 )
 from .error import Error, ServiceMessage
-from .notifications import CreateNotification, NotificationInfo
+from .notifications import CreateNotification, NotificationInfo, UpdateNotification
 from .user import (
     BaseUserInfo,
     BoardUserPreview,
@@ -71,4 +71,5 @@ __all__ = [
     "UserShortInfo",
     "CreateNotification",
     "NotificationInfo",
+    "UpdateNotification",
 ]
