@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { produce } from "immer";
-import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import {
   DndContext,
   KeyboardSensor,
@@ -21,7 +20,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { FaPlus } from "react-icons/fa";
+import { FaFolderOpen, FaPlus } from "react-icons/fa";
 import {
   IBoardFullInfo,
   IColumn,
@@ -44,6 +43,7 @@ import OverlayColumn from "@/components/SoloBoard/OverlayColumn";
 import OverlayTask from "@/components/SoloBoard/OverlayTask";
 import { IoPersonAdd } from "react-icons/io5";
 import BoardUsers from "@/components/BoardUsers";
+import { IoMdSettings } from "react-icons/io";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
@@ -70,8 +70,10 @@ export default function BoardPage() {
   }, [uuid]);
 
   const sensors = useSensors(
-    useSensor(TouchSensor),
-    useSensor(MouseSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -250,30 +252,43 @@ export default function BoardPage() {
 
   return (
     <>
-      <div>
-        <button
-          className="cursor-pointer"
-          onClick={() => {
-            setIsOpen(true);
-            getMembers();
-          }}
-        >
-          <IoPersonAdd />
-        </button>
-        {isOpen && (
-          <BoardUsers
-            onClose={() => setIsOpen(false)}
-            members={members}
-            addMembers={handleAddMember}
-            deleteMember={handleDeleteMember}
-            changeRole={handleChangeMemberRole}
-          />
-        )}
+      <div className="mt-4 px-6 flex items-center flex-row justify-between mb-6">
+        <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row text-base items-center gap-2 font-bold">
+            <FaFolderOpen className="w-8 h-8" />
+            {boardData.board.title}
+          </div>
+          <span className="truncate block max-w-2xl">
+            {boardData.board.description}
+          </span>
+        </div>
+        <div className="flex flex-row gap-4 items-center">
+          <button
+            className="flex gap-2 items-center cursor-pointer p-[7px] rounded-[6px] border-none transition h-[30px] text-sm font-[500] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+            onClick={() => {
+              setIsOpen(true);
+              getMembers();
+            }}
+          >
+            <IoPersonAdd className="w-6 h-6" /> Пригласить
+          </button>
+          {isOpen && (
+            <BoardUsers
+              onClose={() => setIsOpen(false)}
+              members={members}
+              addMembers={handleAddMember}
+              deleteMember={handleDeleteMember}
+              changeRole={handleChangeMemberRole}
+            />
+          )}
+          <button className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]">
+            <IoMdSettings className="w-6 h-6"/>
+          </button>
+        </div>
       </div>
       <DndContext
         collisionDetection={closestCorners}
         sensors={sensors}
-        modifiers={[restrictToWindowEdges]}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
         onDragStart={handleDragStart}
@@ -282,7 +297,7 @@ export default function BoardPage() {
           items={boardData.columns.map((col) => col.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex flex-nowrap h-full justify-start w-auto gap-6 p-6 overflow-x-auto relative">
+          <div className="flex flex-nowrap justify-start w-auto gap-6 p-6 overflow-x-auto relative">
             {boardData.columns.map((col) => (
               <SortableColumn
                 key={col.id}

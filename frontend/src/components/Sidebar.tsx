@@ -6,6 +6,7 @@ import { AiFillEnvironment, AiOutlineLogout } from "react-icons/ai";
 import { FaUser, FaUsers } from "react-icons/fa";
 import { IoMdNotifications } from "react-icons/io";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function Sidebar() {
   const [open, setOpen] = useState<boolean>(true);
@@ -57,12 +58,14 @@ export default function Sidebar() {
       spacing: true,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/profile",
+      link: "/profile"
     },
     {
       title: "Уведомления",
       icon: <IoMdNotifications />,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/notifications",
+      link: "/notifications"
     },
     {
       title: "Мои доски",
@@ -70,12 +73,14 @@ export default function Sidebar() {
       spacing: true,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/main",
+      link: "/main"
     },
     {
       title: "Доступные доски",
       icon: <FaUsers />,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/boards",
+      link: "/boards"
     },
     {
       title: "Выход",
@@ -151,7 +156,7 @@ export default function Sidebar() {
 
         <ul className="pt-2">
           {Menus.map((menu, index) => (
-            <React.Fragment key={index}>
+            <Link href={`${menu.link}`} key={index}>
               <li
                 className={`text-text-inverted flex items-center gap-x-4 cursor-pointer p-2  rounded-md ${
                   menu.spacing ? "mt-7" : "mt-2"
@@ -171,7 +176,7 @@ export default function Sidebar() {
                   {showText && menu.title}
                 </span>
               </li>
-            </React.Fragment>
+            </Link>
           ))}
         </ul>
       </div>

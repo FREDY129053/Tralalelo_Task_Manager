@@ -1,5 +1,5 @@
 import React from "react";
-import { MdDragIndicator, MdOutlineDownloadDone } from "react-icons/md";
+import { MdOutlineDownloadDone } from "react-icons/md";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { IFullTask, ITask, Priority, Status } from "@/interfaces/Board";
@@ -34,17 +34,37 @@ function SortableTask({ task, openSidebar }: Props) {
   };
 
   const priorityFlags: Record<Priority, React.ReactNode> = {
-    LOW: <span className="text-gray-600"><FaFlag /></span>,
-    MEDIUM: <span className="text-blue-600"><FaFlag /></span>,
-    HIGH: <span className="text-red-600"><FaFlag /></span>,
+    LOW: <></>,
+    MEDIUM: (
+      <span className="text-xl text-blue-600">
+        <FaFlag />
+      </span>
+    ),
+    HIGH: (
+      <span className="text-xl text-red-600">
+        <FaFlag />
+      </span>
+    ),
   };
 
   const statusIcon: Record<Status, React.ReactNode> = {
-    TODO : <></>,
-    IN_PROGRESS: <><GrInProgress /></>,
-    DONE: <><MdOutlineDownloadDone /></>,
-    REJECT: <><IoMdClose /></>
-  }
+    TODO: <></>,
+    IN_PROGRESS: (
+      <>
+        <GrInProgress />
+      </>
+    ),
+    DONE: (
+      <>
+        <MdOutlineDownloadDone />
+      </>
+    ),
+    REJECT: (
+      <>
+        <IoMdClose />
+      </>
+    ),
+  };
 
   const openFullTask = (taskID: string) => {
     getTask(taskID).then(openSidebar).catch(console.error);
@@ -54,23 +74,54 @@ function SortableTask({ task, openSidebar }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex w-full text-2xl leading-8 items-center rounded-lg p-3 z-10 gap-2 font-black cursor-pointer"
+      className="border border-[#111012]/10 w-full text-sm leading-8 items-center rounded-lg p-3 z-10 cursor-pointer"
       onClick={() => openFullTask(task.id)}
+      {...listeners}
+      {...attributes}
     >
-      <MdDragIndicator
-        className={`h-6 w-6 ${
-          isDragging ? "cursor-grabbing" : "cursor-grab"
-        } text-sky-300 focus:outline-2 focus:outline-transparent focus:outline-offset-2`}
-        {...listeners}
-        {...attributes}
-      />
-      <div className="flex flex-col gap-4">
-        <span>{task.title}</span>
-        <div className="flex gap-2">
-          <span>{priorityFlags[task.priority]}</span>
-        <span>{statusIcon[task.status]}</span>
+      <div className="flex flex-col">
+        <div className="flex flex-col">
+          <span>12 июня</span>
+          <span className="-mt-2 text-base">{task.title}</span>
         </div>
-        <span>{task.completed_subtasks} / {task.total_subtasks}</span>
+        <div className="flex flex-row justify-between">
+          <span>{priorityFlags[task.priority]}</span>
+          <span>{priorityFlags[task.priority]}</span>
+        </div>
+        {/* <span>{statusIcon[task.status]}</span> */}
+        {/* <div>
+
+          <span>
+            {task.completed_subtasks} / {task.total_subtasks}
+          </span>
+        </div> */}
+        <div className="flex items-center gap-2 mt-5">
+          {task.total_subtasks > 0 &&
+            (task.total_subtasks < 21 ? (
+              <div className="flex flex-1 gap-[2px]">
+                {Array.from({ length: task.total_subtasks }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-2 rounded-sm flex-1 min-w-[4px] ${idx < task.completed_subtasks ? "bg-green-500" : "bg-gray-300"}`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 h-2 bg-gray-300 rounded overflow-hidden">
+                <div
+                  className="h-2 bg-green-500 rounded"
+                  style={{
+                    width: `${Math.round((task.completed_subtasks / task.total_subtasks) * 100)}%`,
+                  }}
+                />
+              </div>
+            ))}
+            {task.total_subtasks > 0 && (
+            <span className="text-xs text-gray-500 whitespace-nowrap">
+              {task.completed_subtasks} / {task.total_subtasks}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

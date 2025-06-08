@@ -23,8 +23,8 @@ function SortableColumn({ column, updateBoard }: Props) {
   const [inputValue, setInputValue] = useState(column.title);
   const inputRef = useRef<HTMLInputElement>(null);
   const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(null);
+  const columnColor = column.color
 
-  // Фокус на инпут при начале редактирования
   useEffect(() => {
     if (editing) {
       setInputValue(column.title);
@@ -93,18 +93,24 @@ function SortableColumn({ column, updateBoard }: Props) {
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="relative flex flex-col min-w-[260px] w-2xs max-w-xs min-h-full rounded-lg bg-sky-400 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10"
+      style={{
+        ...style,
+        background: columnColor || undefined,
+      }}
+      className={`rounded-b-[6px] relative flex flex-col flex-shrink-0 w-[260px] max-h-full rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 ${!column.color ? "bg-task-bg" : ""}`}
     >
       <div className="relative flex items-center justify-center">
         <div
           {...attributes}
-          className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] bg-sky-600 shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] ${
+          style={{
+            background: columnColor || undefined
+          }}
+          className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] ${!column.color ? "bg-task-bg" : ""}  ${
             isDragging ? "cursor-grabbing" : "cursor-grab"
           } min-h-12`}
           {...(!editing ? listeners : {})}
         ></div>
-        <div className="absolute top-0 z-10 flex items-center justify-center m-2 text-2xl leading-8 font-black rounded-t-[6px] bg-transparent">
+        <div className="absolute max-w-3/4 left-4 top-0 z-10 flex items-center justify-center my-2 text-2xl leading-8 font-black rounded-t-[6px] bg-transparent">
           {editing ? (
             <input
               ref={inputRef}
@@ -112,13 +118,12 @@ function SortableColumn({ column, updateBoard }: Props) {
               onChange={(e) => setInputValue(e.target.value)}
               onBlur={finishEdit}
               onKeyDown={handleInputKeyDown}
-              className="bg-white text-sky-900 rounded px-2 py-1 text-xl font-bold outline-none"
+              className="bg-input-bg text-text-primary border border-input-border rounded px-2 py-1 text-xl font-bold outline-none"
               style={{ minWidth: 0 }}
             />
           ) : (
             <span
-              onClick={
-                handleTitleClick}
+              onClick={handleTitleClick}
               className="cursor-pointer select-none text-center max-w-[210px] truncate block"
               title={column.title}
             >
@@ -127,7 +132,7 @@ function SortableColumn({ column, updateBoard }: Props) {
           )}
         </div>
         <DropdownMenu
-          handleClass="absolute right-4 top-3 z-10"
+          handleClass="absolute right-4 top-4 z-10"
           button={
             <div className="text-2xl">
               <SlOptions />
@@ -166,10 +171,12 @@ function SortableColumn({ column, updateBoard }: Props) {
           </SortableContext>
         )}
       </div>
-      <div className="flex justify-center py-4 z-20 bg-gradient-to-t from-sky-400 via-sky-400/80 to-transparent">
+      <div style={{
+        background: columnColor || undefined
+      }} className={`flex justify-center rounded-b-[6px] py-4 z-20 ${!column.color ? "bg-task-bg" : ""}`}>
         <button
           onClick={handleAddTask}
-          className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
+          className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-transparent hover:bg-column-bg text-sky-600 hover:text-sky-800 transition cursor-pointer"
           title="Добавить задачу"
           style={{ minWidth: "48px" }}
         >
@@ -179,7 +186,11 @@ function SortableColumn({ column, updateBoard }: Props) {
           </span>
         </button>
       </div>
-      <TaskSidebar task={sidebarTask} onClose={() => setSidebarTask(null)} onBoardUpdate={updateBoard}/>
+      <TaskSidebar
+        task={sidebarTask}
+        onClose={() => setSidebarTask(null)}
+        onBoardUpdate={updateBoard}
+      />
     </div>
   );
 }

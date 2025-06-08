@@ -14,10 +14,10 @@ from backend.app.src.enums import Priority, Status
 def _is_valid_color(value: str) -> str:
     if value is not None:
         regex = re.compile("^#[a-f0-9]{6}$")
-        if not regex.match(value):
+        if not regex.match(value.lower()):
             raise ValidationError(f"{value} is not valid HEX color code")
 
-    return value
+    return value.lower()
 
 
 FullBoardInfo = typing.NewType(
