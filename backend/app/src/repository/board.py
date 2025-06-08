@@ -28,6 +28,7 @@ async def get_all_boards() -> List[Board]:
 async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
     board = await Board.get_or_none(id=uuid).prefetch_related(
         "columns__tasks__subtasks",
+        "columns__tasks__comments",
     )
 
     if not board:
@@ -38,6 +39,7 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
         tasks = []
         for task in column.tasks:
             subtasks = task.subtasks
+            comments = task.comments
             total = len(subtasks)
             completed = sum(1 for s in subtasks if s.is_completed)
             responsibles = await TaskResponsible.filter(task_id=task.id)
@@ -61,6 +63,7 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
                     responsibles=responsibles_out,
                     total_subtasks=total,
                     subtasks=subtasks,
+                    total_comments=len(comments),
                 )
             )
             tasks.sort(key=lambda x: x.position)

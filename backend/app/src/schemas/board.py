@@ -168,6 +168,7 @@ class TaskShortOut(BaseModel):
     responsibles: List[UserShortInfo]
     total_subtasks: int
     completed_subtasks: int
+    total_comments: int
 
     subtasks: List[SubtaskOut]
 
