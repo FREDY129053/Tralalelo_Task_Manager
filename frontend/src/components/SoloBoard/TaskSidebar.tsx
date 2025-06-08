@@ -1,11 +1,18 @@
 import React, { RefObject, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IFullTask, IUser, Priority, Status } from "@/interfaces/Board";
+import {
+  IFullTask,
+  IMember,
+  IUser,
+  Priority,
+  Status,
+} from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
-import { FaChevronDown, FaTrashAlt } from "react-icons/fa";
+import { FaTimes, FaTrashAlt } from "react-icons/fa";
 import { FiMoreVertical } from "react-icons/fi";
 import {
   createSubTask,
+  deleteResponsible,
   deleteSubTask,
   getTask,
   updateTask,
@@ -18,10 +25,13 @@ import clsx from "clsx";
 import Image from "next/image";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { PRIORITY_FLAG } from "@/constants/priorityFlag";
+import { CustomSelect } from "../CustomSelect";
+import { motion } from "framer-motion";
 
 type Props = {
   task: IFullTask | null;
   onClose: () => void;
+  members: IMember[];
   onBoardUpdate: () => void;
 };
 
@@ -34,7 +44,12 @@ const COLOR_OPTIONS = [
   "var(--color-board-tint-6)",
 ];
 
-export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
+export default function TaskSidebar({
+  task,
+  onClose,
+  members,
+  onBoardUpdate,
+}: Props) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(task);
   const [newDueDate, setNewDueDate] = useState<Date | null>(null);
@@ -78,6 +93,7 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
       updateEvent();
     },
   });
+
   const {
     editing: editingDescription,
     value: valueDescription,
@@ -123,7 +139,17 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
   const handleChangePriority = async (priorityVal: Priority) => {
     await updateTask(sidebarTask.id, "priority", priorityVal);
     await updateEvent();
-  }
+  };
+
+  const handleAddResponsible = async (memberID: string) => {
+    await updateTask(sidebarTask.id, "responsible", memberID);
+    await updateEvent();
+  };
+
+  const handleDeleteResponsible = async (responsibleID: string) => {
+    await deleteResponsible(sidebarTask.id, responsibleID)
+    await updateEvent()
+  } 
 
   const handleColorChange = (color: string) => {
     console.log("Цвет изменен на:", color);
@@ -167,7 +193,9 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
                   style={{ minWidth: 0 }}
                 />
               ) : (
-                <span className="cursor-pointer" onClick={startTitleEditing}>{sidebarTask.title}</span>
+                <span className="cursor-pointer" onClick={startTitleEditing}>
+                  {sidebarTask.title}
+                </span>
               )}
             </h2>
 
@@ -175,26 +203,45 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
             <div className="mb-4">
               <label className="font-semibold block mb-1">Описание:</label>
               {/* <p>{sidebarTask.description || "—"}</p> */}
-              <p>{editingDescription ? (<textarea
-                  ref={inputDescriptionRef as RefObject<HTMLTextAreaElement>}
-                  value={valueDescription}
-                  onChange={(e) => setDescriptionValue(e.target.value)}
-                  onBlur={finishDescriptionEditing}
-                  onKeyDown={handleDescriptionKeyDown}
-                  className="bg-input-bg text-text-primary w-full border border-input-border rounded px-2 py-1 text-xl font-bold outline-none"
-                  style={{ minWidth: 0 }}
-                  rows={3}
-                />) : (<span className="cursor-pointer" onClick={startDescriptionEditing}>{sidebarTask.description || "—"}</span>)}</p>
+              <p>
+                {editingDescription ? (
+                  <textarea
+                    ref={inputDescriptionRef as RefObject<HTMLTextAreaElement>}
+                    value={valueDescription}
+                    onChange={(e) => setDescriptionValue(e.target.value)}
+                    onBlur={finishDescriptionEditing}
+                    onKeyDown={handleDescriptionKeyDown}
+                    className="bg-input-bg text-text-primary w-full border border-input-border rounded px-2 py-1 text-xl font-bold outline-none"
+                    style={{ minWidth: 0 }}
+                    rows={3}
+                  />
+                ) : (
+                  <span
+                    className="cursor-pointer"
+                    onClick={startDescriptionEditing}
+                  >
+                    {sidebarTask.description || "—"}
+                  </span>
+                )}
+              </p>
             </div>
 
             {/* Приоритет */}
             <div className="mb-2">
-              <SelectPriority task={sidebarTask} update={handleChangePriority}/>
+              <SelectPriority
+                task={sidebarTask}
+                update={handleChangePriority}
+              />
             </div>
 
             {/* Ответственные */}
             <div className="mb-2">
-              <Responsibles task={sidebarTask} />
+              <Responsibles
+                task={sidebarTask}
+                users={members}
+                deleteResponsible={handleDeleteResponsible}
+                onSelect={handleAddResponsible}
+              />
             </div>
 
             {/* Срок */}
@@ -280,8 +327,32 @@ function UpPanel({
   );
 }
 
-function SelectPriority({ task, update }: { task: IFullTask, update: (val: Priority) => void }) {
+function SelectPriority({
+  task,
+  update,
+}: {
+  task: IFullTask;
+  update: (val: Priority) => void;
+}) {
   const [priority, setPriority] = useState<Priority>(task.priority);
+
+  const priorityOptions = [
+    {
+      value: "LOW",
+      label: "Низкая",
+      icon: PRIORITY_FLAG["LOW"],
+    },
+    {
+      value: "MEDIUM",
+      label: "Обычная",
+      icon: PRIORITY_FLAG["MEDIUM"],
+    },
+    {
+      value: "HIGH",
+      label: "Высокая",
+      icon: PRIORITY_FLAG["HIGH"],
+    },
+  ];
 
   const handlePriorityChange = (newPriority: Priority) => {
     setPriority(newPriority);
@@ -291,109 +362,32 @@ function SelectPriority({ task, update }: { task: IFullTask, update: (val: Prior
   return (
     <>
       <label className="font-semibold block mb-1">Приоритет:</label>
-      <PrioritySelect value={priority} onChange={handlePriorityChange} className="w-full" />
+      <CustomSelect
+        options={priorityOptions}
+        value={priority}
+        onChange={(val: string) => handlePriorityChange(val as Priority)}
+        className="w-full"
+      />
     </>
   );
 }
 
-type PrioritySelectProps = {
-  value: Priority;
-  onChange: (priority: Priority) => void;
-  className?: string;
-};
-
-const PrioritySelect = ({
-  value,
-  onChange,
-  className = "",
-}: PrioritySelectProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Закрытие при клике вне элемента
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      setIsOpen(false);
-    }
-  };
-
-  const priorities: Priority[] = ["LOW", "MEDIUM", "HIGH"];
-  const priorityAlias = {
-    LOW: "Низкая",
-    MEDIUM: "Обычная",
-    HIGH: "Высокая"
-  }
-
-  return (
-    <div 
-      ref={dropdownRef}
-      className={`relative ${className}`}
-      onKeyDown={handleKeyDown}
-    >
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full px-3 py-2 text-left border rounded-md transition-all ${
-          isOpen ? "ring-2 ring-focus border-focus" : "border-gray-300 hover:border-gray-400"
-        }`}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <div className="flex items-center gap-2">
-          {PRIORITY_FLAG[value]}
-          <span className="capitalize">{priorityAlias[value]}</span>
-        </div>
-        <FaChevronDown 
-          className={`text-gray-500 transition-transform ${
-            isOpen ? "transform rotate-180" : ""
-          }`}
-          size={14}
-        />
-      </button>
-
-      {isOpen && (
-        <ul
-          className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none"
-          role="listbox"
-        >
-          {priorities.map((priority) => (
-            <li
-              key={priority}
-              role="option"
-              aria-selected={value === priority}
-              onClick={() => {
-                onChange(priority);
-                console.log(priority)
-                setIsOpen(false);
-              }}
-              className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
-                value === priority
-                  ? "bg-blue-50 text-blue-700"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              {PRIORITY_FLAG[priority]}
-              <span className="capitalize">{priorityAlias[priority]}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
-
-function Responsibles({ task }: { task: IFullTask }) {
+function Responsibles({
+  task,
+  users,
+  onSelect,
+  deleteResponsible
+}: {
+  task: IFullTask;
+  users: IMember[];
+  onSelect: (userId: string) => void;
+  deleteResponsible: (userId: string) => void;
+}) {
+  const userOptions = users.map((user) => ({
+    value: user.id,
+    label: user.username,
+    avatar: user.avatar_url,
+  }));
   return (
     <>
       <label className="font-semibold block mb-1">Ответственные:</label>
@@ -401,23 +395,39 @@ function Responsibles({ task }: { task: IFullTask }) {
         {task.responsibles.map((res) => (
           <div
             key={res.id}
-            className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full"
+            onClick={() => deleteResponsible(res.id)}
+            className="relative flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full overflow-hidden group hover:bg-red-300"
           >
-            <Image
-              src={res.avatar_url ?? ""}
-              alt="avatar"
-              className="w-6 h-6 rounded-full"
-              width={100}
-              height={100}
-            />
-            <span>{res.username}</span>
+            <motion.div
+              className="flex items-center gap-1 group-hover:invisible"
+              animate="visible"
+            >
+              <Image
+                src={res.avatar_url ?? ""}
+                alt="avatar"
+                className="w-6 h-6 rounded-full"
+                width={24}
+                height={24}
+              />
+              <span>{res.username}</span>
+            </motion.div>
+
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+            >
+              <FaTimes className="text-red-600 text-lg" />
+            </motion.div>
           </div>
         ))}
-        <select className="w-full border px-2 py-1 rounded text-sm">
-          <option>Добавить исполнителя...</option>
-          <option value="user3">user3</option>
-          <option value="user4">user4</option>
-        </select>
+        <CustomSelect
+          options={userOptions}
+          value=""
+          onChange={onSelect}
+          placeholder="Добавить исполнителя..."
+          className="w-full"
+        />
       </div>
     </>
   );

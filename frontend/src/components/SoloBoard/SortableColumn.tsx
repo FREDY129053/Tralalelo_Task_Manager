@@ -6,7 +6,7 @@ import {
   verticalListSortingStrategy,
   SortableContext,
 } from "@dnd-kit/sortable";
-import { IColumn, ITask, IFullTask } from "@/interfaces/Board";
+import { IColumn, ITask, IFullTask, IMember } from "@/interfaces/Board";
 import SortableTask from "./SortableTask";
 import { createTask, deleteColumn, updateColumn } from "@/pages/api/board";
 import DropdownMenu from "../DropdownMenu";
@@ -16,10 +16,11 @@ import { useInlineEdit } from "@/hooks/useInlineEdit";
 
 type Props = {
   column: IColumn;
+  members: IMember[]
   updateBoard: () => void;
 };
 
-function SortableColumn({ column, updateBoard }: Props) {
+function SortableColumn({ column, updateBoard, members}: Props) {
   const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(null);
   const columnColor = column.color;
 
@@ -178,6 +179,7 @@ function SortableColumn({ column, updateBoard }: Props) {
       </div>
       <TaskSidebar
         task={sidebarTask}
+        members={members}
         onClose={() => setSidebarTask(null)}
         onBoardUpdate={updateBoard}
       />

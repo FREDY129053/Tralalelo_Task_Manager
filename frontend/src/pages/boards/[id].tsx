@@ -67,6 +67,7 @@ export default function BoardPage() {
   useEffect(() => {
     if (!uuid) return;
     getBoardData(uuid).then(setBoardData).catch(console.error);
+    getBoardMembers(uuid).then(setMembers).catch(console.error)
   }, [uuid]);
 
   const sensors = useSensors(
@@ -90,6 +91,7 @@ export default function BoardPage() {
 
   const updateBoard = useCallback(() => {
     getBoardData(uuid!).then(setBoardData).catch(console.error);
+    getBoardMembers(uuid!).then(setMembers).catch(console.error);
   }, [uuid]);
 
   const getMembers = useCallback(() => {
@@ -302,6 +304,7 @@ export default function BoardPage() {
               <SortableColumn
                 key={col.id}
                 column={col}
+                members={members}
                 updateBoard={updateBoard}
               />
             ))}

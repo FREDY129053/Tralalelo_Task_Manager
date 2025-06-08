@@ -201,3 +201,11 @@ export async function updateTask(taskID: string, field: string, value: string | 
     "Ошибка при удалении задачи"
   )
 }
+
+export async function deleteResponsible(taskID: string, responsibleID: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/tasks/${taskID}/responsibles?user_id=${responsibleID}`,
+    {method: "DELETE"},
+    "Ошибка при удалении ответственного"
+  )
+}
