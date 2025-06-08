@@ -79,8 +79,13 @@ async def update_fields(task_id: UUID, fields: Dict[str, Any]):
 
     for key, val in fields.items():
         if key == "responsible":
-            await TaskResponsible.create(task_id=task_id, user_id=val)
+            await TaskResponsible.get_or_create(task_id=task_id, user_id=val)
         else:
             setattr(task, key, val)
     fields.pop("responsible", None)
     return await task.save(update_fields=list(fields.keys()))
+
+
+async def delete_responsible(task_id: UUID, member_id: UUID):
+    responsible_row = await TaskResponsible.get(task_id=task_id, user_id=member_id)
+    await responsible_row.delete()

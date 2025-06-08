@@ -183,7 +183,8 @@ async def get_members(board_id: UUID) -> List[BoardUserPreview]:
 
 async def add_member(board_id: UUID, user_id: UUID) -> Optional[BoardUser]:
     try:
-        return await BoardUser.create(board_id=board_id, user_id=user_id)
+        row, _ = await BoardUser.get_or_create(board_id=board_id, user_id=user_id)
+        return row
     except IntegrityError:
         return None
 

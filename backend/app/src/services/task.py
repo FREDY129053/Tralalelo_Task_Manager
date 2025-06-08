@@ -56,3 +56,8 @@ async def update_task_fields(task_id: UUID, fields: TaskUpdate) -> bool:
     await TaskRepo.update_fields(task_id, data_to_update)
 
     return True
+
+
+async def delete_responsible(task_id: UUID, responsible_id: UUID) -> bool:
+    await TaskRepo.delete_responsible(task_id, responsible_id)
+    return True

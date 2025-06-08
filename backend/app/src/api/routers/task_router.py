@@ -88,3 +88,14 @@ async def delete_task(uuid: UUID):
     return JSONResponse(
         content={"message": "task deleted"},
     )
+
+
+@task_router.delete("/{uuid}/responsibles")
+async def delete_responsible(uuid: UUID, user_id: UUID):
+    res = await TaskService.delete_responsible(task_id=uuid, responsible_id=user_id)
+    if not res:
+        raise HTTPException(status_code=404, detail="task not found")
+
+    return JSONResponse(
+        content={"message": "task deleted"},
+    )
