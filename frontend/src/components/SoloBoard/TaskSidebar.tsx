@@ -1,8 +1,8 @@
 import React, { RefObject, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IFullTask, IUser, Status } from "@/interfaces/Board";
+import { IFullTask, IUser, Priority, Status } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
-import { FaTrashAlt } from "react-icons/fa";
+import { FaChevronDown, FaTrashAlt } from "react-icons/fa";
 import { FiMoreVertical } from "react-icons/fi";
 import {
   createSubTask,
@@ -17,6 +17,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import clsx from "clsx";
 import Image from "next/image";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { PRIORITY_FLAG } from "@/constants/priorityFlag";
 
 type Props = {
   task: IFullTask | null;
@@ -119,6 +120,11 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
     await updateEvent();
   };
 
+  const handleChangePriority = async (priorityVal: Priority) => {
+    await updateTask(sidebarTask.id, "priority", priorityVal);
+    await updateEvent();
+  }
+
   const handleColorChange = (color: string) => {
     console.log("Цвет изменен на:", color);
     updateTask(sidebarTask.id, "color", color);
@@ -183,7 +189,7 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
 
             {/* Приоритет */}
             <div className="mb-2">
-              <SelectPriority task={sidebarTask} />
+              <SelectPriority task={sidebarTask} update={handleChangePriority}/>
             </div>
 
             {/* Ответственные */}
@@ -274,25 +280,118 @@ function UpPanel({
   );
 }
 
-function SelectPriority({ task }: { task: IFullTask }) {
+function SelectPriority({ task, update }: { task: IFullTask, update: (val: Priority) => void }) {
+  const [priority, setPriority] = useState<Priority>(task.priority);
+
+  const handlePriorityChange = (newPriority: Priority) => {
+    setPriority(newPriority);
+    update(newPriority);
+  };
+
   return (
     <>
       <label className="font-semibold block mb-1">Приоритет:</label>
-      <select
-        className="border border-gray-300 rounded px-2 py-1 w-full"
-        value={task.priority}
-        onChange={async () => {
-          // await updateTask(task!.id, "priority", e.target.value);
-          // updateEvent();
-        }}
-      >
-        <option value="high">Высокий</option>
-        <option value="medium">Средний</option>
-        <option value="low">Низкий</option>
-      </select>
+      <PrioritySelect value={priority} onChange={handlePriorityChange} className="w-full" />
     </>
   );
 }
+
+type PrioritySelectProps = {
+  value: Priority;
+  onChange: (priority: Priority) => void;
+  className?: string;
+};
+
+const PrioritySelect = ({
+  value,
+  onChange,
+  className = "",
+}: PrioritySelectProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Закрытие при клике вне элемента
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
+  const priorities: Priority[] = ["LOW", "MEDIUM", "HIGH"];
+  const priorityAlias = {
+    LOW: "Низкая",
+    MEDIUM: "Обычная",
+    HIGH: "Высокая"
+  }
+
+  return (
+    <div 
+      ref={dropdownRef}
+      className={`relative ${className}`}
+      onKeyDown={handleKeyDown}
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between w-full px-3 py-2 text-left border rounded-md transition-all ${
+          isOpen ? "ring-2 ring-focus border-focus" : "border-gray-300 hover:border-gray-400"
+        }`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-2">
+          {PRIORITY_FLAG[value]}
+          <span className="capitalize">{priorityAlias[value]}</span>
+        </div>
+        <FaChevronDown 
+          className={`text-gray-500 transition-transform ${
+            isOpen ? "transform rotate-180" : ""
+          }`}
+          size={14}
+        />
+      </button>
+
+      {isOpen && (
+        <ul
+          className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none"
+          role="listbox"
+        >
+          {priorities.map((priority) => (
+            <li
+              key={priority}
+              role="option"
+              aria-selected={value === priority}
+              onClick={() => {
+                onChange(priority);
+                console.log(priority)
+                setIsOpen(false);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
+                value === priority
+                  ? "bg-blue-50 text-blue-700"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              {PRIORITY_FLAG[priority]}
+              <span className="capitalize">{priorityAlias[priority]}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 function Responsibles({ task }: { task: IFullTask }) {
   return (

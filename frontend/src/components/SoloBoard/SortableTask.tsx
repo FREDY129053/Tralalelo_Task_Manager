@@ -2,11 +2,11 @@ import React from "react";
 import { MdOutlineDownloadDone } from "react-icons/md";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { IFullTask, ITask, Priority, Status } from "@/interfaces/Board";
-import { FaFlag } from "react-icons/fa6";
+import { IFullTask, ITask, Status } from "@/interfaces/Board";
 import { GrInProgress } from "react-icons/gr";
 import { IoMdClose } from "react-icons/io";
 import { getTask } from "@/pages/api/board";
+import { PRIORITY_FLAG } from "@/constants/priorityFlag";
 
 type Props = {
   task: ITask;
@@ -31,20 +31,6 @@ function SortableTask({ task, openSidebar }: Props) {
     transition,
     opacity: isDragging ? 0.2 : 1,
     backgroundColor: task.color ?? "#fff",
-  };
-
-  const priorityFlags: Record<Priority, React.ReactNode> = {
-    LOW: <></>,
-    MEDIUM: (
-      <span className="text-xl text-blue-600">
-        <FaFlag />
-      </span>
-    ),
-    HIGH: (
-      <span className="text-xl text-red-600">
-        <FaFlag />
-      </span>
-    ),
   };
 
   const statusIcon: Record<Status, React.ReactNode> = {
@@ -85,8 +71,8 @@ function SortableTask({ task, openSidebar }: Props) {
           <span className="-mt-2 text-base">{task.title}</span>
         </div>
         <div className="flex flex-row justify-between">
-          <span>{priorityFlags[task.priority]}</span>
-          <span>{priorityFlags[task.priority]}</span>
+          <span>{PRIORITY_FLAG[task.priority]}</span>
+          <span>{PRIORITY_FLAG[task.priority]}</span>
         </div>
         {/* <span>{statusIcon[task.status]}</span> */}
         {/* <div>
