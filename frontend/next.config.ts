@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'avatars.mds.yandex.net',
       },
+      new URL('https://i.ibb.co/**'),
     ],
   },
 };
