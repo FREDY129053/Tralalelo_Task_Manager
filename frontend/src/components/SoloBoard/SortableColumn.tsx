@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { RefObject, useCallback, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -100,7 +100,7 @@ function SortableColumn({ column, updateBoard }: Props) {
         <div className="absolute max-w-3/4 left-4 top-0 z-10 flex items-center justify-center my-2 text-2xl leading-8 font-black rounded-t-[6px] bg-transparent">
           {editing ? (
             <input
-              ref={inputRef}
+              ref={inputRef as RefObject<HTMLInputElement>}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onBlur={finishEditing}

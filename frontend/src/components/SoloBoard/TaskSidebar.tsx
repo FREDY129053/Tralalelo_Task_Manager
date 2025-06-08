@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { RefObject, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { IFullTask, IUser } from "@/interfaces/Board";
+import { IFullTask, IUser, Status } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
 import { FaTrashAlt } from "react-icons/fa";
 import { FiMoreVertical } from "react-icons/fi";
@@ -16,6 +16,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import clsx from "clsx";
 import Image from "next/image";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 
 type Props = {
   task: IFullTask | null;
@@ -60,6 +61,39 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarTask, onClose]);
 
+  const {
+    editing: editingTitle,
+    value: valueTitle,
+    setValue: setTitleValue,
+    inputRef: inputTitleRef,
+    startEditing: startTitleEditing,
+    finishEditing: finishTitleEditing,
+    handleKeyDown: handleTitleKeyDown,
+  } = useInlineEdit({
+    initialValue: sidebarTask?.title ?? "",
+    onSave: async (newValue) => {
+      if (!sidebarTask) return;
+      await updateTask(sidebarTask.id, "title", newValue);
+      updateEvent();
+    },
+  });
+  const {
+    editing: editingDescription,
+    value: valueDescription,
+    setValue: setDescriptionValue,
+    inputRef: inputDescriptionRef,
+    startEditing: startDescriptionEditing,
+    finishEditing: finishDescriptionEditing,
+    handleKeyDown: handleDescriptionKeyDown,
+  } = useInlineEdit({
+    initialValue: sidebarTask?.description ?? "",
+    onSave: async (newValue) => {
+      if (!sidebarTask) return;
+      await updateTask(sidebarTask.id, "description", newValue);
+      updateEvent();
+    },
+  });
+
   if (!sidebarTask) return null;
 
   const updateEvent = async () => {
@@ -77,6 +111,11 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
 
   const handleDeleteSubtask = async (subtaskID: string) => {
     await deleteSubTask(subtaskID);
+    await updateEvent();
+  };
+
+  const handleChangeStatus = async (statusVal: Status) => {
+    await updateTask(sidebarTask.id, "status", statusVal);
     await updateEvent();
   };
 
@@ -107,15 +146,39 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Верхняя панель */}
-            <UpPanel onClose={onClose} />
+            <UpPanel onClose={onClose} changeStatus={handleChangeStatus} />
 
             {/* Название */}
-            <h2 className="text-2xl font-bold mb-2">{sidebarTask.title}</h2>
+            <h2 className="text-2xl font-bold mb-2">
+              {editingTitle ? (
+                <input
+                  ref={inputTitleRef as RefObject<HTMLInputElement>}
+                  value={valueTitle}
+                  onChange={(e) => setTitleValue(e.target.value)}
+                  onBlur={finishTitleEditing}
+                  onKeyDown={handleTitleKeyDown}
+                  className="bg-input-bg text-text-primary border border-input-border w-full rounded px-2 py-1 text-xl font-bold outline-none"
+                  style={{ minWidth: 0 }}
+                />
+              ) : (
+                <span className="cursor-pointer" onClick={startTitleEditing}>{sidebarTask.title}</span>
+              )}
+            </h2>
 
             {/* Описание */}
             <div className="mb-4">
               <label className="font-semibold block mb-1">Описание:</label>
-              <p>{sidebarTask.description || "—"}</p>
+              {/* <p>{sidebarTask.description || "—"}</p> */}
+              <p>{editingDescription ? (<textarea
+                  ref={inputDescriptionRef as RefObject<HTMLTextAreaElement>}
+                  value={valueDescription}
+                  onChange={(e) => setDescriptionValue(e.target.value)}
+                  onBlur={finishDescriptionEditing}
+                  onKeyDown={handleDescriptionKeyDown}
+                  className="bg-input-bg text-text-primary w-full border border-input-border rounded px-2 py-1 text-xl font-bold outline-none"
+                  style={{ minWidth: 0 }}
+                  rows={3}
+                />) : (<span className="cursor-pointer" onClick={startDescriptionEditing}>{sidebarTask.description || "—"}</span>)}</p>
             </div>
 
             {/* Приоритет */}
@@ -168,14 +231,26 @@ export default function TaskSidebar({ task, onClose, onBoardUpdate }: Props) {
   );
 }
 
-function UpPanel({ onClose }: { onClose: () => void }) {
+function UpPanel({
+  onClose,
+  changeStatus,
+}: {
+  onClose: () => void;
+  changeStatus: (status: Status) => void;
+}) {
   return (
     <div className="flex justify-end gap-3 items-center mb-4">
       <div className="flex space-x-2">
-        <button className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+        <button
+          onClick={() => changeStatus("DONE")}
+          className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium cursor-pointer hover:bg-green-200"
+        >
           Завершено
         </button>
-        <button className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
+        <button
+          onClick={() => changeStatus("REJECT")}
+          className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium cursor-pointer hover:bg-red-200"
+        >
           Отклонено
         </button>
         <div className="relative group items-center flex border border-border rounded-[6px] px-[3px]">

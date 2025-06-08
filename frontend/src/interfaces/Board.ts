@@ -25,6 +25,7 @@ export type Priority = "LOW" | "MEDIUM" | "HIGH"
 export interface ITask {
   id: string
   title: string
+  description: string | null
   position: number
   priority: Priority
   status: Status

@@ -8,7 +8,7 @@ type UseInlineEditProps = {
 export function useInlineEdit({ initialValue, onSave }: UseInlineEditProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(initialValue);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (editing) {
@@ -28,8 +28,9 @@ export function useInlineEdit({ initialValue, onSave }: UseInlineEditProps) {
 
   const cancelEditing = () => setEditing(false);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       finishEditing();
     } else if (e.key === "Escape") {
       cancelEditing();
