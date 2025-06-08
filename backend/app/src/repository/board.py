@@ -14,6 +14,7 @@ from backend.app.src.db.models import (
 from backend.app.src.enums import UserRole
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
+    AllowBoard,
     BoardUserPreview,
     ColumnOut,
     TaskShortOut,
@@ -23,6 +24,39 @@ from backend.app.src.schemas import (
 
 async def get_all_boards() -> List[Board]:
     return await Board.all()
+
+
+async def get_all_users_boards(user_id: UUID) -> List[AllowBoard]:
+    boards = (
+        await Board.filter(
+            members__user_id=user_id,
+            members__role__in=[UserRole.member, UserRole.moderator],
+        )
+        .prefetch_related("members")
+        .all()
+    )
+
+    result = []
+    for board in boards:
+        user_member = next(
+            (member for member in board.members if str(member.user_id) == str(user_id)),
+            None,
+        )
+
+        if not user_member:
+            continue
+
+        result.append(
+            AllowBoard(
+                id=board.id,
+                title=board.title,
+                description=board.description,
+                is_public=board.is_public,
+                color=board.color,
+                role=user_member.role,
+            )
+        )
+    return result
 
 
 async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
@@ -61,6 +95,7 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
                     color=task.color,
                     completed_subtasks=completed,
                     responsibles=responsibles_out,
+                    due_date=task.due_date,
                     total_subtasks=total,
                     subtasks=subtasks,
                     total_comments=len(comments),

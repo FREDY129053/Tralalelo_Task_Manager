@@ -9,6 +9,7 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 
 from backend.app.src.db.models import Board, BoardUser, Column, Comment, Subtask, Task
 from backend.app.src.enums import Priority, Status
+from backend.app.src.enums.role import UserRole
 
 
 def _is_valid_color(value: str) -> str:
@@ -165,6 +166,7 @@ class TaskShortOut(BaseModel):
     priority: Priority
     status: Status
     color: Optional[str]
+    due_date: Optional[datetime]
     responsibles: List[UserShortInfo]
     total_subtasks: int
     completed_subtasks: int
@@ -216,6 +218,10 @@ class BoardOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AllowBoard(BoardOut):
+    role: UserRole
 
 
 class AbsoluteFullBoardInfo(BaseModel):

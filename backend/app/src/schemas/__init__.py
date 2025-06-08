@@ -1,6 +1,7 @@
 # Здесь собраны все схемы запросов, ответов для хэндлеров
 from .board import (
     AbsoluteFullBoardInfo,
+    AllowBoard,
     BoardOut,
     ColumnOut,
     CommentCreate,
@@ -72,4 +73,5 @@ __all__ = [
     "CreateNotification",
     "NotificationInfo",
     "UpdateNotification",
+    "AllowBoard",
 ]

@@ -8,6 +8,7 @@ import backend.app.src.services.board as BoardService
 from backend.app.src.enums import UserRole
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
+    AllowBoard,
     ColumnOut,
     CommentCreate,
     CreateBoard,
@@ -21,6 +22,20 @@ board_router = APIRouter(prefix="/boards", tags=["Boards Endpoints"])
 @board_router.get("/", response_model=List[FullBoardInfo])
 async def get_all_boards():
     result = await BoardService.get_all_boards()
+
+    return result.message
+
+
+@board_router.get("/include_users", response_model=List[AllowBoard])
+async def get_all_users_in_boards(request: Request):
+    token = request.cookies.get("user", None)
+    if not token:
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+    result = await BoardService.get_users_in_boards(token=token)
+
+    if result.is_error:
+        raise HTTPException(status_code=result.status_code, detail=result.message)
 
     return result.message
 
