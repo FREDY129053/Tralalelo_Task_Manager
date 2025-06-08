@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -12,6 +12,7 @@ import { createTask, deleteColumn, updateColumn } from "@/pages/api/board";
 import DropdownMenu from "../DropdownMenu";
 import { SlOptions } from "react-icons/sl";
 import TaskSidebar from "./TaskSidebar";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 
 type Props = {
   column: IColumn;
@@ -19,38 +20,24 @@ type Props = {
 };
 
 function SortableColumn({ column, updateBoard }: Props) {
-  const [editing, setEditing] = useState(false);
-  const [inputValue, setInputValue] = useState(column.title);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(null);
-  const columnColor = column.color
+  const columnColor = column.color;
 
-  useEffect(() => {
-    if (editing) {
-      setInputValue(column.title);
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
-  }, [editing, column.title]);
-
-  const handleTitleClick = () => {
-    setEditing(true);
-  };
-
-  const finishEdit = async () => {
-    setEditing(false);
-    if (inputValue.trim() !== "" && inputValue !== column.title) {
-      await updateColumn(column.id, "title", inputValue);
+  const {
+    editing,
+    value,
+    setValue,
+    inputRef,
+    startEditing,
+    finishEditing,
+    handleKeyDown,
+  } = useInlineEdit({
+    initialValue: column.title,
+    onSave: async (newValue) => {
+      await updateColumn(column.id, "title", newValue);
       updateBoard();
-    }
-  };
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      finishEdit();
-    } else if (e.key === "Escape") {
-      setEditing(false);
-    }
-  };
+    },
+  });
 
   const {
     attributes,
@@ -97,13 +84,13 @@ function SortableColumn({ column, updateBoard }: Props) {
         ...style,
         background: columnColor || undefined,
       }}
-      className={`rounded-b-[6px] relative flex flex-col flex-shrink-0 w-[260px] max-h-full rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 ${!column.color ? "bg-task-bg" : ""}`}
+      className={`rounded-b-[6px] relative border border-border flex flex-col flex-shrink-0 w-[260px] max-h-full rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 ${!column.color ? "bg-task-bg" : ""}`}
     >
       <div className="relative flex items-center justify-center">
         <div
           {...attributes}
           style={{
-            background: columnColor || undefined
+            background: columnColor || undefined,
           }}
           className={`sticky top-0 z-10 flex items-center justify-center w-full p-2 text-2xl leading-8 font-black rounded-t-[6px] ${!column.color ? "bg-task-bg" : ""}  ${
             isDragging ? "cursor-grabbing" : "cursor-grab"
@@ -114,16 +101,16 @@ function SortableColumn({ column, updateBoard }: Props) {
           {editing ? (
             <input
               ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onBlur={finishEdit}
-              onKeyDown={handleInputKeyDown}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onBlur={finishEditing}
+              onKeyDown={handleKeyDown}
               className="bg-input-bg text-text-primary border border-input-border rounded px-2 py-1 text-xl font-bold outline-none"
               style={{ minWidth: 0 }}
             />
           ) : (
             <span
-              onClick={handleTitleClick}
+              onClick={startEditing}
               className="cursor-pointer select-none text-center max-w-[210px] truncate block"
               title={column.title}
             >
@@ -171,9 +158,12 @@ function SortableColumn({ column, updateBoard }: Props) {
           </SortableContext>
         )}
       </div>
-      <div style={{
-        background: columnColor || undefined
-      }} className={`flex justify-center rounded-b-[6px] py-4 z-20 ${!column.color ? "bg-task-bg" : ""}`}>
+      <div
+        style={{
+          background: columnColor || undefined,
+        }}
+        className={`flex justify-center rounded-b-[6px] py-4 z-20 ${!column.color ? "bg-task-bg" : ""}`}
+      >
         <button
           onClick={handleAddTask}
           className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-transparent hover:bg-column-bg text-sky-600 hover:text-sky-800 transition cursor-pointer"

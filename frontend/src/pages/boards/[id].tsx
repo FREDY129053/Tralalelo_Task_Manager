@@ -297,7 +297,7 @@ export default function BoardPage() {
           items={boardData.columns.map((col) => col.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex flex-nowrap justify-start w-auto gap-6 p-6 overflow-x-auto relative">
+          <div className="flex flex-nowrap h-[90%] justify-start w-auto gap-6 p-6 overflow-x-auto relative">
             {boardData.columns.map((col) => (
               <SortableColumn
                 key={col.id}
