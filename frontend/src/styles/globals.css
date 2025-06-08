@@ -75,6 +75,20 @@
     background: #0369a1;
     border-radius: 4px;
   }
+
+  .react-datepicker__day--outside-month {
+    opacity: 0.5;
+    color: #9ca3af;
+  }
+
+  .react-datepicker__day--outside-month:hover {
+    opacity: 0.7;
+  }
+
+  .react-datepicker__day--disabled {
+    opacity: 0.5 !important;
+  }
+
 }
 
 @media (prefers-color-scheme: dark) {

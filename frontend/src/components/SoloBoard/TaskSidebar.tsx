@@ -8,7 +8,12 @@ import {
   Status,
 } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
-import { FaTimes, FaTrashAlt } from "react-icons/fa";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaTimes,
+  FaTrashAlt,
+} from "react-icons/fa";
 import { FiMoreVertical } from "react-icons/fi";
 import {
   createSubTask,
@@ -147,9 +152,9 @@ export default function TaskSidebar({
   };
 
   const handleDeleteResponsible = async (responsibleID: string) => {
-    await deleteResponsible(sidebarTask.id, responsibleID)
-    await updateEvent()
-  } 
+    await deleteResponsible(sidebarTask.id, responsibleID);
+    await updateEvent();
+  };
 
   const handleColorChange = (color: string) => {
     console.log("Цвет изменен на:", color);
@@ -376,7 +381,7 @@ function Responsibles({
   task,
   users,
   onSelect,
-  deleteResponsible
+  deleteResponsible,
 }: {
   task: IFullTask;
   users: IMember[];
@@ -441,7 +446,7 @@ function SelectDate({
   dateChange: (date: Date | null) => void;
 }) {
   return (
-    <>
+    <div className="flex flex-row gap-4 items-center mt-4">
       <label className="font-semibold block mb-1">Срок:</label>
       <DatePicker
         selected={date}
@@ -450,10 +455,97 @@ function SelectDate({
         dateFormat="dd.MM.yyyy"
         isClearable
         placeholderText="Выберите дату"
-        className="border border-gray-300 rounded px-2 py-1 w-full focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none transition"
-        calendarClassName="rounded-lg shadow-lg border border-gray-200"
+        showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
+        renderCustomHeader={({
+          date,
+          changeYear,
+          changeMonth,
+          decreaseMonth,
+          increaseMonth,
+          prevMonthButtonDisabled,
+          nextMonthButtonDisabled,
+        }) => (
+          <div className="flex items-center justify-between px-4 py-2">
+            <button
+              onClick={decreaseMonth}
+              disabled={prevMonthButtonDisabled}
+              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+            >
+              <FaChevronLeft />
+            </button>
+
+            <div className="flex gap-2">
+              <select
+                value={date.getMonth()}
+                onChange={({ target: { value } }) =>
+                  changeMonth(parseInt(value))
+                }
+                className="bg-transparent border rounded px-2 py-1 text-sm cursor-pointer hover:bg-gray-50"
+              >
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <option key={i} value={i}>
+                    {new Date(0, i).toLocaleString("default", {
+                      month: "long",
+                    })}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={date.getFullYear()}
+                onChange={({ target: { value } }) =>
+                  changeYear(parseInt(value))
+                }
+                className="bg-transparent border rounded px-2 py-1 text-sm cursor-pointer hover:bg-gray-50"
+              >
+                {Array.from({ length: 10 }).map((_, i) => {
+                  const year = new Date().getFullYear() + i - 5;
+                  return (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <button
+              onClick={increaseMonth}
+              disabled={nextMonthButtonDisabled}
+              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        )}
+        className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+        calendarClassName="rounded-lg shadow-xl border border-gray-200 p-4"
+        dayClassName={(date) => {
+          const isWeekend = date.getDay() === 0 || date.getDay() === 6; // 0 - воскресенье, 6 - суббота
+          const isToday =
+            date.getDate() === new Date().getDate() &&
+            date.getMonth() === new Date().getMonth() &&
+            date.getFullYear() === new Date().getFullYear();
+
+          let className = "rounded-[6px] hover:bg-gray-100";
+
+          if (isToday) {
+            className += " bg-blue-100!";
+          }
+
+          if (isWeekend) {
+            className += " text-red-500! hover:bg-red-100!";
+          }
+
+          return className;
+        }}
+        weekDayClassName={() => "text-gray-500 text-sm font-medium"}
+        popperClassName="!pt-2"
+        popperPlacement="bottom-start"
       />
-    </>
+    </div>
   );
 }
 
