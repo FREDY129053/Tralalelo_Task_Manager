@@ -3,12 +3,14 @@ import { createPortal } from "react-dom";
 import {
   IFullTask,
   IMember,
+  ISubtask,
   IUser,
   Priority,
   Status,
 } from "@/interfaces/Board";
 import { IoMdClose } from "react-icons/io";
 import {
+  FaCheck,
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
@@ -20,6 +22,7 @@ import {
   deleteResponsible,
   deleteSubTask,
   getTask,
+  updateSubTask,
   updateTask,
 } from "@/pages/api/board";
 import returnDate from "@/helpers/NormalDate";
@@ -41,12 +44,12 @@ type Props = {
 };
 
 const COLOR_OPTIONS = [
-  "var(--color-board-tint-1)",
-  "var(--color-board-tint-2)",
-  "var(--color-board-tint-3)",
-  "var(--color-board-tint-4)",
-  "var(--color-board-tint-5)",
-  "var(--color-board-tint-6)",
+  "#FBEAEA",
+  "#EAFBEA",
+  "#FAF3E0",
+  "#fad5c0",
+  "#FBEAF7",
+  "#d8eff4",
 ];
 
 export default function TaskSidebar({
@@ -131,6 +134,15 @@ export default function TaskSidebar({
     await updateEvent();
   };
 
+  const handleChangeSubtask = async (
+    subtaskID: string,
+    field: string,
+    val: boolean | string
+  ) => {
+    await updateSubTask(subtaskID, field, val);
+    updateEvent();
+  };
+
   const handleDeleteSubtask = async (subtaskID: string) => {
     await deleteSubTask(subtaskID);
     await updateEvent();
@@ -156,9 +168,9 @@ export default function TaskSidebar({
     await updateEvent();
   };
 
-  const handleColorChange = (color: string) => {
+  const handleColorChange = async (color: string) => {
     console.log("Цвет изменен на:", color);
-    updateTask(sidebarTask.id, "color", color);
+    await updateTask(sidebarTask.id, "color", color);
     updateEvent();
   };
 
@@ -271,6 +283,9 @@ export default function TaskSidebar({
                 showList={showSubtasks}
                 setShowList={setShowSubtasks}
                 task={sidebarTask}
+                deleteSubtask={handleDeleteSubtask}
+                addSubtask={handleAddSubtask}
+                changeSubtask={handleChangeSubtask}
               />
             </div>
 
@@ -573,10 +588,15 @@ function SelectColor({
           {COLOR_OPTIONS.map((c) => (
             <div
               key={c}
-              onClick={() => changeColor(c)}
+              onClick={() => {
+                changeColor(c);
+                setPickerVisible(false);
+              }}
               className={clsx(
                 "w-6 h-6 rounded-full cursor-pointer border",
-                task.color === c ? "ring-2 ring-black" : ""
+                task.color?.toLowerCase() === c.toLowerCase()
+                  ? "ring-1 ring-black"
+                  : ""
               )}
               style={{ background: c }}
             />
@@ -597,8 +617,8 @@ function ProgressBar({ task }: { task: IFullTask }) {
         <path
           className="text-gray-200"
           d="M18 2.0845
-                 a 15.9155 15.9155 0 0 1 0 31.831
-                 a 15.9155 15.9155 0 0 1 0 -31.831"
+           a 15.9155 15.9155 0 0 1 0 31.831
+           a 15.9155 15.9155 0 0 1 0 -31.831"
           fill="none"
           stroke="currentColor"
           strokeWidth="4"
@@ -606,10 +626,11 @@ function ProgressBar({ task }: { task: IFullTask }) {
         <path
           className="text-sky-500"
           d="M18 2.0845
-                 a 15.9155 15.9155 0 0 1 0 31.831"
+           a 15.9155 15.9155 0 0 1 0 31.831
+           a 15.9155 15.9155 0 0 1 0 -31.831"
           fill="none"
           stroke="currentColor"
-          strokeDasharray={`${progress}, 100`}
+          strokeDasharray={`${progress * 0.999}, 100`}
           strokeWidth="4"
         />
       </svg>
@@ -624,11 +645,36 @@ function SubtasksList({
   showList,
   setShowList,
   task,
+  deleteSubtask,
+  addSubtask,
+  changeSubtask,
 }: {
   showList: boolean;
   setShowList: (val: boolean) => void;
   task: IFullTask;
+  deleteSubtask: (taskID: string) => void;
+  changeSubtask: (taskID: string, field: string, val: string | boolean) => void;
+  addSubtask: () => void;
 }) {
+  const [localSubtasks, setLocalSubtasks] = useState(task.subtasks);
+
+  useEffect(() => {
+    setLocalSubtasks(task.subtasks);
+  }, [task.subtasks]);
+
+  const handleCheckboxChange = (subtaskId: string) => {
+    setLocalSubtasks((prev) =>
+      prev.map((subtask) => {
+        if (subtask.id === subtaskId) {
+          const newState = !subtask.is_completed;
+          changeSubtask(subtaskId, "is_completed", newState);
+          return { ...subtask, is_completed: newState };
+        }
+        return subtask;
+      })
+    );
+  };
+
   return (
     <>
       <button
@@ -639,34 +685,100 @@ function SubtasksList({
       </button>
       {showList && (
         <ul className="space-y-2">
-          {task.subtasks.map((subtask, idx) => (
-            <li
-              key={idx}
-              className="flex items-center justify-between border border-border px-2 py-1 rounded"
-            >
-              <input
-                type="checkbox"
-                checked={subtask.is_completed}
-                className="w-4 h-4"
-              />
-              <span
-                className={`flex-1 mx-2 ${subtask.is_completed && "line-through text-gray-400"}`}
-              >
-                {subtask.title}
-              </span>
-              <button className="text-red-500 hover:text-red-700">
-                <FaTrashAlt size={14} />
-              </button>
-            </li>
+          {localSubtasks.map((subtask) => (
+            <SubtaskItem
+              key={subtask.id}
+              subtask={subtask}
+              handleCheckboxChange={handleCheckboxChange}
+              deleteSubtask={deleteSubtask}
+              changeSubtask={changeSubtask}
+            />
           ))}
           <li>
-            <button className="text-sky-600 hover:underline">
+            <button
+              onClick={() => addSubtask()}
+              className="text-sky-600 hover:underline cursor-pointer"
+            >
               + Добавить подзадачу
             </button>
           </li>
         </ul>
       )}
     </>
+  );
+}
+
+function SubtaskItem({
+  subtask,
+  handleCheckboxChange,
+  deleteSubtask,
+  changeSubtask
+}: {
+  subtask: ISubtask;
+  deleteSubtask: (id: string) => void;
+  handleCheckboxChange: (id: string) => void;
+  changeSubtask: (taskID: string, field: string, val: string | boolean) => void;
+}) {
+  const {
+    editing: editingSubtaskTitle,
+    value: valueSubtaskTitle,
+    setValue: setSubtaskTitleValue,
+    inputRef: inputSubtaskTitleRef,
+    startEditing: startSubtaskTitleEditing,
+    finishEditing: finishSubtaskTitleEditing,
+    handleKeyDown: handleSubtaskTitleKeyDown,
+  } = useInlineEdit({
+    initialValue: subtask?.title ?? "",
+    onSave: async (newValue) => {
+      if (!subtask) return;
+      changeSubtask(subtask.id, "title", newValue)
+    },
+  });
+  return (
+    <li className="flex items-center justify-between border border-border px-2 py-1 rounded">
+      <label className="relative flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={subtask.is_completed}
+          onChange={() => handleCheckboxChange(subtask.id)}
+          className="absolute opacity-0 w-0 h-0"
+        />
+        <span
+          className={`flex items-center justify-center w-4 h-4 border rounded ${
+            subtask.is_completed
+              ? "bg-blue-500 border-blue-500"
+              : "border-gray-300"
+          }`}
+        >
+          {subtask.is_completed && <FaCheck className="text-white text-xs" />}
+        </span>
+      </label>
+      {editingSubtaskTitle ? (
+        <input
+          ref={inputSubtaskTitleRef as RefObject<HTMLInputElement>}
+          value={valueSubtaskTitle}
+          onChange={(e) => setSubtaskTitleValue(e.target.value)}
+          onBlur={finishSubtaskTitleEditing}
+          onKeyDown={handleSubtaskTitleKeyDown}
+          className="flex-1 mx-2 bg-transparent outline-none"
+        />
+      ) : (
+        <span
+          onClick={startSubtaskTitleEditing}
+          className={`flex-1 mx-2 cursor-pointer ${
+            subtask.is_completed && "line-through text-gray-400"
+          }`}
+        >
+          {valueSubtaskTitle}
+        </span>
+      )}
+      <button
+        onClick={() => deleteSubtask(subtask.id)}
+        className="text-red-500 hover:text-red-700 cursor-pointer"
+      >
+        <FaTrashAlt size={14} />
+      </button>
+    </li>
   );
 }
 

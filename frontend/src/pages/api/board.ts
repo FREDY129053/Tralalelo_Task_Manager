@@ -181,6 +181,16 @@ export async function createSubTask(taskID: string, title: string, is_completed:
   )
 }
 
+export async function updateSubTask(subtaskID: string, field: string, value: string | boolean | null): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/subtasks/update/${subtaskID}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({[field]: value})
+    },
+    "Ошибка при удалении задачи"
+  )
+}
 export async function deleteSubTask(subtaskID: string): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/subtasks/${subtaskID}`,
