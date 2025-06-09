@@ -31,7 +31,7 @@ function SortableTask({ task, openSidebar }: Props) {
 
   const date = returnDate(task.due_date)
   const [day, month] = [date.split('.')[0], date.split('.')[1]]
-  const abstractMonth = {
+  const abstractMonth: Record<string, string> = {
     "01": "янв.",
     "02": "фев.",
     "03": "мар.",
@@ -90,7 +90,7 @@ function SortableTask({ task, openSidebar }: Props) {
           <span className="text-gray-500">{day} {abstractMonth[month]}</span>
           <span className="-mt-1 text-base">{task.title}</span>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-row justify-between mt-2">
           <div className="flex flex-row">
             {task.responsibles.map((user, index) => (
               <div

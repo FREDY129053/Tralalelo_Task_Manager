@@ -177,11 +177,13 @@ export default function TaskSidebar({
     if (!date) {
       setNewDueDate(null);
       await updateTask(task!.id, "due_date", null);
+      updateEvent()
       return;
     }
     const dateForAPI = date.toISOString();
     setNewDueDate(date);
     await updateTask(task!.id, "due_date", dateForAPI);
+    updateEvent()
   };
 
   return createPortal(
