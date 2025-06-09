@@ -7,6 +7,9 @@ import { GrInProgress } from "react-icons/gr";
 import { IoMdClose } from "react-icons/io";
 import { getTask } from "@/pages/api/board";
 import { PRIORITY_FLAG } from "@/constants/priorityFlag";
+import Image from "next/image";
+import { LiaComment } from "react-icons/lia";
+import returnDate from "@/helpers/NormalDate";
 
 type Props = {
   task: ITask;
@@ -25,6 +28,23 @@ function SortableTask({ task, openSidebar }: Props) {
     id: task.id,
     data: { type: "task" },
   });
+
+  const date = returnDate(task.due_date)
+  const [day, month] = [date.split('.')[0], date.split('.')[1]]
+  const abstractMonth = {
+    "01": "янв.",
+    "02": "фев.",
+    "03": "мар.",
+    "04": "апр.",
+    "05": "май",
+    "06": "июн.",
+    "07": "июл.",
+    "08": "авг.",
+    "09": "сен.",
+    "10": "окт.",
+    "11": "нояб.",
+    "12": "дек.",
+  }
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -67,20 +87,35 @@ function SortableTask({ task, openSidebar }: Props) {
     >
       <div className="flex flex-col">
         <div className="flex flex-col">
-          <span>12 июня</span>
-          <span className="-mt-2 text-base">{task.title}</span>
+          <span className="text-gray-500">{day} {abstractMonth[month]}</span>
+          <span className="-mt-1 text-base">{task.title}</span>
         </div>
         <div className="flex flex-row justify-between">
-          <span>{PRIORITY_FLAG[task.priority]}</span>
-          <span>{PRIORITY_FLAG[task.priority]}</span>
+          <div className="flex flex-row">
+            {task.responsibles.map((user, index) => (
+              <div
+                key={user.id}
+                className="relative"
+                style={{
+                  marginLeft: index > 0 ? "-8px" : "0",
+                  zIndex: task.responsibles.length + index,
+                }}
+              >
+                <Image
+                  src={user.avatar_url ?? ""}
+                  alt={user.username}
+                  width={100}
+                  height={100}
+                  className="w-6 h-6 rounded-[6px] object-cover border border-white"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-row gap-2">
+            <span>{task.total_comments > 0 ? <LiaComment className="text-xl text-gray-500" /> : <></>}</span>
+            <span>{PRIORITY_FLAG[task.priority]}</span>
+          </div>
         </div>
-        {/* <span>{statusIcon[task.status]}</span> */}
-        {/* <div>
-
-          <span>
-            {task.completed_subtasks} / {task.total_subtasks}
-          </span>
-        </div> */}
         <div className="flex items-center gap-2 mt-5">
           {task.total_subtasks > 0 &&
             (task.total_subtasks < 21 ? (
@@ -102,7 +137,7 @@ function SortableTask({ task, openSidebar }: Props) {
                 />
               </div>
             ))}
-            {task.total_subtasks > 0 && (
+          {task.total_subtasks > 0 && (
             <span className="text-xs text-gray-500 whitespace-nowrap">
               {task.completed_subtasks} / {task.total_subtasks}
             </span>

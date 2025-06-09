@@ -62,7 +62,6 @@ export async function deleteMember(boardID: string, userID: string): Promise<voi
   )
 }
 
-
 export async function updateColumnsPositions(
   colsInfo: IUpdateCols[]
 ): Promise<void> {

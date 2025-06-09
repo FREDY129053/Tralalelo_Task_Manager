@@ -34,6 +34,8 @@ export interface ITask {
   total_subtasks: number
   completed_subtasks: number
   subtasks: ISubtask[]
+  total_comments: number
+  due_date: string
 }
 
 export interface IFullTask extends ITask {

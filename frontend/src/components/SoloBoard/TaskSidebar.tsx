@@ -4,7 +4,6 @@ import {
   IFullTask,
   IMember,
   ISubtask,
-  IUser,
   Priority,
   Status,
 } from "@/interfaces/Board";
