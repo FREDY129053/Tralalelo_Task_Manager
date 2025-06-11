@@ -1,4 +1,11 @@
-import { IBoardFullInfo, IBoardShortInfo, IColumn, IFullTask, IMember, Role } from "@/interfaces/Board";
+import {
+  IBoardFullInfo,
+  IBoardShortInfo,
+  IColumn,
+  IFullTask,
+  IMember,
+  Role,
+} from "@/interfaces/Board";
 import { apiFetch } from "./abstractFunctions";
 
 interface IUpdateCols {
@@ -33,33 +40,39 @@ export async function getBoardData(boardId: string): Promise<IBoardFullInfo> {
 export async function getBoardMembers(boardID: string): Promise<IMember[]> {
   return apiFetch(
     `http://localhost:8080/api/boards/${boardID}/members`,
-    {method: "GET"},
+    { method: "GET" },
     "Ошибка при получении участников"
-  )
+  );
 }
 
-export async function addMember(boardID: string, userID: string): Promise<void> {
+export async function addMember(
+  boardID: string,
+  userID: string
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/boards/${boardID}/add_member?user_id=${userID}`,
-    {method: "POST"},
+    { method: "POST" },
     "Ошибка при добавлении участника"
-  )
+  );
 }
 
 export async function changeRole(boardID: string, userID: string, role: Role) {
   return apiFetch(
     `http://localhost:8080/api/boards/${boardID}/change_role/${userID}?role=${role}`,
-    {method: "PUT"},
+    { method: "PUT" },
     "Ошибка при обновлении роли"
-  )
+  );
 }
 
-export async function deleteMember(boardID: string, userID: string): Promise<void> {
+export async function deleteMember(
+  boardID: string,
+  userID: string
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/boards/${boardID}/delete_member?member_id=${userID}`,
-    {method: "DELETE"},
+    { method: "DELETE" },
     "Ошибка при удалении участника"
-  )
+  );
 }
 
 export async function updateColumnsPositions(
@@ -166,29 +179,37 @@ export async function getTask(taskID: string): Promise<IFullTask> {
       method: "GET",
     },
     "Ошибка при получении задачи"
-  )
+  );
 }
 
-export async function createSubTask(taskID: string, title: string, is_completed: boolean = false): Promise<void> {
+export async function createSubTask(
+  taskID: string,
+  title: string,
+  is_completed: boolean = false
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/tasks/${taskID}/subtasks`,
     {
       method: "POST",
-      body: JSON.stringify({title, is_completed})
+      body: JSON.stringify({ title, is_completed }),
     },
     "Ошибка при получении задачи"
-  )
+  );
 }
 
-export async function updateSubTask(subtaskID: string, field: string, value: string | boolean | null): Promise<void> {
+export async function updateSubTask(
+  subtaskID: string,
+  field: string,
+  value: string | boolean | null
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/subtasks/update/${subtaskID}`,
     {
       method: "PATCH",
-      body: JSON.stringify({[field]: value})
+      body: JSON.stringify({ [field]: value }),
     },
     "Ошибка при удалении задачи"
-  )
+  );
 }
 export async function deleteSubTask(subtaskID: string): Promise<void> {
   return apiFetch(
@@ -197,24 +218,42 @@ export async function deleteSubTask(subtaskID: string): Promise<void> {
       method: "DELETE",
     },
     "Ошибка при удалении задачи"
-  )
+  );
 }
 
-export async function updateTask(taskID: string, field: string, value: string | null): Promise<void> {
+export async function updateTask(
+  taskID: string,
+  field: string,
+  value: string | null
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/tasks/${taskID}/fields`,
     {
       method: "PATCH",
-      body: JSON.stringify({[field]: value})
+      body: JSON.stringify({ [field]: value }),
     },
     "Ошибка при удалении задачи"
-  )
+  );
 }
 
-export async function deleteResponsible(taskID: string, responsibleID: string): Promise<void> {
+export async function deleteResponsible(
+  taskID: string,
+  responsibleID: string
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/tasks/${taskID}/responsibles?user_id=${responsibleID}`,
-    {method: "DELETE"},
+    { method: "DELETE" },
     "Ошибка при удалении ответственного"
-  )
+  );
+}
+
+export async function writeComment(
+  taskID: string,
+  content: string
+): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/tasks/${taskID}/comments`,
+    { method: "POST", body: JSON.stringify({content}) },
+    "Ошибка при записи комментария"
+  );
 }

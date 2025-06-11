@@ -23,6 +23,7 @@ import {
   getTask,
   updateSubTask,
   updateTask,
+  writeComment,
 } from "@/pages/api/board";
 import returnDate from "@/helpers/NormalDate";
 import DatePicker from "react-datepicker";
@@ -186,6 +187,11 @@ export default function TaskSidebar({
     updateEvent()
   };
 
+  const handleWriteComment = async (content: string) => {
+    await writeComment(sidebarTask.id, content)
+    updateEvent()
+  }
+
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-none">
       <div
@@ -297,7 +303,7 @@ export default function TaskSidebar({
           </div>
 
           {/* Поле ввода комментария */}
-          <WriteComment text={commentText} setComment={setCommentText} />
+          <WriteComment text={commentText} setComment={setCommentText} saveComment={handleWriteComment} />
         </div>
       </div>
     </div>,
@@ -840,9 +846,11 @@ function CommentsList({ task }: { task: IFullTask }) {
 function WriteComment({
   text,
   setComment,
+  saveComment
 }: {
   text: string;
   setComment: (val: string) => void;
+  saveComment: (val: string) => void;
 }) {
   return (
     <div className="sticky bottom-0 bg-white border-t p-4 w-full">
@@ -856,8 +864,8 @@ function WriteComment({
         />
         <button
           onClick={() => {
-            console.log("Отправка комментария:", text);
-            setComment("");
+            saveComment(text)
+            setComment("")
           }}
           className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition-colors"
         >
