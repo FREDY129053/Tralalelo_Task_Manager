@@ -5,6 +5,7 @@ from .board import (
     BoardOut,
     ColumnOut,
     CommentCreate,
+    CommentOut,
     CreateBoard,
     CreateColumn,
     FullBoardInfo,
@@ -74,4 +75,5 @@ __all__ = [
     "NotificationInfo",
     "UpdateNotification",
     "AllowBoard",
+    "CommentOut",
 ]

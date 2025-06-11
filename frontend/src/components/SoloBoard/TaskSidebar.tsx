@@ -811,8 +811,7 @@ function CommentsList({ task }: { task: IFullTask }) {
                   >
                     <Image
                       src={
-                        c.author?.avatar ||
-                        "https://i.ibb.co/QFTc28Lg/93582da73164.png"
+                        c.user.avatar_url
                       }
                       alt="avatar"
                       className="w-6 h-6 rounded-full -mt-7"
@@ -821,8 +820,7 @@ function CommentsList({ task }: { task: IFullTask }) {
                     />
                     <div>
                       <div className="text-sm font-medium">
-                        {/* {c.author?.username} */}
-                        Fredy129053
+                        {c.user.username}
                       </div>
                       <div className="text-xs text-gray-500 mb-1">
                         {returnDate(c.created_at)}

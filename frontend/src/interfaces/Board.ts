@@ -16,7 +16,7 @@ export interface IComment {
   id: string
   content: string
   created_at: string
-  user_id: string
+  user: IUserShortInfo
 }
 
 export type Role = "CREATOR" | "MODERATOR" | "MEMBER"

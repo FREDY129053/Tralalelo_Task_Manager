@@ -139,7 +139,7 @@ class CommentOut(BaseModel):
     id: UUID
     content: str
     created_at: datetime
-    user_id: Optional[UUID]
+    user: Optional[UserShortInfo]
 
     class Config:
         from_attributes = True

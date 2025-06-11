@@ -4,7 +4,7 @@ from uuid import UUID
 from tortoise.exceptions import OperationalError
 
 from backend.app.src.db.models import Comment, Subtask, Task, TaskResponsible
-from backend.app.src.schemas import TaskOut, UserShortInfo
+from backend.app.src.schemas import CommentOut, TaskOut, UserShortInfo
 
 
 async def get_task(uuid: UUID) -> Optional[Task]:
@@ -13,7 +13,7 @@ async def get_task(uuid: UUID) -> Optional[Task]:
 
 async def get_full_task(id: UUID) -> Optional[TaskOut]:
     task = await Task.get_or_none(id=id).prefetch_related(
-        "subtasks", "comments", "responsibles__user"
+        "subtasks", "comments__user", "responsibles__user"
     )
     if not task:
         return None
@@ -25,6 +25,18 @@ async def get_full_task(id: UUID) -> Optional[TaskOut]:
             avatar_url=responsible.user.avatar_url,
         )
         for responsible in task.responsibles
+    ]
+
+    comments = [
+        CommentOut(
+            id=com.id,
+            content=com.content,
+            created_at=com.created_at,
+            user=UserShortInfo(
+                id=com.user.id, username=com.user.username, avatar_url=com.user.avatar_url
+            ),
+        )
+        for com in task.comments
     ]
 
     return TaskOut(
@@ -40,7 +52,7 @@ async def get_full_task(id: UUID) -> Optional[TaskOut]:
         total_subtasks=len(task.subtasks),
         completed_subtasks=sum(1 for s in task.subtasks if s.is_completed),
         subtasks=task.subtasks,
-        comments=task.comments,
+        comments=comments,
     )
 
 
