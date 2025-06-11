@@ -18,7 +18,9 @@ def _is_valid_color(value: str) -> str:
         if not regex.match(value.lower()):
             raise ValidationError(f"{value} is not valid HEX color code")
 
-    return value.lower()
+        return value.lower()
+
+    return value
 
 
 FullBoardInfo = typing.NewType(
