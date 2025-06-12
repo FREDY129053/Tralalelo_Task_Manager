@@ -18,7 +18,6 @@ export default function NotificationList({
 }: Props) {
   const [selected, setSelected] = useState<INotification | null>(null);
 
-  // Модалка для просмотра уведомления
   function NotificationModal({
     notification,
     onClose,
@@ -88,7 +87,7 @@ export default function NotificationList({
 
   return (
     <div className="w-full  mx-auto flex flex-col h-full">
-      <h2 className="text-lg font-bold text-center pt-6 pb-2">Уведомления</h2>
+      <h2 className="text-3xl font-bold text-center pt-6 mb-6">Уведомления</h2>
       <div className="flex-1 w-full overflow-y-auto px-6 pb-2">
         {notifications.length === 0 && (
           <div className="text-center text-gray-400 py-10">Нет уведомлений</div>

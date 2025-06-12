@@ -1,35 +1,40 @@
-import { IBoardShortInfo } from "@/interfaces/Board";
-import { getBoards } from "@/pages/api/board";
+import { FilterOption, IBoardShortInfo, IMemberBoardShortInfo } from "@/interfaces/Board";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-export default function Boards() {
-  const [boards, setBoards] = useState<IBoardShortInfo[] | null>(null);
-  const [filter, setFilter] = useState<"all" | "public" | "private">("all");
 
-  useEffect(() => {
-    getBoards().then(setBoards).catch(console.error);
-  }, []);
+type Props = {
+  title: string;
+  boards: IBoardShortInfo[] | IMemberBoardShortInfo[] | null;
+  filters?: FilterOption[];
+  defaultFilter?: string;
+};
+
+export default function Boards({
+  title,
+  boards,
+  filters,
+  defaultFilter = "all",
+}: Props) {
+  const [filter, setFilter] = useState<string>(defaultFilter);
 
   const filteredBoards =
     boards?.filter((board) => {
-      if (filter === "all") return true;
-      if (filter === "public") return board.is_public;
-      if (filter === "private") return !board.is_public;
-      return true;
+      const current = filters?.find((f) => f.value === filter);
+      return current ? current.check(board) : true;
     }) ?? [];
 
   return (
     <div className="min-h-screen bg-main-bg text-[var(--color-text-primary)] p-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Мои доски</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">{title}</h1>
 
       <div className="flex justify-center gap-4 mb-10 flex-wrap">
-        {["all", "public", "private"].map((f) => {
-          const isActive = filter === f;
+        {filters?.map((f) => {
+          const isActive = filter === f.value;
           return (
             <button
-              key={f}
-              onClick={() => setFilter(f as never)}
+              key={f.value}
+              onClick={() => setFilter(f.value)}
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition hover:bg-hover cursor-pointer
             ${
               isActive
@@ -37,16 +42,18 @@ export default function Boards() {
                 : "border-[var(--color-button-bg)] text-[var(--color-button-bg)] hover:bg-[var(--color-button-bg)] hover:text-white"
             }`}
             >
-              {f === "all" && "Все доски"}
-              {f === "public" && "Публичные"}
-              {f === "private" && "Приватные"}
+              {f.label}
             </button>
           );
         })}
       </div>
 
       <div
-        className={`${filteredBoards.length <= 0 ? "flex flex-col items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"}`}
+        className={`${
+          filteredBoards.length <= 0
+            ? "flex flex-col items-center justify-center"
+            : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        }`}
       >
         {filteredBoards.length > 0 ? (
           filteredBoards.map((board) => (
@@ -83,7 +90,7 @@ export default function Boards() {
           ))
         ) : (
           <div className="text-center text-[var(--color-text-secondary)]">
-            Загрузка...
+            Нет досок
           </div>
         )}
       </div>

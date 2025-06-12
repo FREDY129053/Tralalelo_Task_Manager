@@ -4,6 +4,7 @@ import {
   IColumn,
   IFullTask,
   IMember,
+  IMemberBoardShortInfo,
   Role,
 } from "@/interfaces/Board";
 import { apiFetch } from "./abstractFunctions";
@@ -22,6 +23,13 @@ interface IUpdateTasks {
 export async function getBoards(): Promise<IBoardShortInfo[]> {
   return apiFetch<IBoardShortInfo[]>(
     "http://localhost:8080/api/boards",
+    { method: "GET" },
+    "ошибка при получении досок"
+  );
+}
+export async function getMyBoards(): Promise<IMemberBoardShortInfo[]> {
+  return apiFetch<IMemberBoardShortInfo[]>(
+    "http://localhost:8080/api/boards/include_users",
     { method: "GET" },
     "ошибка при получении досок"
   );

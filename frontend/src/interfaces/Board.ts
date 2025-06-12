@@ -6,6 +6,17 @@ export interface IBoardShortInfo {
   color: string | null
 }
 
+export interface FilterOption {
+  label: string;
+  value: string;
+  field: string;
+  check: (board: IBoardShortInfo | IMemberBoardShortInfo) => boolean;
+}
+
+export interface IMemberBoardShortInfo extends IBoardShortInfo {
+  role: string
+}
+
 export interface ISubtask {
   id: string
   title: string

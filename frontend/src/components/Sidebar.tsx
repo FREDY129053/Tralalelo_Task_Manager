@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { BsArrowLeftShort, BsKanbanFill } from "react-icons/bs";
-import { AiFillEnvironment, AiOutlineLogout } from "react-icons/ai";
+import { AiOutlineLogout } from "react-icons/ai";
 import { FaUser, FaUsers } from "react-icons/fa";
 import { IoMdNotifications } from "react-icons/io";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Sidebar() {
   const [open, setOpen] = useState<boolean>(true);
@@ -79,8 +80,8 @@ export default function Sidebar() {
       title: "Доступные доски",
       icon: <FaUsers />,
       hover: "hover:bg-hover",
-      isHighLight: router.pathname === "/boards",
-      link: "/boards"
+      isHighLight: router.pathname === "/in_boards",
+      link: "/in_boards"
     },
     {
       title: "Выход",
@@ -140,11 +141,7 @@ export default function Sidebar() {
         )}
 
         <div className="flex flex-col gap-4 items-center justify-center mt-8 mb-2">
-          <AiFillEnvironment
-            className={`bg-amber-300 text-4xl rounded cursor-pointer block float-left mr-2 duration-500 ${
-              !open && "rotate-360"
-            }`}
-          />
+              <Image className="rounded float-left duration-500" src={"/favicon.ico"} height={80} width={80} alt="logo" />
           <h1
             className={`${
               !open && "scale-0"
@@ -156,7 +153,7 @@ export default function Sidebar() {
 
         <ul className="pt-2">
           {Menus.map((menu, index) => (
-            <Link href={`${menu.link}`} key={index}>
+            <Link href={`${menu.link}`} key={index} onClick={() => setOpen(!isMobile)}>
               <li
                 className={`text-text-inverted flex items-center gap-x-4 cursor-pointer p-2  rounded-md ${
                   menu.spacing ? "mt-7" : "mt-2"
