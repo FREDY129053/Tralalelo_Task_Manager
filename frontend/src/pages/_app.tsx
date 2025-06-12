@@ -11,7 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
       {isShowSidebar ? (
         <div className="flex h-screen">
           <Sidebar />
-          <div className="flex-1 bg-main-bg h-full overflow-x-auto overflow-y-hidden">
+          <div className="flex-1 bg-main-bg h-full overflow-hidden">
             <Component {...pageProps} />
           </div>
         </div>

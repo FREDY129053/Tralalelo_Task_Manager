@@ -263,7 +263,7 @@ export default function BoardPage() {
   const boardColor = boardData.board.color || "#fff";
 
   return (
-    <div className="h-full overflow-x-auto overflow-y-hidden" style={{
+    <div className="h-[98.9%]" style={{
       background: `linear-gradient(to bottom, #fff, ${boardColor})`,
     }}>
       <div className="sticky pt-4 px-6 flex items-center flex-row justify-between mb-6">
@@ -316,7 +316,7 @@ export default function BoardPage() {
           items={boardData.columns.map((col) => col.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex flex-nowrap h-[90%] justify-start w-auto gap-6 p-6 relative">
+          <div className="flex flex-nowrap h-[90%] justify-start w-auto gap-6 p-6 relative overflow-x-scroll">
             {boardData.columns.map((col) => (
               <SortableColumn
                 key={col.id}
