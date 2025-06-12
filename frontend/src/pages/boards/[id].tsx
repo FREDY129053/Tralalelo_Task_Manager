@@ -172,7 +172,7 @@ export default function BoardPage() {
   }
   async function handleDeleteMember(userID: string) {
     await deleteMember(uuid!, userID).then().catch(console.error);
-    getMembers();
+    updateBoard();
   }
 
   function getTasksPositionsPayload(column: IColumn) {

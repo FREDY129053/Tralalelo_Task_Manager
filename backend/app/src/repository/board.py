@@ -11,6 +11,7 @@ from backend.app.src.db.models import (
     TaskResponsible,
     User,
 )
+from backend.app.src.db.models.boards import Task
 from backend.app.src.enums import UserRole
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
@@ -203,6 +204,11 @@ async def delete_member(board_id: UUID, member_id: UUID) -> bool:
     board_member = await BoardUser.get_or_none(board_id=board_id, user_id=member_id)
     if not board_member:
         return False
+
+    tasks = await Task.filter(column__board_id=board_id).all()
+    task_ids = [task.id for task in tasks]
+    await TaskResponsible.filter(task_id__in=task_ids, user_id=member_id).delete()
+
     await board_member.delete()
 
     return True
