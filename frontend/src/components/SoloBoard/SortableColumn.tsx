@@ -132,6 +132,15 @@ function SortableColumn({ column, updateBoard, members}: Props) {
               onClick: () => handleDeleteColumn(column.id),
             },
             {
+              label: "Цвет колонки",
+              colorPicker: true,
+              color: column.color ?? "",
+              onColorSelect: async (color) => {
+                await updateColumn(column.id, "color", color);
+                updateBoard();
+              },
+            },
+            {
               label: "Фильтровать пиво",
               submenu: [
                 { label: "Светлое", onClick: () => alert("Опция 1") },

@@ -1,10 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import SelectColor from "./ColorPicker"; // импортируйте ваш ColorPicker
 
 type MenuOption = {
   label: string;
   onClick?: () => void;
   submenu?: MenuOption[];
+  colorPicker?: boolean;
+  onColorSelect?: (color: string) => void;
+  color?: string;
 };
 
 type MenuProps = {
@@ -13,13 +17,18 @@ type MenuProps = {
   handleClass?: string;
 };
 
-export default function DropdownMenu({ button, options, handleClass }: MenuProps) {
+export default function DropdownMenu({
+  button,
+  options,
+  handleClass,
+}: MenuProps) {
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState<{ left: number; top: number } | null>(null);
+  const [coords, setCoords] = useState<{ left: number; top: number } | null>(
+    null
+  );
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // вычисляем координаты после открытия и после рендера меню
   useEffect(() => {
     if (open && btnRef.current && menuRef.current) {
       const btnRect = btnRef.current.getBoundingClientRect();
@@ -83,8 +92,7 @@ export default function DropdownMenu({ button, options, handleClass }: MenuProps
             </div>
           </div>,
           document.body
-        )
-      }
+        )}
     </div>
   );
 }
@@ -97,6 +105,7 @@ function MenuList({
   onClose: () => void;
 }) {
   const [submenuIdx, setSubmenuIdx] = useState<number | null>(null);
+  const [colorPickerVisible, setColorPickerVisible] = useState(false);
 
   return (
     <ul className="py-1">
@@ -107,17 +116,31 @@ function MenuList({
           onMouseEnter={() => setSubmenuIdx(opt.submenu ? idx : null)}
           onMouseLeave={() => setSubmenuIdx(null)}
         >
-          <button
-            className="w-full text-left px-4 py-2 hover:bg-sky-100 transition flex items-center justify-between rounded"
-            onClick={() => {
-              if (opt.onClick) opt.onClick();
-              if (!opt.submenu) onClose();
-            }}
-            type="button"
-          >
-            <span>{opt.label}</span>
-            {opt.submenu && <span className="ml-2">&rarr;</span>}
-          </button>
+          {opt.colorPicker ? (
+            <div className="px-4 py-1">
+              <SelectColor
+                color={opt.color ?? null}
+                setPickerVisible={setColorPickerVisible} 
+                pickerVisible={colorPickerVisible}
+                changeColor={(color) => {
+                  opt.onColorSelect?.(color);
+                  onClose();
+                }}
+              />
+            </div>
+          ) : (
+            <button
+              className="w-full text-left px-4 py-2 hover:bg-sky-100 transition flex items-center justify-between rounded"
+              onClick={() => {
+                if (opt.onClick) opt.onClick();
+                if (!opt.submenu) onClose();
+              }}
+              type="button"
+            >
+              <span>{opt.label}</span>
+              {opt.submenu && <span className="ml-2">&rarr;</span>}
+            </button>
+          )}
           {opt.submenu && submenuIdx === idx && (
             <div className="absolute top-0 left-full ml-2 z-50 min-w-[160px]">
               <div

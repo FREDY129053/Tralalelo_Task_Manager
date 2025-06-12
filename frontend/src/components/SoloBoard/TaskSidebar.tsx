@@ -29,12 +29,12 @@ import returnDate from "@/helpers/NormalDate";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-import clsx from "clsx";
 import Image from "next/image";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { PRIORITY_FLAG } from "@/constants/priorityFlag";
 import { CustomSelect } from "../CustomSelect";
 import { motion } from "framer-motion";
+import SelectColor from "../ColorPicker";
 
 type Props = {
   task: IFullTask | null;
@@ -42,15 +42,6 @@ type Props = {
   members: IMember[];
   onBoardUpdate: () => void;
 };
-
-const COLOR_OPTIONS = [
-  "#FBEAEA",
-  "#EAFBEA",
-  "#FAF3E0",
-  "#fad5c0",
-  "#FBEAF7",
-  "#d8eff4",
-];
 
 export default function TaskSidebar({
   task,
@@ -169,7 +160,6 @@ export default function TaskSidebar({
   };
 
   const handleColorChange = async (color: string) => {
-    console.log("Цвет изменен на:", color);
     await updateTask(sidebarTask.id, "color", color);
     updateEvent();
   };
@@ -275,7 +265,7 @@ export default function TaskSidebar({
 
             {/* Цвет */}
             <SelectColor
-              task={sidebarTask}
+              color={sidebarTask.color}
               setPickerVisible={setColorPickerVisible}
               pickerVisible={colorPickerVisible}
               changeColor={handleColorChange}
@@ -571,48 +561,7 @@ function SelectDate({
   );
 }
 
-function SelectColor({
-  task,
-  setPickerVisible,
-  pickerVisible,
-  changeColor,
-}: {
-  task: IFullTask;
-  setPickerVisible: (val: boolean) => void;
-  pickerVisible: boolean;
-  changeColor: (color: string) => void;
-}) {
-  return (
-    <div className="mb-4 relative flex flex-row items-center gap-4">
-      <label className="font-semibold block mb-1">Цвет:</label>
-      <div
-        className="w-6 h-6 rounded-full border cursor-pointer"
-        style={{ background: task.color ?? "" }}
-        onClick={() => setPickerVisible(!pickerVisible)}
-      />
-      {pickerVisible && (
-        <div className="absolute z-20 mt-30 ml-4 bg-white border border-border p-2 rounded shadow grid grid-cols-3 gap-2">
-          {COLOR_OPTIONS.map((c) => (
-            <div
-              key={c}
-              onClick={() => {
-                changeColor(c);
-                setPickerVisible(false);
-              }}
-              className={clsx(
-                "w-6 h-6 rounded-full cursor-pointer border",
-                task.color?.toLowerCase() === c.toLowerCase()
-                  ? "ring-1 ring-black"
-                  : ""
-              )}
-              style={{ background: c }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+
 
 function ProgressBar({ task }: { task: IFullTask }) {
   const completed = task.completed_subtasks;
