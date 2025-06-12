@@ -16,13 +16,31 @@ import { useInlineEdit } from "@/hooks/useInlineEdit";
 
 type Props = {
   column: IColumn;
-  members: IMember[]
+  members: IMember[];
   updateBoard: () => void;
 };
 
-function SortableColumn({ column, updateBoard, members}: Props) {
+type PriorityFilter = "ALL" | "LOW" | "MEDIUM" | "HIGH";
+type DueDateFilter = "ALL" | "WITH_DATE" | "WITHOUT_DATE";
+
+const PRIORITY_LABELS: Record<PriorityFilter, string> = {
+  ALL: "Все",
+  LOW: "Низкий",
+  MEDIUM: "Обычный",
+  HIGH: "Высокий",
+};
+const DUE_LABELS: Record<DueDateFilter, string> = {
+  ALL: "Все",
+  WITH_DATE: "С датой",
+  WITHOUT_DATE: "Без даты",
+};
+
+function SortableColumn({ column, updateBoard, members }: Props) {
   const [sidebarTask, setSidebarTask] = useState<IFullTask | null>(null);
   const columnColor = column.color;
+
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("ALL");
+  const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>("ALL");
 
   const {
     editing,
@@ -70,6 +88,18 @@ function SortableColumn({ column, updateBoard, members}: Props) {
     await deleteColumn(colID).then().catch(console.error);
     updateBoard();
   }
+
+  const filteredTasks = column.tasks.filter((task) => {
+    const priorityOk =
+      priorityFilter === "ALL" ? true : task.priority === priorityFilter;
+    const dueDateOk =
+      dueDateFilter === "ALL"
+        ? true
+        : dueDateFilter === "WITH_DATE"
+          ? !!task.due_date
+          : !task.due_date;
+    return priorityOk && dueDateOk;
+  });
 
   const renderTask = useCallback(
     (task: ITask) => (
@@ -141,13 +171,40 @@ function SortableColumn({ column, updateBoard, members}: Props) {
               },
             },
             {
-              label: "Фильтровать пиво",
+              label: `Фильтр по приоритету: ${PRIORITY_LABELS[priorityFilter]}`,
               submenu: [
-                { label: "Светлое", onClick: () => alert("Опция 1") },
-                { label: "Темное", onClick: () => alert("Опция 2") },
                 {
-                  label: "Нефильтрованное",
-                  onClick: () => alert("Опция сосал"),
+                  label: "Все",
+                  onClick: () => setPriorityFilter("ALL"),
+                },
+                {
+                  label: "Низкий",
+                  onClick: () => setPriorityFilter("LOW"),
+                },
+                {
+                  label: "Обычный",
+                  onClick: () => setPriorityFilter("MEDIUM"),
+                },
+                {
+                  label: "Высокий",
+                  onClick: () => setPriorityFilter("HIGH"),
+                },
+              ],
+            },
+            {
+              label: `Фильтр по сроку: ${DUE_LABELS[dueDateFilter]}`,
+              submenu: [
+                {
+                  label: "Все",
+                  onClick: () => setDueDateFilter("ALL"),
+                },
+                {
+                  label: "С датой",
+                  onClick: () => setDueDateFilter("WITH_DATE"),
+                },
+                {
+                  label: "Без даты",
+                  onClick: () => setDueDateFilter("WITHOUT_DATE"),
                 },
               ],
             },
@@ -155,16 +212,16 @@ function SortableColumn({ column, updateBoard, members}: Props) {
         />
       </div>
       <div className="-z-1 flex-1 flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
-        {column.tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
             List is empty
           </div>
         ) : (
           <SortableContext
-            items={column.tasks}
+            items={filteredTasks}
             strategy={verticalListSortingStrategy}
           >
-            {column.tasks.map(renderTask)}
+            {filteredTasks.map(renderTask)}
           </SortableContext>
         )}
       </div>
