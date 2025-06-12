@@ -3,14 +3,12 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.src.api.routers import router
 from backend.app.src.config import load_environment, validate_environment
 from backend.app.src.db import init_db_tortoise
-from backend.app.src.helpers.notification import notify_users
 
 scheduler = AsyncIOScheduler()
 
@@ -23,8 +21,8 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
     await init_db_tortoise(_app)
 
-    scheduler.add_job(notify_users, CronTrigger(day="*/25"))
-    # scheduler.add_job(notify_users, CronTrigger(second="*/25"))
+    # scheduler.add_job(notify_users, CronTrigger(day="*/25"))
+    # scheduler.add_job(notify_users, CronTrigger(second="*/5"))
     scheduler.start()
     yield
 

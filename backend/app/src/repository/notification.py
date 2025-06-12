@@ -16,7 +16,7 @@ async def create_notification(title: str, text: str, user_id: UUID) -> Notificat
 
 
 async def get_all_users_notifications(user_id: UUID) -> List[Notification]:
-    return await Notification.filter(user_id=user_id)
+    return await Notification.filter(user_id=user_id).order_by("-created_at")
 
 
 async def update_fields(notification_id: int, fields: Dict[str, Any]):

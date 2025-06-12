@@ -65,3 +65,11 @@ export interface IUserShortInfo {
 export interface IMember extends IUserShortInfo {
   role: Role
 }
+
+export interface INotification {
+  title: string
+  text: string
+  is_read: boolean
+  created_at: string
+  id: number
+}

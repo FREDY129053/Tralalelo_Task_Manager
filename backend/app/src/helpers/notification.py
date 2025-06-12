@@ -29,7 +29,7 @@ def build_message(data: Dict) -> str:
 
     return (
         f'{msg} в колонке **"{column_name}"** '
-        f'на доске **"{board_name}"**.\nСсылка: {board_url}'
+        f'на доске **"{board_name}"**.\n\n\nСсылка: {board_url}'
     )
 
 
