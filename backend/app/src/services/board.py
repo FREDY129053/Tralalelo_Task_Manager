@@ -3,7 +3,7 @@ from uuid import UUID
 import backend.app.src.repository.board as BoardRepo
 from backend.app.src.enums import UserRole
 from backend.app.src.helpers.jwt import decode_jwt_token
-from backend.app.src.schemas import CreateBoard, CreateColumn, ServiceMessage
+from backend.app.src.schemas import CreateBoard, CreateColumn, ServiceMessage, UpdateBoard
 
 
 async def get_all_boards() -> ServiceMessage:
@@ -151,3 +151,11 @@ async def delete_board(id: UUID) -> ServiceMessage:
         return ServiceMessage(is_error=True, message="board not found", status_code=404)
 
     return ServiceMessage(message="board deleted")
+
+
+async def update_board_fields(column_id: UUID, fields: UpdateBoard) -> bool:
+    data_to_update = fields.model_dump(exclude_unset=True)
+
+    await BoardRepo.update_fields(column_id, data_to_update)
+
+    return True

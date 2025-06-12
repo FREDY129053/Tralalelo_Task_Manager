@@ -257,3 +257,18 @@ export async function writeComment(
     "Ошибка при записи комментария"
   );
 }
+
+export async function updateBoardData(
+  boardUUID: string,
+  field: string,
+  value: string | boolean
+): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${boardUUID}/info`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ [field]: value }),
+    },
+    "Ошибка при обновлении доски"
+  );
+}

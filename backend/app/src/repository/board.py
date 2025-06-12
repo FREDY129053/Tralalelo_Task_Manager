@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from tortoise.exceptions import IntegrityError
@@ -215,3 +215,12 @@ async def delete_board(id: UUID) -> bool:
     await board.delete()
 
     return True
+
+
+async def update_fields(column_id: UUID, fields: Dict[str, Any]):
+    board = await Board.get(id=column_id)
+
+    for key, val in fields.items():
+        setattr(board, key, val)
+
+    return await board.save(update_fields=list(fields.keys()))

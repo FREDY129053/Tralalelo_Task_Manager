@@ -103,6 +103,11 @@ class UpdateColumn(BaseModel):
     )
 
 
+class UpdateBoard(UpdateColumn):
+    is_public: Optional[bool] = None
+    description: Optional[str] = None
+
+
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None

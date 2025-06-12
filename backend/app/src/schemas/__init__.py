@@ -19,6 +19,7 @@ from .board import (
     TaskOut,
     TaskShortOut,
     TaskUpdate,
+    UpdateBoard,
     UpdateColumn,
     UpdateColumnsPos,
     UpdateTaskInfo,
@@ -76,4 +77,5 @@ __all__ = [
     "UpdateNotification",
     "AllowBoard",
     "CommentOut",
+    "UpdateBoard",
 ]

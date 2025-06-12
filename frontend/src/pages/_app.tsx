@@ -9,9 +9,9 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className="bg-main-bg">
       {isShowSidebar ? (
-        <div className="flex gap-2 h-screen overflow-hidden">
+        <div className="flex h-screen">
           <Sidebar />
-          <div className="flex-1 bg-main-bg h-full">
+          <div className="flex-1 bg-main-bg h-full overflow-x-auto overflow-y-hidden">
             <Component {...pageProps} />
           </div>
         </div>

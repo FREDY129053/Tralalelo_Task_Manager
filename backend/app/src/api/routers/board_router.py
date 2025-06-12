@@ -14,6 +14,7 @@ from backend.app.src.schemas import (
     CreateBoard,
     CreateColumn,
     FullBoardInfo,
+    UpdateBoard,
 )
 
 board_router = APIRouter(prefix="/boards", tags=["Boards Endpoints"])
@@ -124,6 +125,18 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn):
 
     return JSONResponse(
         content={"message": result.message}, status_code=result.status_code
+    )
+
+
+@board_router.patch("/{uuid}/info")
+async def update_board_info(uuid: UUID, data: UpdateBoard):
+    res = await BoardService.update_board_fields(uuid, data)
+
+    if not res:
+        raise HTTPException(status_code=400, detail="troubles")
+
+    return JSONResponse(
+        content={"message": "ok"},
     )
 
 

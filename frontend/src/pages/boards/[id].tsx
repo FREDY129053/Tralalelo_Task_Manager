@@ -35,6 +35,7 @@ import {
   deleteMember,
   getBoardData,
   getBoardMembers,
+  updateBoardData,
   updateColumnsPositions,
   updateTaskData,
 } from "../api/board";
@@ -44,12 +45,14 @@ import OverlayTask from "@/components/SoloBoard/OverlayTask";
 import { IoPersonAdd } from "react-icons/io5";
 import BoardUsers from "@/components/BoardUsers";
 import { IoMdSettings } from "react-icons/io";
+import BoardSettings from "@/components/BoardSettings";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSetting, setIsSetting] = useState(false);
   const router = useRouter();
   const [boardData, setBoardData] = useState<IBoardFullInfo | null>(null);
   const [activeItem, setActiveItem] = useState<
@@ -97,6 +100,14 @@ export default function BoardPage() {
   const getMembers = useCallback(() => {
     getBoardMembers(uuid!).then(setMembers).catch(console.error);
   }, [uuid]);
+  const getBoard = useCallback(() => {
+    getBoardData(uuid!).then(setBoardData).catch(console.error);
+  }, [uuid]);
+
+  const handleUpdateBoardData = useCallback(async (id: string, field: string, value: string | boolean) => {
+    await updateBoardData(id, field, value)
+    getBoard()
+  }, [getBoard])
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
@@ -196,7 +207,6 @@ export default function BoardPage() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Перемещение колонок
     const srcColIdx = boardData!.columns.findIndex((c) => c.id === activeId);
     const dstColIdx = boardData!.columns.findIndex((c) => c.id === overId);
 
@@ -231,7 +241,6 @@ export default function BoardPage() {
       const overIdx = targetCol.tasks.findIndex((t) => t.id === overId);
       const insertIdx = overIdx === -1 ? targetCol.tasks.length : overIdx;
 
-      // если таска не переместилась — ничего не делаем
       if (sourceColId === targetColId && srcIdx === insertIdx) return;
 
       const [movedTask] = sourceCol.tasks.splice(srcIdx, 1);
@@ -240,7 +249,6 @@ export default function BoardPage() {
 
     setBoardData(next);
 
-    // Обновляем бэкенд только по затронутым колонкам
     const affectedColIds = new Set([sourceColId, targetColId]);
     for (const colId of affectedColIds) {
       const col = next.columns.find((c) => c.id === colId)!;
@@ -252,9 +260,13 @@ export default function BoardPage() {
 
   if (!boardData) return <div>Loading...</div>;
 
+  const boardColor = boardData.board.color || "#fff";
+
   return (
-    <>
-      <div className="mt-4 px-6 flex items-center flex-row justify-between mb-6">
+    <div className="h-full overflow-x-auto overflow-y-hidden" style={{
+      background: `linear-gradient(to bottom, #fff, ${boardColor})`,
+    }}>
+      <div className="sticky pt-4 px-6 flex items-center flex-row justify-between mb-6">
         <div className="flex flex-row items-center gap-4">
           <div className="flex flex-row text-base items-center gap-2 font-bold">
             <FaFolderOpen className="w-8 h-8" />
@@ -283,9 +295,14 @@ export default function BoardPage() {
               changeRole={handleChangeMemberRole}
             />
           )}
-          <button className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]">
+          <button onClick={() => setIsSetting(true)} className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]">
             <IoMdSettings className="w-6 h-6"/>
           </button>
+          {
+            isSetting && (
+              <BoardSettings board={boardData.board} onClose={() => setIsSetting(false)} updateBoard={handleUpdateBoardData} />
+            )
+          }
         </div>
       </div>
       <DndContext
@@ -299,7 +316,7 @@ export default function BoardPage() {
           items={boardData.columns.map((col) => col.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex flex-nowrap h-[90%] justify-start w-auto gap-6 p-6 overflow-x-auto relative">
+          <div className="flex flex-nowrap h-[90%] justify-start w-auto gap-6 p-6 relative">
             {boardData.columns.map((col) => (
               <SortableColumn
                 key={col.id}
@@ -333,6 +350,6 @@ export default function BoardPage() {
           ) : null}
         </DragOverlay>
       </DndContext>
-    </>
+    </div>
   );
 }
