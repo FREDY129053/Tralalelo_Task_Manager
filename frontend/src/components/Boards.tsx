@@ -65,7 +65,7 @@ export default function Boards({
               <div
                 className="absolute top-0 left-0 h-full w-2 rounded-l-xl"
                 style={{
-                  backgroundColor: board.color ?? "var(--color-button-bg)",
+                  backgroundColor: board.color ?? "#fff",
                 }}
               />
 

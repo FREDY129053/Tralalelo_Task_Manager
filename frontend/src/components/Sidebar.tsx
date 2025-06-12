@@ -59,14 +59,14 @@ export default function Sidebar() {
       spacing: true,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/profile",
-      link: "/profile"
+      link: "/profile",
     },
     {
       title: "Уведомления",
       icon: <IoMdNotifications />,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/notifications",
-      link: "/notifications"
+      link: "/notifications",
     },
     {
       title: "Мои доски",
@@ -74,14 +74,14 @@ export default function Sidebar() {
       spacing: true,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/main",
-      link: "/main"
+      link: "/main",
     },
     {
       title: "Доступные доски",
       icon: <FaUsers />,
       hover: "hover:bg-hover",
       isHighLight: router.pathname === "/in_boards",
-      link: "/in_boards"
+      link: "/in_boards",
     },
     {
       title: "Выход",
@@ -141,7 +141,13 @@ export default function Sidebar() {
         )}
 
         <div className="flex flex-col gap-4 items-center justify-center mt-8 mb-2">
-              <Image className="rounded float-left duration-500" src={"/favicon.ico"} height={80} width={80} alt="logo" />
+          <Image
+            className="rounded float-left duration-500"
+            src={"/favicon.ico"}
+            height={80}
+            width={80}
+            alt="logo"
+          />
           <h1
             className={`${
               !open && "scale-0"
@@ -153,7 +159,13 @@ export default function Sidebar() {
 
         <ul className="pt-2">
           {Menus.map((menu, index) => (
-            <Link href={`${menu.link}`} key={index} onClick={() => setOpen(!isMobile)}>
+            <Link
+              href={`${menu.link}`}
+              key={index}
+              onClick={() => {
+                if (isMobile) setOpen(false);
+              }}
+            >
               <li
                 className={`text-text-inverted flex items-center gap-x-4 cursor-pointer p-2  rounded-md ${
                   menu.spacing ? "mt-7" : "mt-2"
