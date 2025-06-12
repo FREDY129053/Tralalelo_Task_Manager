@@ -31,6 +31,22 @@ async def search_user(query: str = Query(min_length=1)):
     return await UserService.search_users(query=query)
 
 
+@user_router.get("/me", response_model=FullInfo)
+async def get_self_user(request: Request):
+    cookie_data = request.cookies.get("user", None)
+    if not cookie_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized!"
+        )
+
+    user = await UserService.get_user(cookie_data)
+    if not user:
+        raise HTTPException(
+            detail="user not found!", status_code=status.HTTP_404_NOT_FOUND
+        )
+    return user
+
+
 @user_router.get(
     "/{uuid}",
     response_model=FullInfo,

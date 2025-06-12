@@ -1,3 +1,4 @@
+import { IUserFullInfo } from "@/interfaces/User";
 import { apiFetch } from "./abstractFunctions";
 
 export async function registerUser(
@@ -23,4 +24,12 @@ export async function loginUser(username: string, password: string) {
     { method: "POST", body: JSON.stringify({ username, password }) },
     "Ошибка при входе. Проверьте введенные данные"
   );
+}
+
+export async function getProfile(): Promise<IUserFullInfo> {
+  return apiFetch(
+    "http://localhost:8080/api/users/me",
+    {method: "GET"},
+    "Ошибка при получении пользователя"
+  )
 }

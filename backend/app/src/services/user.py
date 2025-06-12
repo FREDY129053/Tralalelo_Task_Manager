@@ -21,6 +21,14 @@ async def get_user_info(uuid: UUID) -> Optional[FullInfo]:
     return user
 
 
+async def get_user(token: str) -> Optional[FullInfo]:
+    uuid = decode_jwt_token(token=token)
+    if not uuid:
+        return None
+
+    return await UserRepo.get_user_info(UUID(uuid["uuid"]))
+
+
 async def create_user(user: RegUser) -> Optional[str]:
     new_pass = hash_pass(user.password)
     avatar = AvatarGenerator(user.username).generate_avatar_url()
