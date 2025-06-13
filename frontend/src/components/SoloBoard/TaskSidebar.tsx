@@ -25,7 +25,6 @@ import {
   updateTask,
   writeComment,
 } from "@/pages/api/board";
-import returnDate from "@/helpers/NormalDate";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -35,6 +34,8 @@ import { PRIORITY_FLAG } from "@/constants/priorityFlag";
 import { CustomSelect } from "../CustomSelect";
 import { motion } from "framer-motion";
 import SelectColor from "../ColorPicker";
+import WriteComment from "../Writecomment";
+import CommentsList from "../CommentsList";
 
 type Props = {
   task: IFullTask | null;
@@ -288,7 +289,7 @@ export default function TaskSidebar({
 
             {/* Комментарии */}
             <div className="mb-24">
-              <CommentsList task={sidebarTask} />
+              <CommentsList comments={sidebarTask.comments} />
             </div>
           </div>
 
@@ -561,8 +562,6 @@ function SelectDate({
   );
 }
 
-
-
 function ProgressBar({ task }: { task: IFullTask }) {
   const completed = task.completed_subtasks;
   const total = task.total_subtasks;
@@ -738,89 +737,3 @@ function SubtaskItem({
   );
 }
 
-function CommentsList({ task }: { task: IFullTask }) {
-  return (
-    <>
-      <label className="font-semibold block mb-2">Комментарии:</label>
-      <div className="space-y-4">
-        {task.comments.length === 0 ? (
-          <p className="text-gray-400">Нет комментариев</p>
-        ) : (
-          [...task.comments]
-            .reduce((acc: any[], comment) => {
-              const date = returnDate(comment.created_at).split(" ")[0];
-              if (!acc.length || acc[acc.length - 1].date !== date) {
-                acc.push({ date, comments: [comment] });
-              } else {
-                acc[acc.length - 1].comments.push(comment);
-              }
-              return acc;
-            }, [])
-            .map((group) => (
-              <div key={group.date}>
-                <div className="text-xs text-gray-500 mb-1">{group.date}</div>
-                {group.comments.map((c: any) => (
-                  <div
-                    key={c.id}
-                    className="flex gap-2 border-b pb-2 mb-2 items-center"
-                  >
-                    <Image
-                      src={
-                        c.user.avatar_url
-                      }
-                      alt="avatar"
-                      className="w-6 h-6 rounded-full -mt-7"
-                      width={100}
-                      height={100}
-                    />
-                    <div>
-                      <div className="text-sm font-medium">
-                        {c.user.username}
-                      </div>
-                      <div className="text-xs text-gray-500 mb-1">
-                        {returnDate(c.created_at)}
-                      </div>
-                      <div>{c.content}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))
-        )}
-      </div>
-    </>
-  );
-}
-
-function WriteComment({
-  text,
-  setComment,
-  saveComment
-}: {
-  text: string;
-  setComment: (val: string) => void;
-  saveComment: (val: string) => void;
-}) {
-  return (
-    <div className="sticky bottom-0 bg-white border-t p-4 w-full">
-      <div className="flex gap-2 w-full">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Введите комментарий..."
-          className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:border-sky-500"
-        />
-        <button
-          onClick={() => {
-            saveComment(text)
-            setComment("")
-          }}
-          className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition-colors"
-        >
-          Отправить
-        </button>
-      </div>
-    </div>
-  );
-}

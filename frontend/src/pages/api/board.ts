@@ -2,6 +2,7 @@ import {
   IBoardFullInfo,
   IBoardShortInfo,
   IColumn,
+  IComment,
   IFullTask,
   IMember,
   IMemberBoardShortInfo,
@@ -294,5 +295,20 @@ export async function deleteBoard(id: string): Promise<void> {
     `http://localhost:8080/api/boards/${id}`,
     {method: "DELETE"},
     "Ошибка при удалении доски"
+  )
+}
+
+export async function getBoardComments(id: string): Promise<IComment[]> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${id}/comments`,
+    {method: "GET"},
+    "Ошибка при получении комментариев"
+  )
+}
+export async function writeBoardComment(id: string, content: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${id}/comments`,
+    {method: "POST", body: JSON.stringify({content})},
+    "Ошибка при записи комментария"
   )
 }

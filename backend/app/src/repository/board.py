@@ -154,8 +154,23 @@ async def create_column(
 
 
 async def get_comments(id: UUID):
-    board = await Board.get(id=id).prefetch_related("comments")
-    return await board.comments
+    board = await Board.get(id=id).prefetch_related("comments__user")
+    res = []
+    for comment in board.comments:
+        res.append(
+            {
+                "id": comment.id,
+                "board_id": comment.board_id,
+                "content": comment.content,
+                "created_at": comment.created_at,
+                "user": {
+                    "id": comment.user.id,
+                    "username": comment.user.username,
+                    "avatar_url": comment.user.avatar_url,
+                },
+            }
+        )
+    return res
 
 
 async def create_comment(id: UUID, user_id: str, text: str) -> Optional[BoardComment]:
