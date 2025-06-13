@@ -6,8 +6,8 @@ import { FaTrashAlt } from "react-icons/fa";
 type Props = {
   comments: IComment[];
   onDelete: (id: string) => void;
-  userID: string;
-  role: Role;
+  userID?: string;
+  role?: Role;
 };
 
 export default function CommentsList({

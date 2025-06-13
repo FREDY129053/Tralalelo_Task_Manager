@@ -18,6 +18,7 @@ import {
 import { FiMoreVertical } from "react-icons/fi";
 import {
   createSubTask,
+  deleteComment,
   deleteResponsible,
   deleteSubTask,
   getTask,
@@ -184,6 +185,11 @@ export default function TaskSidebar({
     updateEvent()
   }
 
+  async function handleDeleteComment(commentID: string) {
+      await deleteComment(commentID);
+     updateEvent()
+    }
+
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-none">
       <div
@@ -290,7 +296,7 @@ export default function TaskSidebar({
 
             {/* Комментарии */}
             <div className="mb-24">
-              <CommentsList comments={sidebarTask.comments} />
+              <CommentsList comments={sidebarTask.comments} onDelete={handleDeleteComment} />
             </div>
           </div>
 
