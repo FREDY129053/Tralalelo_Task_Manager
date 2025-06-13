@@ -36,7 +36,7 @@ async def create_board(token: str, board_data: CreateBoard) -> ServiceMessage:
     if not user_data:
         return ServiceMessage(is_error=True, message="invalid token", status_code=403)
 
-    is_created = await BoardRepo.create_board(
+    created_id = await BoardRepo.create_board(
         title=board_data.title,
         description=board_data.description,
         color=board_data.color,
@@ -44,12 +44,12 @@ async def create_board(token: str, board_data: CreateBoard) -> ServiceMessage:
         creator_id=user_data.get("uuid", ""),
     )
 
-    if not is_created:
+    if not created_id:
         return ServiceMessage(
             is_error=True, message="invalid board data", status_code=400
         )
 
-    return ServiceMessage(message="board created", status_code=201)
+    return ServiceMessage(message=created_id, status_code=201)
 
 
 async def get_board_column_data(uuid: UUID) -> ServiceMessage:

@@ -280,3 +280,19 @@ export async function updateBoardData(
     "Ошибка при обновлении доски"
   );
 }
+
+export async function createBoard(title: string, description: string | null, is_public: boolean): Promise<Record<string, string>> {
+  return apiFetch(
+    "http://localhost:8080/api/boards/",
+    {method: "POST", body: JSON.stringify({title, description, is_public})},
+    "Ошибка при создании доски"
+  )
+}
+
+export async function deleteBoard(id: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${id}`,
+    {method: "DELETE"},
+    "Ошибка при удалении доски"
+  )
+}

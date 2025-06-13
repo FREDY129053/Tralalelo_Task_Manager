@@ -177,12 +177,12 @@ export default function BoardUsers({
                 </div>
 
                 <div className="relative">
-                  <button
+                  {member.role === "CREATOR" ? (<></>) : (<button
                     onClick={() => toggleRoleMenu(member.id)}
                     className="p-2 hover:bg-gray-200 rounded-full"
                   >
                     <IoMdMore size={20} />
-                  </button>
+                  </button>)}
                   {menuOpenId === member.id && (
                     <div className="role-menu absolute right-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded shadow-lg z-50">
                       {member.role === "MODERATOR" && (

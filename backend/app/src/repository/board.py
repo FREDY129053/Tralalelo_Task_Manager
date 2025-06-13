@@ -128,7 +128,7 @@ async def create_board(
     is_public: bool,
     color: Optional[str],
     creator_id: UUID,
-) -> bool:
+) -> str:
     try:
         board = await Board.create(
             title=title, description=description, is_public=is_public, color=color
@@ -137,9 +137,9 @@ async def create_board(
             user_id=creator_id, board_id=board.id, role=UserRole.creator
         )
 
-        return True
+        return str(board.id)
     except IntegrityError:
-        return False
+        return ""
 
 
 async def create_column(
