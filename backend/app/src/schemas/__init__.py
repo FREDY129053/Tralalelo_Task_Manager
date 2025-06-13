@@ -26,12 +26,11 @@ from .board import (
     UpdateTaskPos,
     UserShortInfo,
 )
-from .error import Error, ServiceMessage
 from .notifications import CreateNotification, NotificationInfo, UpdateNotification
+from .service_response import Error, ServiceMessage, SuccessResponse
 from .user import (
     BaseUserInfo,
     BoardUserPreview,
-    CreateUser,
     FullInfo,
     Login,
     RegUser,
@@ -40,7 +39,6 @@ from .user import (
 )
 
 __all__ = [
-    "CreateUser",
     "BaseUserInfo",
     "RegUser",
     "FullInfo",
@@ -78,4 +76,5 @@ __all__ = [
     "AllowBoard",
     "CommentOut",
     "UpdateBoard",
+    "SuccessResponse",
 ]
