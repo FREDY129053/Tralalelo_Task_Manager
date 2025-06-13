@@ -17,8 +17,7 @@ export default function AuthPage() {
         await registerUser(
           data.username,
           data.password,
-          data.email!,
-          data.phone || ""
+          data.email!
         );
       } else {
         await loginUser(data.username, data.password);

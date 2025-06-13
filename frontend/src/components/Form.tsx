@@ -1,14 +1,10 @@
 import { FC } from "react";
 import { useForm } from "react-hook-form";
-import { FaUser, FaLock, FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 
 // Регулярные выражения
 const EMAIL_REGEX =
   /^[a-z0-9!#$%&'*+/=?^_{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
-
-// TODO Переписать регулярку потому что API оказывается не все из них хавает
-const PHONE_REGEX =
-  /^((8|\+374|\+994|\+995|\+375|\+7|\+380|\+38|\+996|\+998|\+993)[\- ]?)?\(?\d{3,5}\)?[\- ]?\d{1}[\- ]?\d{1}[\- ]?\d{1}[\- ]?\d{1}[\- ]?\d{1}(([\- ]?\d{1})?[\- ]?\d{1})?$/;
 
 interface FormProps {
   isRegistering: boolean;
@@ -112,24 +108,6 @@ const Form: FC<FormProps> = ({
             />
             {errors.email && (
               <p className="text-text-error text-sm">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="relative">
-            <FaPhone className="absolute top-3 left-3 text-" />
-            <input
-              {...register("phone", {
-                pattern: {
-                  value: PHONE_REGEX,
-                  message: "Неверный номер телефона",
-                },
-              })}
-              type="tel"
-              placeholder="Phone (optional)"
-              className="pl-10 py-2 w-full border border-input-border rounded-lg bg-input-bg focus:outline-none focus:ring-2 focus:ring-input-border"
-            />
-            {errors.phone && (
-              <p className="text-text-error text-sm">{errors.phone.message}</p>
             )}
           </div>
         </>
