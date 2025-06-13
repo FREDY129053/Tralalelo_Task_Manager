@@ -47,7 +47,7 @@ async def create_user(user_data: RegUser):
         raise HTTPException(detail=result.message, status_code=result.status_code)
 
     response = JSONResponse(
-        content={"message": "user created successfully"},
+        content={"message": result.message},
         status_code=status.HTTP_201_CREATED,
     )
 
@@ -117,7 +117,7 @@ async def login_user(data: Login):
         raise HTTPException(status_code=result.status_code, detail=result.message)
 
     response = JSONResponse(
-        content={"message": "login successfully"}, status_code=result.status_code
+        content={"message": result.message}, status_code=result.status_code
     )
     response.set_cookie(key="user", value=str(result.message), httponly=True)
 

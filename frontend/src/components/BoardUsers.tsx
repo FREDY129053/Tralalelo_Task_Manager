@@ -12,6 +12,7 @@ type Props = {
   deleteMember: (userID: string) => void;
   changeRole: (userID: string, role: Role) => void;
   onClose: () => void;
+  userID: string
 };
 
 export default function BoardUsers({
@@ -20,6 +21,7 @@ export default function BoardUsers({
   addMembers,
   deleteMember,
   changeRole,
+  userID,
 }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<IUserShortInfo[]>([]);
@@ -177,7 +179,7 @@ export default function BoardUsers({
                 </div>
 
                 <div className="relative">
-                  {member.role === "CREATOR" ? (
+                  {member.role === "CREATOR" || member.id === userID ? (
                     <></>
                   ) : (
                     <button

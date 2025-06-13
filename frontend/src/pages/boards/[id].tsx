@@ -33,6 +33,7 @@ import {
   addMember,
   changeRole,
   createColumn,
+  deleteComment,
   deleteMember,
   getBoardComments,
   getBoardData,
@@ -55,6 +56,8 @@ import { LiaComment } from "react-icons/lia";
 import CommentsModal from "@/components/CommentsModal";
 import { MdOutlineTask } from "react-icons/md";
 import StatusTasks from "@/components/StatusTasks";
+import { decodeJWT } from "@/helpers/DecodeToken.";
+import { getRole } from "../api/users";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
@@ -73,6 +76,8 @@ export default function BoardPage() {
   const [isComments, setIsComments] = useState(false);
   const [statusTasks, setStatusTasks] = useState<ITask[]>([]);
   const [isTasks, setIsTasks] = useState(false);
+  const [userUUID, setUserUUID] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<Role | null>(null);
 
   useEffect(() => {
     if (router.isReady) {
@@ -82,9 +87,15 @@ export default function BoardPage() {
 
   useEffect(() => {
     if (!uuid) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    setUserUUID(decodeJWT(token));
+
+    getRole(uuid)
+      .then((res) => setUserRole(res.message))
+      .catch(console.error);
     getBoardData(uuid).then(setBoardData).catch(console.error);
-    getBoardMembers(uuid).then(setMembers).catch(console.error);
-    getBoardComments(uuid).then(setComments).catch(console.error);
   }, [uuid]);
 
   const sensors = useSensors(
@@ -113,6 +124,10 @@ export default function BoardPage() {
 
   const getMembers = useCallback(() => {
     getBoardMembers(uuid!).then(setMembers).catch(console.error);
+  }, [uuid]);
+
+  const getComments = useCallback(() => {
+    getBoardComments(uuid!).then(setComments).catch(console.error);
   }, [uuid]);
 
   const getBoard = useCallback(() => {
@@ -199,7 +214,11 @@ export default function BoardPage() {
 
   async function handleWriteComment(text: string) {
     await writeBoardComment(uuid!, text);
-    getBoardComments(uuid!).then(setComments).catch(console.error);
+    getComments()
+  }
+  async function handleDeleteComment(commentID: string) {
+    await deleteComment(commentID)
+    getComments()
   }
 
   async function handleChangeStatus(taskID: string) {
@@ -313,26 +332,33 @@ export default function BoardPage() {
           </span>
         </div>
         <div className="flex flex-row gap-4 items-center">
-          <button
-            className="flex gap-2 items-center cursor-pointer p-[7px] rounded-[6px] border-none transition h-[30px] text-sm font-[500] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
-            onClick={() => {
-              setIsOpen(true);
-              getMembers();
-            }}
-          >
-            <IoPersonAdd className="w-6 h-6" /> Пригласить
-          </button>
-          {isOpen && (
-            <BoardUsers
-              onClose={() => setIsOpen(false)}
-              members={members}
-              addMembers={handleAddMember}
-              deleteMember={handleDeleteMember}
-              changeRole={handleChangeMemberRole}
-            />
+          {userRole !== "MEMBER" && boardData.board.is_public ? (
+            <>
+              <button
+                className="flex gap-2 items-center cursor-pointer p-[7px] rounded-[6px] border-none transition h-[30px] text-sm font-[500] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+                onClick={() => {
+                  setIsOpen(true);
+                  getMembers();
+                }}
+              >
+                <IoPersonAdd className="w-6 h-6" /> Пригласить
+              </button>
+              {isOpen && (
+                <BoardUsers
+                  onClose={() => setIsOpen(false)}
+                  members={members}
+                  addMembers={handleAddMember}
+                  deleteMember={handleDeleteMember}
+                  changeRole={handleChangeMemberRole}
+                  userID={userUUID!}
+                />
+              )}
+            </>
+          ) : (
+            <></>
           )}
           <button
-            onClick={() => setIsComments(true)}
+            onClick={() => {getComments(); setIsComments(true)}}
             className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
           >
             <LiaComment className="w-6 h-6" />
@@ -343,10 +369,16 @@ export default function BoardPage() {
               onClose={() => setIsComments(false)}
               canWrite={true}
               onSendComment={handleWriteComment}
+              onDeleteComment={handleDeleteComment}
+              userID={userUUID!}
+              role={userRole!}
             />
           )}
           <button
-            onClick={() => {getStatusTasks(); setIsTasks(true)}}
+            onClick={() => {
+              getStatusTasks();
+              setIsTasks(true);
+            }}
             className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
           >
             <MdOutlineTask className="w-6 h-6" />
@@ -358,18 +390,22 @@ export default function BoardPage() {
               onChangeStatus={handleChangeStatus}
             />
           )}
-          <button
-            onClick={() => setIsSetting(true)}
-            className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
-          >
-            <IoMdSettings className="w-6 h-6" />
-          </button>
-          {isSetting && (
-            <BoardSettings
-              board={boardData.board}
-              onClose={() => setIsSetting(false)}
-              updateBoard={handleUpdateBoardData}
-            />
+          {userRole === "CREATOR" && (
+            <>
+              <button
+                onClick={() => setIsSetting(true)}
+                className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+              >
+                <IoMdSettings className="w-6 h-6" />
+              </button>
+              {isSetting && (
+                <BoardSettings
+                  board={boardData.board}
+                  onClose={() => setIsSetting(false)}
+                  updateBoard={handleUpdateBoardData}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

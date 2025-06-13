@@ -257,6 +257,15 @@ export async function deleteResponsible(
   );
 }
 
+export async function deleteComment(
+  commentID: string,
+): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/comments/${commentID}`,
+    { method: "DELETE" },
+    "Ошибка при удалении комментария"
+  );
+}
 export async function writeComment(
   taskID: string,
   content: string

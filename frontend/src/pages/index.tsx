@@ -14,13 +14,15 @@ export default function AuthPage() {
     setIsSendingData(true);
     try {
       if (displayedRegistering) {
-        await registerUser(
+        const res = await registerUser(
           data.username,
           data.password,
           data.email!
         );
+        localStorage.setItem("token", res.message)
       } else {
-        await loginUser(data.username, data.password);
+        const res = await loginUser(data.username, data.password);
+        localStorage.setItem("token", res.message)
       }
       router.push("/main");
     } catch (error) {

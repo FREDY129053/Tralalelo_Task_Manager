@@ -3,13 +3,16 @@ import { createPortal } from "react-dom";
 import { IoMdClose } from "react-icons/io";
 import CommentsList from "./CommentsList";
 import WriteComment from "./Writecomment";
-import { IComment } from "@/interfaces/Board";
+import { IComment, Role } from "@/interfaces/Board";
 
 type Props = {
   comments: IComment[];
   onClose: () => void;
   canWrite?: boolean;
   onSendComment?: (text: string) => void;
+  onDeleteComment: (commentID: string) => void
+  userID: string
+  role: Role
 };
 
 export default function CommentsModal({
@@ -17,6 +20,9 @@ export default function CommentsModal({
   onClose,
   canWrite = false,
   onSendComment,
+  onDeleteComment,
+  userID,
+  role
 }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [commentText, setCommentText] = useState("");
@@ -53,7 +59,7 @@ export default function CommentsModal({
           <IoMdClose />
         </button>
         <div className="overflow-y-auto flex-1 pr-2">
-          <CommentsList comments={comments} />
+          <CommentsList comments={comments} onDelete={onDeleteComment} userID={userID} role={role} />
         </div>
         {canWrite && onSendComment && (
           <div className="mt-8">
