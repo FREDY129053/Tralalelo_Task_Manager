@@ -24,3 +24,11 @@ export async function updateNotificationReadStatus(
     "Ошибка при получении уведомлений"
   );
 }
+
+export async function createNotification(title: string, text: string, user_id: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/notification`,
+    { method: "POST", body: JSON.stringify({title, text, user_id }) },
+    "Ошибка при создании уведомления"
+  );
+}

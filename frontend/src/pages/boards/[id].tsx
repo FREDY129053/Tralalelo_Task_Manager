@@ -58,6 +58,7 @@ import { MdOutlineTask } from "react-icons/md";
 import StatusTasks from "@/components/StatusTasks";
 import { decodeJWT } from "@/helpers/DecodeToken.";
 import { getRole } from "../api/users";
+import { createNotification } from "../api/notification";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
@@ -201,24 +202,46 @@ export default function BoardPage() {
 
   async function handleAddMember(userID: string) {
     await addMember(uuid!, userID).then().catch(console.error);
+    await createNotification(
+      "Добавление в доску!",
+      `Вас добавили в доску **"${boardData?.board.title}"**. Теперь вы часть семьи)\n\nСсылка: http://localhost:3000/boards/${boardData?.board.id}`,
+      userID
+    )
+      .then()
+      .catch(console.error);
     getMembers();
   }
   async function handleChangeMemberRole(userID: string, role: Role) {
     await changeRole(uuid!, userID, role).then().catch(console.error);
+    await createNotification(
+      "Изменение роли!",
+      `Вы были назначены на роль ${role === "MODERATOR" ? "**МОДЕРАТОР**" : "**УЧАСТНИК**"} в доске **"${boardData?.board.title}"**.\n\nСсылка: http://localhost:3000/boards/${boardData?.board.id}`,
+      userID
+    )
+      .then()
+      .catch(console.error);
     getMembers();
   }
+
   async function handleDeleteMember(userID: string) {
     await deleteMember(uuid!, userID).then().catch(console.error);
+    await createNotification(
+      "Удаление из доски(",
+      `Вы были удалены из доски **"${boardData?.board.title}"**...`,
+      userID
+    )
+      .then()
+      .catch(console.error);
     updateBoard();
   }
 
   async function handleWriteComment(text: string) {
     await writeBoardComment(uuid!, text);
-    getComments()
+    getComments();
   }
   async function handleDeleteComment(commentID: string) {
-    await deleteComment(commentID)
-    getComments()
+    await deleteComment(commentID);
+    getComments();
   }
 
   async function handleChangeStatus(taskID: string) {
@@ -358,7 +381,10 @@ export default function BoardPage() {
             <></>
           )}
           <button
-            onClick={() => {getComments(); setIsComments(true)}}
+            onClick={() => {
+              getComments();
+              setIsComments(true);
+            }}
             className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
           >
             <LiaComment className="w-6 h-6" />
