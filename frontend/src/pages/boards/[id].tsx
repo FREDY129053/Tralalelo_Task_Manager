@@ -37,8 +37,10 @@ import {
   getBoardComments,
   getBoardData,
   getBoardMembers,
+  getBoardStatusTasks,
   updateBoardData,
   updateColumnsPositions,
+  updateTask,
   updateTaskData,
   writeBoardComment,
 } from "../api/board";
@@ -51,6 +53,8 @@ import { IoMdSettings } from "react-icons/io";
 import BoardSettings from "@/components/BoardSettings";
 import { LiaComment } from "react-icons/lia";
 import CommentsModal from "@/components/CommentsModal";
+import { MdOutlineTask } from "react-icons/md";
+import StatusTasks from "@/components/StatusTasks";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
@@ -67,6 +71,8 @@ export default function BoardPage() {
   const [members, setMembers] = useState<IMember[]>([]);
   const [comments, setComments] = useState<IComment[]>([]);
   const [isComments, setIsComments] = useState(false);
+  const [statusTasks, setStatusTasks] = useState<ITask[]>([]);
+  const [isTasks, setIsTasks] = useState(false);
 
   useEffect(() => {
     if (router.isReady) {
@@ -108,8 +114,13 @@ export default function BoardPage() {
   const getMembers = useCallback(() => {
     getBoardMembers(uuid!).then(setMembers).catch(console.error);
   }, [uuid]);
+
   const getBoard = useCallback(() => {
     getBoardData(uuid!).then(setBoardData).catch(console.error);
+  }, [uuid]);
+
+  const getStatusTasks = useCallback(() => {
+    getBoardStatusTasks(uuid!).then(setStatusTasks).catch(console.error);
   }, [uuid]);
 
   const handleUpdateBoardData = useCallback(
@@ -187,8 +198,14 @@ export default function BoardPage() {
   }
 
   async function handleWriteComment(text: string) {
-    await writeBoardComment(uuid!, text)
+    await writeBoardComment(uuid!, text);
     getBoardComments(uuid!).then(setComments).catch(console.error);
+  }
+
+  async function handleChangeStatus(taskID: string) {
+    await updateTask(taskID, "status", "TODO");
+    updateBoard();
+    getStatusTasks();
   }
 
   function getTasksPositionsPayload(column: IColumn) {
@@ -326,6 +343,19 @@ export default function BoardPage() {
               onClose={() => setIsComments(false)}
               canWrite={true}
               onSendComment={handleWriteComment}
+            />
+          )}
+          <button
+            onClick={() => {getStatusTasks(); setIsTasks(true)}}
+            className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+          >
+            <MdOutlineTask className="w-6 h-6" />
+          </button>
+          {isTasks && (
+            <StatusTasks
+              tasks={statusTasks}
+              onClose={() => setIsTasks(false)}
+              onChangeStatus={handleChangeStatus}
             />
           )}
           <button

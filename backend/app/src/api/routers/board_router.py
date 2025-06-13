@@ -173,3 +173,8 @@ async def get_comments(uuid: UUID):
     result = await BoardService.get_comments(uuid=uuid)
 
     return result.message
+
+
+@board_router.get("/{uuid}/status_tasks")
+async def get_all_tasks_with_status(uuid: UUID):
+    return await BoardService.get_tasks_with_status(uuid)

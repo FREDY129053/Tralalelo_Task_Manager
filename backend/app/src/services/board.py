@@ -159,3 +159,7 @@ async def update_board_fields(column_id: UUID, fields: UpdateBoard) -> bool:
     await BoardRepo.update_fields(column_id, data_to_update)
 
     return True
+
+
+async def get_tasks_with_status(id: UUID):
+    return await BoardRepo.get_tasks_with_status(id)

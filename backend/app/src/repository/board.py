@@ -13,6 +13,7 @@ from backend.app.src.db.models import (
 )
 from backend.app.src.db.models.boards import Task
 from backend.app.src.enums import UserRole
+from backend.app.src.enums.status import Status
 from backend.app.src.schemas import (
     AbsoluteFullBoardInfo,
     AllowBoard,
@@ -86,22 +87,23 @@ async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
                         id=user.id, username=user.username, avatar_url=user.avatar_url
                     )
                 )
-            tasks.append(
-                TaskShortOut(
-                    id=task.id,
-                    title=task.title,
-                    position=task.position,
-                    priority=task.priority.value,
-                    status=task.status.value,
-                    color=task.color,
-                    completed_subtasks=completed,
-                    responsibles=responsibles_out,
-                    due_date=task.due_date,
-                    total_subtasks=total,
-                    subtasks=subtasks,
-                    total_comments=len(comments),
+            if task.status not in [Status.done, Status.reject]:
+                tasks.append(
+                    TaskShortOut(
+                        id=task.id,
+                        title=task.title,
+                        position=task.position,
+                        priority=task.priority.value,
+                        status=task.status.value,
+                        color=task.color,
+                        completed_subtasks=completed,
+                        responsibles=responsibles_out,
+                        due_date=task.due_date,
+                        total_subtasks=total,
+                        subtasks=subtasks,
+                        total_comments=len(comments),
+                    )
                 )
-            )
             tasks.sort(key=lambda x: x.position)
         columns_out.append(
             ColumnOut(
@@ -245,3 +247,10 @@ async def update_fields(column_id: UUID, fields: Dict[str, Any]):
         setattr(board, key, val)
 
     return await board.save(update_fields=list(fields.keys()))
+
+
+async def get_tasks_with_status(board_id: UUID):
+    tasks = await Task.filter(
+        column__board_id=board_id, status__in=[Status.done, Status.reject]
+    ).all()
+    return tasks

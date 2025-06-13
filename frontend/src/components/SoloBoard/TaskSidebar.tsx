@@ -143,6 +143,7 @@ export default function TaskSidebar({
   const handleChangeStatus = async (statusVal: Status) => {
     await updateTask(sidebarTask.id, "status", statusVal);
     await updateEvent();
+    onClose()
   };
 
   const handleChangePriority = async (priorityVal: Priority) => {

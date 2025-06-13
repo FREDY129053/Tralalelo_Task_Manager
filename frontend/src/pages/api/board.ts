@@ -6,6 +6,7 @@ import {
   IFullTask,
   IMember,
   IMemberBoardShortInfo,
+  ITask,
   Role,
 } from "@/interfaces/Board";
 import { apiFetch } from "./abstractFunctions";
@@ -310,5 +311,12 @@ export async function writeBoardComment(id: string, content: string): Promise<vo
     `http://localhost:8080/api/boards/${id}/comments`,
     {method: "POST", body: JSON.stringify({content})},
     "Ошибка при записи комментария"
+  )
+}
+export async function getBoardStatusTasks(id: string): Promise<ITask[]> {
+  return apiFetch(
+    `http://localhost:8080/api/boards/${id}/status_tasks`,
+    {method: "GET"},
+    "Ошибка при получении задач"
   )
 }
