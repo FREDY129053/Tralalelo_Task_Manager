@@ -1,9 +1,12 @@
+from typing import List
 from uuid import UUID
 
 import backend.app.src.repository.board as BoardRepo
 from backend.app.src.enums import UserRole
 from backend.app.src.helpers.jwt import decode_jwt_token
 from backend.app.src.schemas import CreateBoard, CreateColumn, ServiceMessage, UpdateBoard
+from backend.app.src.schemas.board import CommentData
+from backend.app.src.schemas.user import BoardUserPreview
 
 
 async def get_all_boards() -> ServiceMessage:
@@ -61,12 +64,8 @@ async def get_board_column_data(uuid: UUID) -> ServiceMessage:
 
 
 async def create_column(board_uuid: UUID, column_data: CreateColumn) -> ServiceMessage:
-    board = await BoardRepo.get_board(uuid=board_uuid)
-    if not board:
-        return ServiceMessage(is_error=True, message="board not found", status_code=404)
-
     column = await BoardRepo.create_column(
-        board=board,
+        board_id=board_uuid,
         title=column_data.title,
         position=column_data.position,
         color=column_data.color,
@@ -79,7 +78,7 @@ async def create_column(board_uuid: UUID, column_data: CreateColumn) -> ServiceM
     return ServiceMessage(message="column created", status_code=201)
 
 
-async def get_comments(uuid: UUID) -> ServiceMessage:
+async def get_comments(uuid: UUID) -> ServiceMessage[List[CommentData]]:
     comments = await BoardRepo.get_comments(id=uuid)
     return ServiceMessage(
         message=comments,
@@ -102,7 +101,7 @@ async def write_comment(board_id: UUID, token: str, text: str) -> ServiceMessage
     return ServiceMessage(message="comment created", status_code=201)
 
 
-async def get_members(id: UUID) -> ServiceMessage:
+async def get_members(id: UUID) -> ServiceMessage[List[BoardUserPreview]]:
     members = await BoardRepo.get_members(board_id=id)
 
     return ServiceMessage(message=members)
@@ -153,13 +152,20 @@ async def delete_board(id: UUID) -> ServiceMessage:
     return ServiceMessage(message="board deleted")
 
 
-async def update_board_fields(column_id: UUID, fields: UpdateBoard) -> bool:
+async def update_board_fields(column_id: UUID, fields: UpdateBoard) -> ServiceMessage:
     data_to_update = fields.model_dump(exclude_unset=True)
 
-    await BoardRepo.update_fields(column_id, data_to_update)
+    is_updated = await BoardRepo.update_fields(column_id, data_to_update)
 
-    return True
+    if not is_updated:
+        return ServiceMessage(
+            is_error=True, message="invalid input. cannot update board", status_code=400
+        )
+
+    return ServiceMessage(message="board updated")
 
 
-async def get_tasks_with_status(id: UUID):
-    return await BoardRepo.get_tasks_with_status(id)
+async def get_tasks_with_status(id: UUID) -> ServiceMessage:
+    tasks = await BoardRepo.get_tasks_with_status(id)
+
+    return ServiceMessage(message=tasks)

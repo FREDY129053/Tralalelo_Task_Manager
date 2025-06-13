@@ -7,9 +7,10 @@ from uuid import UUID
 from pydantic import AfterValidator, BaseModel, Field, ValidationError, field_validator
 from tortoise.contrib.pydantic import pydantic_model_creator
 
-from backend.app.src.db.models import Board, BoardUser, Column, Comment, Subtask, Task
+from backend.app.src.db.models import Board
 from backend.app.src.enums import Priority, Status
 from backend.app.src.enums.role import UserRole
+from backend.app.src.schemas.user import UserPreview
 
 
 def _is_valid_color(value: str) -> str:
@@ -31,44 +32,25 @@ FullBoardInfo = typing.NewType(
         validators={"color": field_validator("color")(_is_valid_color)},
     ),
 )
-FullColumnInfo = typing.NewType(
-    "FullColumnInfo",
-    pydantic_model_creator(
-        Column,
-        name="Column",
-        validators={"color": field_validator("color")(_is_valid_color)},
-    ),
-)
-FullTaskInfo = typing.NewType(
-    "FullTaskInfo",
-    pydantic_model_creator(
-        Task, name="Task", validators={"color": field_validator("color")(_is_valid_color)}
-    ),
-)
-FullSubtaskInfo = typing.NewType(
-    "FullSubtaskInfo", pydantic_model_creator(Subtask, name="Subtask")
-)
-FullCommentInfo = typing.NewType(
-    "FullCommentInfo", pydantic_model_creator(Comment, name="Comment")
-)
-BoardUserInfo = typing.NewType(
-    "BoardUserInfo", pydantic_model_creator(BoardUser, name="BoardUser")
-)
 
 
-class UserShortInfo(BaseModel):
-    id: UUID
-    username: str
-    avatar_url: str | None
-
-
-class CreateBoard(BaseModel):
-    title: str
-    description: str | None = None
-    is_public: bool = True
+class ColorMixin(BaseModel):
     color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
         default=None, description="Hex color, e.g. #000000"
     )
+
+
+class TitleMixin(BaseModel):
+    title: str
+
+
+class PositionMixin(BaseModel):
+    position: int
+
+
+class CreateBoard(ColorMixin, TitleMixin):
+    description: str | None = None
+    is_public: bool = True
 
 
 class UpdateColumnsPos(BaseModel):
@@ -76,31 +58,23 @@ class UpdateColumnsPos(BaseModel):
     new_pos: int
 
 
-class UpdateTaskPos(BaseModel):
-    col_id: UUID
+class UpdateTaskPos(UpdateColumnsPos):
     task_id: UUID
-    position: int
 
 
-class UpdateTaskInfo(BaseModel):
-    task_id: UUID
-    col_id: UUID
-    position: int
+class CreateColumn(ColorMixin, TitleMixin, PositionMixin): ...
 
 
-class CreateColumn(BaseModel):
-    title: str
-    position: int
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
-        default=None, description="Hex color, e.g. #000000"
-    )
-
-
-class UpdateColumn(BaseModel):
+class UpdateColumn(ColorMixin):
     title: Optional[str] = None
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
-        default=None, description="Hex color, e.g. #000000"
-    )
+
+
+class CommentData(BaseModel):
+    id: UUID
+    board_id: UUID
+    content: str
+    created_at: datetime
+    user: UserPreview
 
 
 class UpdateBoard(UpdateColumn):
@@ -108,28 +82,20 @@ class UpdateBoard(UpdateColumn):
     description: Optional[str] = None
 
 
-class TaskCreate(BaseModel):
-    title: str
+class TaskCreate(ColorMixin, TitleMixin, PositionMixin):
     description: Optional[str] = None
-    position: int
     due_date: Optional[datetime] = None
     priority: Priority = Priority.low
     status: Status = Status.to_do
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
-        default=None, description="Hex color, e.g. #000000"
-    )
     responsible: Optional[UUID] = None
 
 
-class TaskUpdate(BaseModel):
+class TaskUpdate(ColorMixin):
     title: Optional[str] = None
     description: Optional[str] = None
     due_date: Optional[datetime] = None
     priority: Optional[Priority] = None
     status: Optional[Status] = None
-    color: Annotated[Optional[str], AfterValidator(_is_valid_color)] = Field(
-        default=None, description="Hex color, e.g. #000000"
-    )
     responsible: Optional[UUID] = None
 
 
@@ -146,7 +112,7 @@ class CommentOut(BaseModel):
     id: UUID
     content: str
     created_at: datetime
-    user: Optional[UserShortInfo]
+    user: Optional[UserPreview]
 
     class Config:
         from_attributes = True
@@ -166,7 +132,7 @@ class SubtaskOut(BaseModel):
         from_attributes = True
 
 
-class TaskShortOut(BaseModel):
+class BaseTaskOut(BaseModel):
     id: UUID
     title: str
     position: int
@@ -174,35 +140,21 @@ class TaskShortOut(BaseModel):
     status: Status
     color: Optional[str]
     due_date: Optional[datetime]
-    responsibles: List[UserShortInfo]
+    responsibles: List[UserPreview]
     total_subtasks: int
     completed_subtasks: int
+    subtasks: List[SubtaskOut]
+
+    class Config:
+        from_attributes = True
+
+
+class TaskShortOut(BaseTaskOut):
     total_comments: int
 
-    subtasks: List[SubtaskOut]
 
-    class Config:
-        from_attributes = True
-
-
-class TaskOut(BaseModel):
-    id: UUID
-    title: str
-    description: Optional[str]
-    position: int
-    due_date: Optional[datetime]
-    priority: Priority
-    status: Status
-    color: Optional[str]
-    responsibles: List[UserShortInfo]
-    total_subtasks: int
-    completed_subtasks: int
-
-    subtasks: List[SubtaskOut]
+class TaskOut(BaseTaskOut):
     comments: List[CommentOut]
-
-    class Config:
-        from_attributes = True
 
 
 class ColumnOut(BaseModel):

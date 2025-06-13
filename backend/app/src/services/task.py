@@ -44,7 +44,7 @@ async def update_task_data(tasks_data: List[UpdateTaskPos]) -> bool:
         await TaskRepo.update_task_pos(
             task_uuid=new_task.task_id,
             column_id=new_task.col_id,
-            position=new_task.position,
+            position=new_task.new_pos,
         )
 
     return True

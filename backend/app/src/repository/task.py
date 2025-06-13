@@ -4,7 +4,7 @@ from uuid import UUID
 from tortoise.exceptions import OperationalError
 
 from backend.app.src.db.models import Comment, Subtask, Task, TaskResponsible
-from backend.app.src.schemas import CommentOut, TaskOut, UserShortInfo
+from backend.app.src.schemas import CommentOut, TaskOut, UserPreview
 
 
 async def get_task(uuid: UUID) -> Optional[Task]:
@@ -19,7 +19,7 @@ async def get_full_task(id: UUID) -> Optional[TaskOut]:
         return None
 
     responsibles_data = [
-        UserShortInfo(
+        UserPreview(
             id=responsible.user.id,
             username=responsible.user.username,
             avatar_url=responsible.user.avatar_url,
@@ -32,7 +32,7 @@ async def get_full_task(id: UUID) -> Optional[TaskOut]:
             id=com.id,
             content=com.content,
             created_at=com.created_at,
-            user=UserShortInfo(
+            user=UserPreview(
                 id=com.user.id, username=com.user.username, avatar_url=com.user.avatar_url
             ),
         )
