@@ -117,7 +117,7 @@ function SortableColumn({ column, updateBoard, members }: Props) {
         ...style,
         background: columnColor || undefined,
       }}
-      className={`rounded-b-[6px] relative border border-border flex flex-col flex-shrink-0 w-[260px] max-h-full rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 ${!column.color ? "bg-task-bg" : ""}`}
+      className={`group rounded-b-[6px] relative border border-border flex flex-col flex-shrink-0 w-[260px] max-h-full rounded-lg shadow-[inset_0_0_0_1px_hsl(0deg_0%_100%_/_10%)] z-10 ${!column.color ? "bg-task-bg" : ""}`}
     >
       <div className="relative flex items-center justify-center">
         <div
@@ -152,7 +152,7 @@ function SortableColumn({ column, updateBoard, members }: Props) {
           )}
         </div>
         <DropdownMenu
-          handleClass="absolute right-4 top-4 z-10"
+          handleClass="opacity-0 group-hover:opacity-100 transition-all duration-300 absolute right-4 top-4 z-10"
           button={
             <div className="text-2xl">
               <SlOptions />
@@ -235,7 +235,12 @@ function SortableColumn({ column, updateBoard, members }: Props) {
       >
         <button
           onClick={() => setAddTaskOpen(true)}
-          className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-transparent hover:bg-column-bg text-sky-600 hover:text-sky-800 transition cursor-pointer"
+          className={`
+            flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2
+            rounded-full sm:rounded-lg bg-transparent hover:bg-column-bg text-sky-600 hover:text-sky-800 cursor-pointer
+            transition-all duration-300
+            ${addTaskOpen ? "opacity-100 pointer-events-auto" : "opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"}
+          `}
           title="Добавить задачу"
           style={{ minWidth: "48px" }}
         >
@@ -244,12 +249,12 @@ function SortableColumn({ column, updateBoard, members }: Props) {
             Добавить задачу
           </span>
         </button>
-        <AddTaskModal
-          open={addTaskOpen}
-          onClose={() => setAddTaskOpen(false)}
-          onSubmit={handleAddTask}
-        />
       </div>
+      <AddTaskModal
+        open={addTaskOpen}
+        onClose={() => setAddTaskOpen(false)}
+        onSubmit={handleAddTask}
+      />
       <TaskSidebar
         task={sidebarTask}
         members={members}

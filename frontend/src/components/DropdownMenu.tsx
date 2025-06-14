@@ -120,7 +120,7 @@ function MenuList({
             <div className="px-4 py-1">
               <SelectColor
                 color={opt.color ?? null}
-                setPickerVisible={setColorPickerVisible} 
+                setPickerVisible={setColorPickerVisible}
                 pickerVisible={colorPickerVisible}
                 changeColor={(color) => {
                   opt.onColorSelect?.(color);

@@ -1,10 +1,7 @@
 import React from "react";
-import { MdOutlineDownloadDone } from "react-icons/md";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { IFullTask, ITask, Status } from "@/interfaces/Board";
-import { GrInProgress } from "react-icons/gr";
-import { IoMdClose } from "react-icons/io";
+import { IFullTask, ITask } from "@/interfaces/Board";
 import { getTask } from "@/pages/api/board";
 import { PRIORITY_FLAG } from "@/constants/priorityFlag";
 import Image from "next/image";
@@ -51,25 +48,6 @@ function SortableTask({ task, openSidebar }: Props) {
     transition,
     opacity: isDragging ? 0.2 : 1,
     backgroundColor: task.color ?? "#fff",
-  };
-
-  const statusIcon: Record<Status, React.ReactNode> = {
-    TODO: <></>,
-    IN_PROGRESS: (
-      <>
-        <GrInProgress />
-      </>
-    ),
-    DONE: (
-      <>
-        <MdOutlineDownloadDone />
-      </>
-    ),
-    REJECT: (
-      <>
-        <IoMdClose />
-      </>
-    ),
   };
 
   const openFullTask = (taskID: string) => {

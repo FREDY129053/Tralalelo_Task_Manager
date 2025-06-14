@@ -21,7 +21,7 @@ export default function SelectColor({
   changeColor: (color: string) => void;
 }) {
   return (
-    <div className="mb-4 relative flex flex-row items-center gap-4">
+    <div className="relative flex flex-row items-center gap-4">
       <label className="font-semibold block mb-1">Цвет:</label>
       <div
         className="w-6 h-6 rounded-full border cursor-pointer"

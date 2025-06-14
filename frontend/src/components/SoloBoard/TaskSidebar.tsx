@@ -21,6 +21,7 @@ import {
   deleteComment,
   deleteResponsible,
   deleteSubTask,
+  deleteTask,
   getTask,
   updateSubTask,
   updateTask,
@@ -146,7 +147,7 @@ export default function TaskSidebar({
   const handleChangeStatus = async (statusVal: Status) => {
     await updateTask(sidebarTask.id, "status", statusVal);
     await updateEvent();
-    onClose()
+    onClose();
   };
 
   const handleChangePriority = async (priorityVal: Priority) => {
@@ -173,24 +174,30 @@ export default function TaskSidebar({
     if (!date) {
       setNewDueDate(null);
       await updateTask(task!.id, "due_date", null);
-      updateEvent()
+      updateEvent();
       return;
     }
     const dateForAPI = date.toISOString();
     setNewDueDate(date);
     await updateTask(task!.id, "due_date", dateForAPI);
-    updateEvent()
+    updateEvent();
   };
 
   const handleWriteComment = async (content: string) => {
-    await writeComment(sidebarTask.id, content)
-    updateEvent()
-  }
+    await writeComment(sidebarTask.id, content);
+    updateEvent();
+  };
 
   async function handleDeleteComment(commentID: string) {
-      await deleteComment(commentID);
-     updateEvent()
-    }
+    await deleteComment(commentID);
+    updateEvent();
+  }
+
+  async function handleDeleteTask() {
+    await deleteTask(sidebarTask!.id);
+    onClose();
+    onBoardUpdate();
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-none">
@@ -202,7 +209,11 @@ export default function TaskSidebar({
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             {/* Верхняя панель */}
-            <UpPanel onClose={onClose} changeStatus={handleChangeStatus} />
+            <UpPanel
+              onClose={onClose}
+              changeStatus={handleChangeStatus}
+              onDelete={handleDeleteTask}
+            />
 
             {/* Название */}
             <h2 className="text-2xl font-bold mb-2">
@@ -274,12 +285,14 @@ export default function TaskSidebar({
             </div>
 
             {/* Цвет */}
-            <SelectColor
-              color={sidebarTask.color}
-              setPickerVisible={setColorPickerVisible}
-              pickerVisible={colorPickerVisible}
-              changeColor={handleColorChange}
-            />
+            <div className="mb-6">
+              <SelectColor
+                color={sidebarTask.color}
+                setPickerVisible={setColorPickerVisible}
+                pickerVisible={colorPickerVisible}
+                changeColor={handleColorChange}
+              />
+            </div>
 
             {/* Прогресс подзадач */}
             <ProgressBar task={sidebarTask} />
@@ -305,12 +318,19 @@ export default function TaskSidebar({
 
             {/* Комментарии */}
             <div className="mb-24">
-              <CommentsList comments={sidebarTask.comments} onDelete={handleDeleteComment} />
+              <CommentsList
+                comments={sidebarTask.comments}
+                onDelete={handleDeleteComment}
+              />
             </div>
           </div>
 
           {/* Поле ввода комментария */}
-          <WriteComment text={commentText} setComment={setCommentText} saveComment={handleWriteComment} />
+          <WriteComment
+            text={commentText}
+            setComment={setCommentText}
+            saveComment={handleWriteComment}
+          />
         </div>
       </div>
     </div>,
@@ -321,10 +341,30 @@ export default function TaskSidebar({
 function UpPanel({
   onClose,
   changeStatus,
+  onDelete,
 }: {
   onClose: () => void;
   changeStatus: (status: Status) => void;
+  onDelete: () => void;
 }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
+
   return (
     <div className="flex justify-end gap-3 items-center mb-4">
       <div className="flex space-x-2">
@@ -340,13 +380,31 @@ function UpPanel({
         >
           Отклонено
         </button>
-        <div className="relative group items-center flex border border-border rounded-[6px] px-[3px]">
-          <FiMoreVertical className="text-xl cursor-pointer" />
-          <div className="absolute top-full left-0 mt-1 hidden group-hover:block bg-white shadow-md rounded p-2 z-10">
-            <button className="text-red-600 hover:underline text-sm">
-              Удалить задачу
-            </button>
-          </div>
+        <div
+          className="relative flex items-center border border-border rounded-[6px] px-[3px]"
+          ref={dropdownRef}
+        >
+          <button
+            onClick={() => setDropdownOpen((v) => !v)}
+            className="text-xl cursor-pointer p-1"
+            aria-label="Ещё"
+            type="button"
+          >
+            <FiMoreVertical />
+          </button>
+          {dropdownOpen && (
+            <div className="absolute top-full -left-10 mt-1 bg-white shadow-md rounded p-2 z-10 min-w-[120px]">
+              <button
+                onClick={() => {
+                  onDelete();
+                  setDropdownOpen(false);
+                }}
+                className="text-red-600 hover:underline text-sm w-full text-left"
+              >
+                Удалить задачу
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <button
@@ -683,7 +741,7 @@ function SubtaskItem({
   subtask,
   handleCheckboxChange,
   deleteSubtask,
-  changeSubtask
+  changeSubtask,
 }: {
   subtask: ISubtask;
   deleteSubtask: (id: string) => void;
@@ -702,7 +760,7 @@ function SubtaskItem({
     initialValue: subtask?.title ?? "",
     onSave: async (newValue) => {
       if (!subtask) return;
-      changeSubtask(subtask.id, "title", newValue)
+      changeSubtask(subtask.id, "title", newValue);
     },
   });
   return (
@@ -752,4 +810,3 @@ function SubtaskItem({
     </li>
   );
 }
-

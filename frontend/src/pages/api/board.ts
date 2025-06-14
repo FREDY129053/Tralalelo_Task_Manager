@@ -19,7 +19,7 @@ interface IUpdateCols {
 interface IUpdateTasks {
   col_id: string;
   task_id: string;
-  position: number;
+  new_pos: number;
 }
 
 export async function getBoards(): Promise<IBoardShortInfo[]> {
@@ -257,9 +257,7 @@ export async function deleteResponsible(
   );
 }
 
-export async function deleteComment(
-  commentID: string,
-): Promise<void> {
+export async function deleteComment(commentID: string): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/comments/${commentID}`,
     { method: "DELETE" },
@@ -272,7 +270,7 @@ export async function writeComment(
 ): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/tasks/${taskID}/comments`,
-    { method: "POST", body: JSON.stringify({content}) },
+    { method: "POST", body: JSON.stringify({ content }) },
     "Ошибка при записи комментария"
   );
 }
@@ -292,40 +290,55 @@ export async function updateBoardData(
   );
 }
 
-export async function createBoard(title: string, description: string | null, is_public: boolean): Promise<Record<string, string>> {
+export async function createBoard(
+  title: string,
+  description: string | null,
+  is_public: boolean
+): Promise<Record<string, string>> {
   return apiFetch(
     "http://localhost:8080/api/boards/",
-    {method: "POST", body: JSON.stringify({title, description, is_public})},
+    { method: "POST", body: JSON.stringify({ title, description, is_public }) },
     "Ошибка при создании доски"
-  )
+  );
 }
 
 export async function deleteBoard(id: string): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/boards/${id}`,
-    {method: "DELETE"},
+    { method: "DELETE" },
     "Ошибка при удалении доски"
-  )
+  );
 }
 
 export async function getBoardComments(id: string): Promise<IComment[]> {
   return apiFetch(
     `http://localhost:8080/api/boards/${id}/comments`,
-    {method: "GET"},
+    { method: "GET" },
     "Ошибка при получении комментариев"
-  )
+  );
 }
-export async function writeBoardComment(id: string, content: string): Promise<void> {
+export async function writeBoardComment(
+  id: string,
+  content: string
+): Promise<void> {
   return apiFetch(
     `http://localhost:8080/api/boards/${id}/comments`,
-    {method: "POST", body: JSON.stringify({content})},
+    { method: "POST", body: JSON.stringify({ content }) },
     "Ошибка при записи комментария"
-  )
+  );
 }
 export async function getBoardStatusTasks(id: string): Promise<ITask[]> {
   return apiFetch(
     `http://localhost:8080/api/boards/${id}/status_tasks`,
-    {method: "GET"},
+    { method: "GET" },
     "Ошибка при получении задач"
-  )
+  );
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  return apiFetch(
+    `http://localhost:8080/api/tasks/${id}`,
+    { method: "DELETE" },
+    "Ошибка при удалении задачи"
+  );
 }

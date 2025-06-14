@@ -256,7 +256,7 @@ export default function BoardPage() {
     return column.tasks.map((task, idx) => ({
       col_id: column.id,
       task_id: task.id,
-      position: idx + 1,
+      new_pos: idx + 1,
     }));
   }
 
@@ -460,7 +460,7 @@ export default function BoardPage() {
             <div className="flex items-center">
               <button
                 onClick={() => setAddColumnOpen(true)}
-                className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
+                className="cursor-pointer flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition"
                 title="Добавить колонку"
                 style={{ minWidth: "48px" }}
               >
