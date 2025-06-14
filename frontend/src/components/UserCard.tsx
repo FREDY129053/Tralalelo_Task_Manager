@@ -4,6 +4,7 @@ import { IUserFullInfo } from "@/interfaces/User";
 import returnDate from "@/helpers/NormalDate";
 import { FiEdit2 } from "react-icons/fi";
 import { updateUser } from "@/pages/api/users";
+import Loading from "./Loading";
 
 type Props = {
   user: IUserFullInfo;
@@ -114,7 +115,9 @@ export default function UserCard({ user }: Props) {
           </div>
         </div>
       ) : (
-        <div>Loading...</div>
+        <div className="w-full h-full absolute translate-1/2">
+                <Loading variant="dots" />
+              </div>
       )}
     </div>
   );

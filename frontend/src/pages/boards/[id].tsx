@@ -61,12 +61,13 @@ import { getRole } from "../api/users";
 import { createNotification } from "../api/notification";
 import AddTaskModal from "@/components/AddModal";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import Loading from "@/components/Loading";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
-  useAuthRedirect()
+  useAuthRedirect();
   const [isOpen, setIsOpen] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const router = useRouter();
@@ -337,7 +338,12 @@ export default function BoardPage() {
     setActiveItem(null);
   }
 
-  if (!boardData) return <div>Loading...</div>;
+  if (!boardData)
+    return (
+      <div className="w-full h-full absolute translate-1/2">
+        <Loading variant="dots" />
+      </div>
+    );
 
   const boardColor = boardData.board.color || "#fff";
 

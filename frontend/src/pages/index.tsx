@@ -14,17 +14,20 @@ export default function AuthPage() {
     setIsSendingData(true);
     try {
       if (displayedRegistering) {
-        const res = await registerUser(
-          data.username,
-          data.password,
-          data.email!
-        );
-        localStorage.setItem("token", res.message)
+        await registerUser(data.username, data.password, data.email!)
+          .then((res) => {
+            localStorage.setItem("token", res.message);
+            router.push("/main");
+          })
+          .catch(() => alert("Username или почта уже заняты"));
       } else {
-        const res = await loginUser(data.username, data.password);
-        localStorage.setItem("token", res.message)
+        await loginUser(data.username, data.password)
+          .then((res) => {
+            localStorage.setItem("token", res.message);
+            router.push("/main");
+          })
+          .catch(() => alert("Неверный логин или пароль"));
       }
-      router.push("/main");
     } catch (error) {
       console.error(error);
     } finally {
