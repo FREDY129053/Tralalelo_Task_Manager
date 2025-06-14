@@ -13,6 +13,7 @@ import DropdownMenu from "../DropdownMenu";
 import { SlOptions } from "react-icons/sl";
 import TaskSidebar from "./TaskSidebar";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import AddTaskModal from "../AddModal";
 
 type Props = {
   column: IColumn;
@@ -41,6 +42,7 @@ function SortableColumn({ column, updateBoard, members }: Props) {
 
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("ALL");
   const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>("ALL");
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
 
   const {
     editing,
@@ -76,12 +78,12 @@ function SortableColumn({ column, updateBoard, members }: Props) {
     opacity: isDragging ? 0.2 : 1,
   };
 
-  async function handleAddTask() {
-    const title = prompt("Введите название задачи");
+  async function handleAddTask(title: string) {
     if (!title) return;
     const position = column.tasks.length + 1;
-    await createTask(column.id, title, position).then().catch(console.error);
+    await createTask(column.id, title, position).catch(console.error);
     updateBoard();
+    setAddTaskOpen(false);
   }
 
   async function handleDeleteColumn(colID: string) {
@@ -232,7 +234,7 @@ function SortableColumn({ column, updateBoard, members }: Props) {
         className={`flex justify-center rounded-b-[6px] py-4 z-20 ${!column.color ? "bg-task-bg" : ""}`}
       >
         <button
-          onClick={handleAddTask}
+          onClick={() => setAddTaskOpen(true)}
           className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-transparent hover:bg-column-bg text-sky-600 hover:text-sky-800 transition cursor-pointer"
           title="Добавить задачу"
           style={{ minWidth: "48px" }}
@@ -242,6 +244,11 @@ function SortableColumn({ column, updateBoard, members }: Props) {
             Добавить задачу
           </span>
         </button>
+        <AddTaskModal
+          open={addTaskOpen}
+          onClose={() => setAddTaskOpen(false)}
+          onSubmit={handleAddTask}
+        />
       </div>
       <TaskSidebar
         task={sidebarTask}

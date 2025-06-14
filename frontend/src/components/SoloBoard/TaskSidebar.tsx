@@ -37,6 +37,7 @@ import { motion } from "framer-motion";
 import SelectColor from "../ColorPicker";
 import WriteComment from "../Writecomment";
 import CommentsList from "../CommentsList";
+import AddTaskModal from "../AddModal";
 
 type Props = {
   task: IFullTask | null;
@@ -57,6 +58,7 @@ export default function TaskSidebar({
   const [showSubtasks, setShowSubtasks] = useState(true);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [addSubtaskOpen, setAddSubtaskOpen] = useState(false);
 
   useEffect(() => {
     setSidebarTask(task);
@@ -120,11 +122,11 @@ export default function TaskSidebar({
     onBoardUpdate();
   };
 
-  const handleAddSubtask = async () => {
-    const title = prompt("Введите название подзадачи");
+  const handleAddSubtask = async (title?: string) => {
     if (!title) return;
     await createSubTask(sidebarTask.id, title);
     await updateEvent();
+    setAddSubtaskOpen(false);
   };
 
   const handleChangeSubtask = async (
@@ -289,8 +291,15 @@ export default function TaskSidebar({
                 setShowList={setShowSubtasks}
                 task={sidebarTask}
                 deleteSubtask={handleDeleteSubtask}
-                addSubtask={handleAddSubtask}
+                addSubtask={() => setAddSubtaskOpen(true)}
                 changeSubtask={handleChangeSubtask}
+              />
+              <AddTaskModal
+                open={addSubtaskOpen}
+                onClose={() => setAddSubtaskOpen(false)}
+                onSubmit={handleAddSubtask}
+                title="Добавить подзадачу"
+                placeholder="Введите название подзадачи"
               />
             </div>
 

@@ -59,6 +59,7 @@ import StatusTasks from "@/components/StatusTasks";
 import { decodeJWT } from "@/helpers/DecodeToken.";
 import { getRole } from "../api/users";
 import { createNotification } from "../api/notification";
+import AddTaskModal from "@/components/AddModal";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
@@ -79,6 +80,7 @@ export default function BoardPage() {
   const [isTasks, setIsTasks] = useState(false);
   const [userUUID, setUserUUID] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<Role | null>(null);
+  const [addColumnOpen, setAddColumnOpen] = useState(false);
 
   useEffect(() => {
     if (router.isReady) {
@@ -192,12 +194,12 @@ export default function BoardPage() {
     [boardData, findColumnByTaskId]
   );
 
-  async function handleAddColumn() {
-    const title = prompt("Введите название колонки");
+  async function handleAddColumn(title?: string) {
     if (!title) return;
     const position = boardData!.columns.length + 1;
-    await createColumn(uuid!, title, position).then().catch(console.error);
+    await createColumn(uuid!, title, position).catch(console.error);
     updateBoard();
+    setAddColumnOpen(false);
   }
 
   async function handleAddMember(userID: string) {
@@ -457,7 +459,7 @@ export default function BoardPage() {
             ))}
             <div className="flex items-center">
               <button
-                onClick={handleAddColumn}
+                onClick={() => setAddColumnOpen(true)}
                 className="flex items-center justify-center h-12 w-12 sm:h-12 sm:w-auto sm:px-4 sm:py-2 rounded-full sm:rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-600 hover:text-sky-800 transition shadow border-2 border-dashed border-sky-300 cursor-pointer"
                 title="Добавить колонку"
                 style={{ minWidth: "48px" }}
@@ -467,6 +469,13 @@ export default function BoardPage() {
                   Добавить колонку
                 </span>
               </button>
+              <AddTaskModal
+                open={addColumnOpen}
+                onClose={() => setAddColumnOpen(false)}
+                onSubmit={handleAddColumn}
+                title="Добавить колонку"
+                placeholder="Введите название колонки"
+              />
             </div>
           </div>
         </SortableContext>
