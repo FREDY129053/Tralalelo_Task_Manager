@@ -6,6 +6,7 @@ import { IoMdAdd } from "react-icons/io";
 import { useRouter } from "next/router";
 import { FaLock, FaLockOpen } from "react-icons/fa";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export default function Main() {
   useAuthRedirect()
@@ -15,6 +16,7 @@ export default function Main() {
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const router = useRouter();
+  const isMobile = useIsMobile(480)
 
   useEffect(() => {
     if (!router) return;
@@ -60,7 +62,7 @@ export default function Main() {
         onClick={() => setModalOpen(true)}
       >
         <IoMdAdd className="w-6 h-6" />
-        Создать доску
+        {!isMobile && "Создать доску"}
       </button>
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">

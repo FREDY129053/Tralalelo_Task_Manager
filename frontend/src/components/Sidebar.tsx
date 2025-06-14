@@ -116,7 +116,7 @@ export default function Sidebar() {
         className={`
         ${
           isMobile
-            ? `fixed top-0 left-0 w-screen h-screen bg-sidebar-bg z-40 flex flex-col p-5 pt-8 transition-all duration-300 ${
+            ? `fixed top-0 left-0 w-screen h-screen bg-sidebar-bg z-9999 flex flex-col p-5 pt-8 transition-all duration-300 ${
                 open
                   ? "opacity-100 pointer-events-auto"
                   : "opacity-0 pointer-events-none"

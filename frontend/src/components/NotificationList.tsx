@@ -4,6 +4,7 @@ import { FaTrashAlt } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type Props = {
   notifications: INotification[];
@@ -17,6 +18,7 @@ export default function NotificationList({
   onRead,
 }: Props) {
   const [selected, setSelected] = useState<INotification | null>(null);
+  const isMobile = useIsMobile(640);
 
   function NotificationModal({
     notification,
@@ -110,7 +112,9 @@ export default function NotificationList({
                 </div>
               </div>
               <button
-                className="cursor-pointer ml-2 opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-red-600"
+                className={`cursor-pointer ml-2 transition text-gray-400 hover:text-red-600
+                  ${isMobile ? "" : "opacity-0 group-hover:opacity-100"}
+                `}
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(n.id);
