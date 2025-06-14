@@ -68,6 +68,20 @@ async def get_all_users_in_boards(request: Request):
     return result.message
 
 
+@board_router.get("/my", response_model=List[FullBoardInfo])
+async def get_all_users_boards(request: Request):
+    token = request.cookies.get("user", None)
+    if not token:
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+    result = await BoardService.get_users_boards(token=token)
+
+    if result.is_error:
+        raise HTTPException(status_code=result.status_code, detail=result.message)
+
+    return result.message
+
+
 @board_router.post(
     "/",
     responses={

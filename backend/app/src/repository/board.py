@@ -75,6 +75,47 @@ async def get_all_users_boards(user_id: UUID) -> List[AllowBoard]:
     return result
 
 
+async def get_all_users_own_boards(user_id: UUID) -> List[Board]:
+    """Получение всех досок, где пользователь создатель
+
+    Args:
+        user_id (UUID): идентификатор пользователя
+
+    Returns:
+        List[AllowBoard]: массив досок
+    """
+    boards = (
+        await Board.filter(
+            members__user_id=user_id,
+            members__role__in=[UserRole.creator],
+        )
+        .prefetch_related("members")
+        .all()
+    )
+
+    result = []
+    for board in boards:
+        user_member = next(
+            (member for member in board.members if str(member.user_id) == str(user_id)),
+            None,
+        )
+
+        if not user_member:
+            continue
+        result.append(board)
+
+    #     result.append(
+    #         AllowBoard(
+    #             id=board.id,
+    #             title=board.title,
+    #             description=board.description,
+    #             is_public=board.is_public,
+    #             color=board.color,
+    #         )
+    #     )
+    return result
+
+
 async def get_full_board_data(uuid: UUID) -> Optional[AbsoluteFullBoardInfo]:
     """Получение максимально подробной информации о доске
 

@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { logout } from "@/pages/api/users";
 
 export default function Sidebar() {
   const [open, setOpen] = useState<boolean>(true);
@@ -82,7 +83,8 @@ export default function Sidebar() {
       icon: <AiOutlineLogout />,
       spacing: true,
       hover: "hover:bg-red-400 hover:text-white",
-      link: "http://localhost:3000"
+      link: "http://localhost:3000",
+      click: async() => {await logout(); localStorage.removeItem("token")}
     },
   ];
 
@@ -159,6 +161,7 @@ export default function Sidebar() {
               key={index}
               onClick={() => {
                 if (isMobile) setOpen(false);
+                if (menu.click) menu.click()
               }}
             >
               <li

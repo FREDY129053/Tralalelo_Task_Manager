@@ -26,6 +26,18 @@ async def get_users_in_boards(token: str) -> ServiceMessage:
     return ServiceMessage(message=boards, status_code=200)
 
 
+async def get_users_boards(token: str) -> ServiceMessage:
+    user_data = decode_jwt_token(token)
+    if not user_data:
+        return ServiceMessage(is_error=True, message="invalid token", status_code=403)
+
+    boards = await BoardRepo.get_all_users_own_boards(
+        user_id=user_data.get("uuid", ""),
+    )
+
+    return ServiceMessage(message=boards, status_code=200)
+
+
 async def get_full_board_data(uuid: UUID) -> ServiceMessage:
     board = await BoardRepo.get_full_board_data(uuid)
     if board is None:

@@ -24,7 +24,7 @@ interface IUpdateTasks {
 
 export async function getBoards(): Promise<IBoardShortInfo[]> {
   return apiFetch<IBoardShortInfo[]>(
-    "http://localhost:8080/api/boards",
+    "http://localhost:8080/api/boards/my",
     { method: "GET" },
     "ошибка при получении досок"
   );

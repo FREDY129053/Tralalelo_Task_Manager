@@ -62,12 +62,14 @@ import { createNotification } from "../api/notification";
 import AddTaskModal from "@/components/AddModal";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import Loading from "@/components/Loading";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
   useAuthRedirect();
+  const isMobile = useIsMobile(640); // или 640, если нужно строже
   const [isOpen, setIsOpen] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const router = useRouter();
@@ -354,27 +356,41 @@ export default function BoardPage() {
         background: `linear-gradient(to bottom, #fff, ${boardColor})`,
       }}
     >
-      <div className="sticky pt-4 px-6 flex items-center flex-row justify-between mb-6">
-        <div className="flex flex-row items-center gap-4">
-          <div className="flex flex-row text-base items-center gap-2 font-bold">
-            <FaFolderOpen className="w-8 h-8" />
-            {boardData.board.title}
+      <div
+        className={`sticky pt-4 px-6 flex items-center justify-between mb-6 ${
+          isMobile ? "flex-row gap-2 px-2 pt-2" : "flex-row"
+        }`}
+      >
+        {!isMobile ? (
+          <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row text-base items-center gap-2 font-bold">
+              <FaFolderOpen className="w-8 h-8" />
+              {boardData.board.title}
+            </div>
+            <span className="truncate block max-w-2xl">
+              {boardData.board.description}
+            </span>
           </div>
-          <span className="truncate block max-w-2xl">
-            {boardData.board.description}
-          </span>
-        </div>
-        <div className="flex flex-row gap-4 items-center">
-          {userRole !== "MEMBER" && boardData.board.is_public ? (
+        ) : null}
+        <div
+          className={`flex items-center gap-2 ${
+            isMobile ? "w-full justify-end gap-6" : "gap-4"
+          }`}
+        >
+          {userRole !== "MEMBER" && boardData.board.is_public && (
             <>
               <button
-                className="flex gap-2 items-center cursor-pointer p-[7px] rounded-[6px] border-none transition h-[30px] text-sm font-[500] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+                className={`flex gap-2 items-center cursor-pointer p-[7px] rounded-[6px] border-none transition h-[30px] text-sm font-[500] hover:text-[#1A1A1A] hover:bg-[#E9E9E9] ${
+                  isMobile ? "text-base px-2" : ""
+                }`}
                 onClick={() => {
                   setIsOpen(true);
                   getMembers();
                 }}
+                title="Пригласить"
               >
-                <IoPersonAdd className="w-6 h-6" /> Пригласить
+                <IoPersonAdd className="w-6 h-6" />
+                {!isMobile && "Пригласить"}
               </button>
               {isOpen && (
                 <BoardUsers
@@ -387,15 +403,16 @@ export default function BoardPage() {
                 />
               )}
             </>
-          ) : (
-            <></>
           )}
           <button
             onClick={() => {
               getComments();
               setIsComments(true);
             }}
-            className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+            className={`flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9] ${
+              isMobile ? "text-base px-2" : ""
+            }`}
+            title="Комментарии"
           >
             <LiaComment className="w-6 h-6" />
           </button>
@@ -415,7 +432,10 @@ export default function BoardPage() {
               getStatusTasks();
               setIsTasks(true);
             }}
-            className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+            className={`flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9] ${
+              isMobile ? "text-base px-2" : ""
+            }`}
+            title="Задачи по статусу"
           >
             <MdOutlineTask className="w-6 h-6" />
           </button>
@@ -430,7 +450,10 @@ export default function BoardPage() {
             <>
               <button
                 onClick={() => setIsSetting(true)}
-                className="flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9]"
+                className={`flex font-[500] cursor-pointer h-[30px] items-center p-[7px] rounded-[6px] hover:text-[#1A1A1A] hover:bg-[#E9E9E9] ${
+                  isMobile ? "text-base px-2" : ""
+                }`}
+                title="Настройки"
               >
                 <IoMdSettings className="w-6 h-6" />
               </button>

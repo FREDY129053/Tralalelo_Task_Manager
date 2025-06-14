@@ -49,3 +49,11 @@ export async function updateUser(userID: string, username: string, email: string
     "Ошибка при обновлении пользователя"
   )
 }
+
+export async function logout(): Promise<void> {
+  return apiFetch(
+    "http://localhost:8080/api/users/logout",
+    {method: "POST"},
+    "Ошибка при выходе"
+  )
+}
