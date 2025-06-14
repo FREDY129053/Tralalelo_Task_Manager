@@ -45,6 +45,7 @@ async def get_all_users_boards(user_id: UUID) -> List[AllowBoard]:
     """
     boards = (
         await Board.filter(
+            is_public=True,
             members__user_id=user_id,
             members__role__in=[UserRole.member, UserRole.moderator],
         )

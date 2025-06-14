@@ -154,6 +154,7 @@ class TaskShortOut(BaseTaskOut):
 
 
 class TaskOut(BaseTaskOut):
+    description: Optional[str]
     comments: List[CommentOut]
 
 

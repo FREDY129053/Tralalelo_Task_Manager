@@ -1,5 +1,3 @@
-import os
-
 from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
@@ -25,6 +23,7 @@ async def init_db_tortoise(_app: FastAPI):
     }
 
     await Tortoise.init(config=TORTOISE_ORM)
+    await Tortoise.generate_schemas()
 
     register_tortoise(
         app=_app,

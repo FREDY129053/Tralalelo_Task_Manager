@@ -56,7 +56,7 @@ async def notify_users():
     for _, entries in tasks_by_days.items():
         for entry in entries:
             message = build_message(entry)
-            # subject = "⏰ Уведомление о сроке задачи"
+            subject = "⏰ Уведомление о сроке задачи"
 
             responsible_id = entry["user_id"]
             responsible_email = entry["user_email"]
@@ -71,10 +71,10 @@ async def notify_users():
             )
             await create_notification(notification=notification)
 
-            # try:
-            #     await send_email(responsible_email, subject, message)
-            # except Exception as e:
-            #     print(f"[ERROR] Failed to send to {responsible_email}: {e}")
+            try:
+                await send_email(responsible_email, subject, message)
+            except Exception as e:
+                print(f"[ERROR] Failed to send to {responsible_email}: {e}")
 
             if entry.get("creator_email"):
                 creator_id = entry["creator_id"]
@@ -88,7 +88,7 @@ async def notify_users():
                 )
                 await create_notification(notification=notification)
 
-                # try:
-                #     await send_email(creator_email, subject, message)
-                # except Exception as e:
-                #     print(f"[ERROR] Failed to send to {creator_email}: {e}")
+                try:
+                    await send_email(creator_email, subject, message)
+                except Exception as e:
+                    print(f"[ERROR] Failed to send to {creator_email}: {e}")

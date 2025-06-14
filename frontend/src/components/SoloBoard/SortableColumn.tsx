@@ -216,7 +216,7 @@ function SortableColumn({ column, updateBoard, members }: Props) {
       <div className="-z-1 flex-1 flex flex-col items-center gap-2 w-full p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-700">
         {filteredTasks.length === 0 ? (
           <div className="flex items-center justify-center w-full h-20 text-2xl leading-8 font-semibold text-white uppercase">
-            List is empty
+            
           </div>
         ) : (
           <SortableContext
