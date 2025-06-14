@@ -138,7 +138,7 @@ export default function BoardUsers({
                     <span>{item.username}</span>
                   </div>
                   <button
-                    className="px-2 py-1 bg-sky-400 text-white rounded"
+                    className="cursor-pointer px-2 py-1 bg-sky-400 text-white rounded"
                     onClick={() => {
                       addMembers(item.id);
                       setQuery("");
@@ -184,7 +184,7 @@ export default function BoardUsers({
                   ) : (
                     <button
                       onClick={() => toggleRoleMenu(member.id)}
-                      className="p-2 hover:bg-gray-200 rounded-full"
+                      className="cursor-pointer p-2 hover:bg-gray-200 rounded-full"
                     >
                       <IoMdMore size={20} />
                     </button>
@@ -193,7 +193,7 @@ export default function BoardUsers({
                     <div className="role-menu absolute right-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded shadow-lg z-50">
                       {member.role === "MODERATOR" && (
                         <button
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          className="cursor-pointer w-full text-left px-4 py-2 hover:bg-gray-100"
                           onClick={() =>
                             handleChangeRole(member.id, member.role)
                           }
@@ -203,7 +203,7 @@ export default function BoardUsers({
                       )}
                       {member.role === "MEMBER" && (
                         <button
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          className="cursor-pointer w-full text-left px-4 py-2 hover:bg-gray-100"
                           onClick={() =>
                             handleChangeRole(member.id, member.role)
                           }
@@ -213,7 +213,7 @@ export default function BoardUsers({
                       )}
                       {member.role !== "CREATOR" && (
                         <button
-                          className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+                          className="cursor-pointer w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
                           onClick={() => handleDelete(member.id)}
                         >
                           Удалить участника

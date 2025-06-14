@@ -114,7 +114,7 @@ export default function Boards({
               {onDeleteBoard && (
                 <button
                   className={`
-                    absolute top-3 right-3 z-10 p-2 rounded-full bg-white shadow-md
+                    cursor-pointer absolute top-3 right-3 z-10 p-2 rounded-full bg-white shadow-md
                     text-red-500 hover:bg-red-100 hover:text-red-700 transition
                     ${isMobile ? "" : "opacity-0 group-hover:opacity-100"}
                   `}

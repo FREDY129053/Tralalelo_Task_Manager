@@ -32,7 +32,7 @@ export default function TasksModal({ tasks, onClose, onChangeStatus, title }: Pr
         className="w-full max-w-2xl relative bg-white border rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]"
       >
         <button
-          className="absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
+          className="cursor-pointer absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
           onClick={onClose}
           aria-label="Закрыть"
           type="button"
@@ -53,7 +53,7 @@ export default function TasksModal({ tasks, onClose, onChangeStatus, title }: Pr
                   {/* Чекбокс со статусом */}
                   <button
                     className={`
-                      flex items-center justify-center w-8 h-8 rounded-full border-2
+                      cursor-pointer flex items-center justify-center w-8 h-8 rounded-full border-2
                       ${
                         task.status === "DONE"
                           ? "border-green-500 bg-green-100 text-green-600"

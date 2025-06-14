@@ -61,7 +61,7 @@ export default function DropdownMenu({
 
   return (
     <div className={handleClass}>
-      <button ref={btnRef} onClick={() => setOpen((v) => !v)}>
+      <button className="cursor-pointer " ref={btnRef} onClick={() => setOpen((v) => !v)}>
         {button}
       </button>
       {open &&
@@ -130,7 +130,7 @@ function MenuList({
             </div>
           ) : (
             <button
-              className="w-full text-left px-4 py-2 hover:bg-sky-100 transition flex items-center justify-between rounded"
+              className="cursor-pointer w-full text-left px-4 py-2 hover:bg-sky-100 transition flex items-center justify-between rounded"
               onClick={() => {
                 if (opt.onClick) opt.onClick();
                 if (!opt.submenu) onClose();

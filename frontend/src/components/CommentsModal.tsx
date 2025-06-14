@@ -51,7 +51,7 @@ export default function CommentsModal({
         className="w-full max-w-2xl relative bg-modal-bg border border-[var(--color-board-tint-5)] rounded-2xl shadow-2xl p-6 flex flex-col max-h-[90vh]"
       >
         <button
-          className="absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
+          className="cursor-pointer absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
           onClick={onClose}
           aria-label="Закрыть"
           type="button"

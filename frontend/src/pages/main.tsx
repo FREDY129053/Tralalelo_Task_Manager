@@ -66,7 +66,7 @@ export default function Main() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
             <button
-              className="absolute right-4 top-4 text-2xl text-gray-400 hover:text-gray-700"
+              className="cursor-pointer absolute right-4 top-4 text-2xl text-gray-400 hover:text-gray-700"
               onClick={() => setModalOpen(false)}
               aria-label="Закрыть"
             >
@@ -120,7 +120,7 @@ export default function Main() {
               </label>
             </div>
             <button
-              className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 rounded-lg transition"
+              className="cursor-pointer w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 rounded-lg transition"
               onClick={handleCreate}
               disabled={!title.trim()}
             >

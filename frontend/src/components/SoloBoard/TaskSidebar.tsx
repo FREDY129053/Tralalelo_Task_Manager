@@ -399,7 +399,7 @@ function UpPanel({
                   onDelete();
                   setDropdownOpen(false);
                 }}
-                className="text-red-600 hover:underline text-sm w-full text-left"
+                className="cursor-pointer text-red-600 hover:underline text-sm w-full text-left"
               >
                 Удалить задачу
               </button>
@@ -408,7 +408,7 @@ function UpPanel({
         </div>
       </div>
       <button
-        className="text-3xl text-gray-400 hover:text-gray-700"
+        className="cursor-pointer text-3xl text-gray-400 hover:text-gray-700"
         onClick={onClose}
         aria-label="Закрыть"
         type="button"
@@ -558,7 +558,7 @@ function SelectDate({
             <button
               onClick={decreaseMonth}
               disabled={prevMonthButtonDisabled}
-              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+              className="cursor-pointer p-1 rounded hover:bg-gray-100 disabled:opacity-50"
             >
               <FaChevronLeft />
             </button>
@@ -601,7 +601,7 @@ function SelectDate({
             <button
               onClick={increaseMonth}
               disabled={nextMonthButtonDisabled}
-              className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+              className="cursor-pointer p-1 rounded hover:bg-gray-100 disabled:opacity-50"
             >
               <FaChevronRight />
             </button>
@@ -707,7 +707,7 @@ function SubtasksList({
   return (
     <>
       <button
-        className="text-sm text-sky-600 underline mb-2"
+        className="cursor-pointer text-sm text-sky-600 underline mb-2"
         onClick={() => setShowList(!showList)}
       >
         {showList ? "Скрыть подзадачи" : "Показать подзадачи"}
@@ -726,7 +726,7 @@ function SubtasksList({
           <li>
             <button
               onClick={() => addSubtask()}
-              className="text-sky-600 hover:underline cursor-pointer"
+              className=" text-sky-600 hover:underline cursor-pointer"
             >
               + Добавить подзадачу
             </button>

@@ -24,7 +24,7 @@ export default function WriteComment({
             saveComment(text)
             setComment("")
           }}
-          className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition-colors"
+          className="cursor-pointer bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition-colors"
         >
           Отправить
         </button>

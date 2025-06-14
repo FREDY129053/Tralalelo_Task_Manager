@@ -56,7 +56,7 @@ export const CustomSelect = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full px-3 py-2 text-left border rounded-md transition-all ${
+        className={`cursor-pointer flex items-center justify-between w-full px-3 py-2 text-left border rounded-md transition-all ${
           isOpen ? "ring-2 ring-focus border-focus" : "border-gray-300 hover:border-gray-400"
         }`}
         aria-haspopup="listbox"

@@ -76,7 +76,7 @@ export default function BoardSettings({ board, onClose, updateBoard }: Props) {
         className="w-full max-w-lg relative bg-modal-bg border border-[var(--color-board-tint-5)] rounded-2xl shadow-2xl p-6"
       >
         <button
-          className="absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
+          className="cursor-pointer absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
           onClick={onClose}
           aria-label="Закрыть"
           type="button"
@@ -141,7 +141,7 @@ export default function BoardSettings({ board, onClose, updateBoard }: Props) {
               style={{ background: board.color || "#fff" }}
             />
             <button
-              className="px-3 py-1 bg-sky-100 rounded hover:bg-sky-200 text-sky-700"
+              className="cursor-pointer px-3 py-1 bg-sky-100 rounded hover:bg-sky-200 text-sky-700"
               onClick={() => setColorPickerVisible(v => !v)}
               type="button"
             >
@@ -165,7 +165,7 @@ export default function BoardSettings({ board, onClose, updateBoard }: Props) {
           <label className="font-semibold block mb-1">Открытость доски:</label>
           <div className="flex gap-4 items-center">
             <button
-              className={`px-3 py-1 rounded ${!board.is_public ? "bg-gray-300 text-gray-700" : "bg-sky-500 text-white"} font-semibold`}
+              className={`cursor-pointer px-3 py-1 rounded ${!board.is_public ? "bg-gray-300 text-gray-700" : "bg-sky-500 text-white"} font-semibold`}
               disabled={!board.is_public}
               onClick={() => handlePrivacyChange(false)}
               type="button"
@@ -173,7 +173,7 @@ export default function BoardSettings({ board, onClose, updateBoard }: Props) {
               Публичная
             </button>
             <button
-              className={`px-3 py-1 rounded ${!board.is_public? "bg-sky-500 text-white" : "bg-gray-300 text-gray-700"} font-semibold`}
+              className={`cursor-pointer px-3 py-1 rounded ${!board.is_public? "bg-sky-500 text-white" : "bg-gray-300 text-gray-700"} font-semibold`}
               disabled={board.is_public}
               onClick={() => handlePrivacyChange(true)}
               type="button"

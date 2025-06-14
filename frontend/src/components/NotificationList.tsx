@@ -53,7 +53,7 @@ export default function NotificationList({
           className="w-full max-w-lg relative bg-white border rounded-2xl shadow-2xl p-6"
         >
           <button
-            className="absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
+            className="cursor-pointer absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
             onClick={handleClose}
             aria-label="Закрыть"
             type="button"
@@ -110,7 +110,7 @@ export default function NotificationList({
                 </div>
               </div>
               <button
-                className="ml-2 opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-red-600"
+                className="cursor-pointer ml-2 opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-red-600"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(n.id);

@@ -57,7 +57,6 @@ async def create_user(user: RegUser) -> ServiceMessage[str]:
 
 
 async def update_user(uuid: UUID, user: BaseUserInfo) -> ServiceMessage[str]:
-    new_pass = hash_pass(user.hashed_password)
     avatar = AvatarGenerator(user.username).generate_avatar_url()
 
     is_updated = await UserRepo.update_user(
@@ -66,7 +65,7 @@ async def update_user(uuid: UUID, user: BaseUserInfo) -> ServiceMessage[str]:
         email=user.email,
         avatar_url=avatar,
         is_admin=user.is_admin,
-        password=new_pass,
+        password=user.hashed_password,
     )
 
     if not is_updated:

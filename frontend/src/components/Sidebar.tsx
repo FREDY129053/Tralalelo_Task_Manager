@@ -82,12 +82,13 @@ export default function Sidebar() {
       icon: <AiOutlineLogout />,
       spacing: true,
       hover: "hover:bg-red-400 hover:text-white",
+      link: "http://localhost:3000"
     },
   ];
 
   const MobileArrowButton = (
     <button
-      className="fixed top-4 left-4 z-50 bg-white rounded-full border border-sidebar-bg p-2 shadow-lg transition-all duration-300"
+      className="cursor-pointer fixed top-4 left-4 z-50 bg-white rounded-full border border-sidebar-bg p-2 shadow-lg transition-all duration-300"
       onClick={handleToggle}
       aria-label={open ? "Закрыть меню" : "Открыть меню"}
       style={{

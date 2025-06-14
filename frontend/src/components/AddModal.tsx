@@ -46,7 +46,7 @@ export default function AddTaskModal({
         className="w-full max-w-md relative bg-modal-bg border border-[var(--color-board-tint-5)] rounded-2xl shadow-2xl p-6"
       >
         <button
-          className="absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
+          className="cursor-pointer absolute right-4 top-4 text-3xl text-gray-400 hover:text-gray-700"
           onClick={onClose}
           aria-label="Закрыть"
           type="button"
@@ -74,7 +74,7 @@ export default function AddTaskModal({
           />
           <button
             type="submit"
-            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 rounded-lg transition"
+            className="cursor-pointer w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 rounded-lg transition"
             disabled={!value.trim()}
           >
             Добавить

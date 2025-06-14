@@ -63,13 +63,13 @@ export default function UserCard({ user }: Props) {
                     autoFocus
                   />
                   <button
-                    className="text-sm text-[var(--color-accent)] hover:underline"
+                    className="cursor-pointer text-sm text-[var(--color-accent)] hover:underline"
                     onClick={handleEmailSave}
                   >
                     Сохранить
                   </button>
                   <button
-                    className="text-sm text-gray-400 hover:text-gray-600"
+                    className="cursor-pointer text-sm text-gray-400 hover:text-gray-600"
                     onClick={() => {
                       setEditingEmail(false);
                       setEmailValue(userData.email || "");
@@ -85,7 +85,7 @@ export default function UserCard({ user }: Props) {
                   </span>
                   <button
                     onClick={() => setEditingEmail(true)}
-                    className="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+                    className="cursor-pointer text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
                     title="Изменить email"
                   >
                     <FiEdit2 className="text-lg" />

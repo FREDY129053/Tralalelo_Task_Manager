@@ -66,7 +66,7 @@ export default function CommentsList({
                     {(role !== "MEMBER" || userID === c.user.id) && (
                       <>
                         <button
-                          className="absolute right-4 opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-red-600"
+                          className="cursor-pointer absolute right-4 opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-red-600"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDelete(c.id);
