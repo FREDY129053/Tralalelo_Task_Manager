@@ -5,8 +5,10 @@ import { getBoards, createBoard, deleteBoard } from "./api/board";
 import { IoMdAdd } from "react-icons/io";
 import { useRouter } from "next/router";
 import { FaLock, FaLockOpen } from "react-icons/fa";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function Main() {
+  useAuthRedirect()
   const [boards, setBoards] = useState<IBoardShortInfo[] | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [title, setTitle] = useState("");

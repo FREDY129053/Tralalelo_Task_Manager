@@ -1,3 +1,4 @@
+import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   FilterOption,
   IBoardShortInfo,
@@ -31,7 +32,7 @@ export default function Boards({
     }) ?? [];
 
   // Проверка на мобильное устройство
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+  const isMobile = useIsMobile(480);
 
   return (
     <div className="h-screen bg-main-bg text-[var(--color-text-primary)] p-8 overflow-y-scroll">

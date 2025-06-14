@@ -40,3 +40,12 @@ export async function getRole(boardID: string): Promise<Record<string, Role>> {
     "Ошибка при получении роли"
   )
 }
+
+export async function updateUser(userID: string, username: string, email: string, avatar_url: string, is_admin: boolean = false, hashed_password: string): Promise<void> {
+  // Тупо через PUT, Но да ладно
+  return apiFetch(
+    `http://localhost:8080/api/users/${userID}`,
+    {method: "PUT", body: JSON.stringify({username, email, hashed_password, avatar_url, is_admin})},
+    "Ошибка при обновлении пользователя"
+  )
+}

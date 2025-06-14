@@ -8,30 +8,24 @@ import { IoMdNotifications } from "react-icons/io";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export default function Sidebar() {
   const [open, setOpen] = useState<boolean>(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile(480);
   const [isReady, setIsReady] = useState(false);
   const [showText, setShowText] = useState(open);
   const router = useRouter();
 
   useEffect(() => {
-    const checkMobile = () => {
-      if (window.innerWidth <= 480) {
-        setIsMobile(true);
-        setOpen(false);
-      } else {
-        setIsMobile(false);
-        const saved = localStorage.getItem("isOpenSidebar");
-        setOpen(saved !== null ? JSON.parse(saved) : true);
-      }
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+    if (isMobile) {
+      setOpen(false);
+    } else {
+      const saved = localStorage.getItem("isOpenSidebar");
+      setOpen(saved !== null ? JSON.parse(saved) : true);
+    }
     setIsReady(true);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (open) {

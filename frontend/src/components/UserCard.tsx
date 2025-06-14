@@ -2,29 +2,28 @@ import Image from "next/image";
 import { useState } from "react";
 import { IUserFullInfo } from "@/interfaces/User";
 import returnDate from "@/helpers/NormalDate";
+import { FiEdit2 } from "react-icons/fi";
+import { updateUser } from "@/pages/api/users";
 
 type Props = {
   user: IUserFullInfo;
 };
 
 export default function UserCard({ user }: Props) {
-  const [editingPhone, setEditingPhone] = useState(false);
-  const [phoneValue, setPhoneValue] = useState(user.phone || "");
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailValue, setEmailValue] = useState(user.email || "");
 
   const [userData, setUserData] = useState(user);
 
-  const handlePhoneSave = () => {
-    setUserData({ ...userData, phone: phoneValue });
-    setEditingPhone(false);
-    // Здесь можно вызвать API для обновления телефона
-    console.log("Изменено: phone", phoneValue);
+  const handleEmailSave = () => {
+    setUserData({ ...userData, email: emailValue });
+    setEditingEmail(false);
+    updateUser(user.id, user.username, emailValue, user.avatar_url, user.is_admin, user.hashed_password)
   };
 
-  // Для отображения пароля точками
   const passwordDots = "•".repeat(8);
 
-  // Формат даты регистрации
-  const regDate = returnDate(user.registered_at)
+  const regDate = returnDate(user.registered_at);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--color-bg-base)] p-4">
@@ -53,37 +52,27 @@ export default function UserCard({ user }: Props) {
             <span className="font-semibold text-[var(--color-text-secondary)]">
               Email:
             </span>
-            <span className="text-[var(--color-text-primary)]">
-              {userData.email}
-            </span>
-          </div>
-
-          {/* Телефон */}
-          <div className="w-full flex justify-between items-center bg-[var(--color-neutral)]/70 rounded-xl p-4 mb-2">
-            <span className="font-semibold text-[var(--color-text-secondary)]">
-              Телефон:
-            </span>
             <div className="flex items-center gap-3">
-              {editingPhone ? (
+              {editingEmail ? (
                 <>
                   <input
                     type="text"
                     className="px-2 py-1 rounded border border-[var(--color-border)] text-[var(--color-text-primary)] bg-[var(--color-neutral)]"
-                    value={phoneValue}
-                    onChange={(e) => setPhoneValue(e.target.value)}
+                    value={emailValue}
+                    onChange={(e) => setEmailValue(e.target.value)}
                     autoFocus
                   />
                   <button
                     className="text-sm text-[var(--color-accent)] hover:underline"
-                    onClick={handlePhoneSave}
+                    onClick={handleEmailSave}
                   >
                     Сохранить
                   </button>
                   <button
                     className="text-sm text-gray-400 hover:text-gray-600"
                     onClick={() => {
-                      setEditingPhone(false);
-                      setPhoneValue(userData.phone || "");
+                      setEditingEmail(false);
+                      setEmailValue(userData.email || "");
                     }}
                   >
                     Отмена
@@ -92,13 +81,14 @@ export default function UserCard({ user }: Props) {
               ) : (
                 <>
                   <span className="text-[var(--color-text-primary)]">
-                    {userData.phone || ""}
+                    {userData.email}
                   </span>
                   <button
-                    onClick={() => setEditingPhone(true)}
-                    className="text-sm text-[var(--color-accent)] hover:underline"
+                    onClick={() => setEditingEmail(true)}
+                    className="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+                    title="Изменить email"
                   >
-                    Изменить
+                    <FiEdit2 className="text-lg" />
                   </button>
                 </>
               )}

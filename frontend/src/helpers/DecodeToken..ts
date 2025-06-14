@@ -15,3 +15,13 @@ export const decodeJWT = (token: string | null): string | null => {
     return null;
   }
 }
+export const fullDecodeJWT = (token: string | null): JWTPayload | null => {
+  if (!token) return null;
+  try {
+    const decoded = jwtDecode<JWTPayload>(token);
+    return decoded;
+  } catch (e) {
+    console.error("Ошибка при декодировании токена:", e);
+    return null;
+  }
+}

@@ -60,11 +60,13 @@ import { decodeJWT } from "@/helpers/DecodeToken.";
 import { getRole } from "../api/users";
 import { createNotification } from "../api/notification";
 import AddTaskModal from "@/components/AddModal";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 type DraggedTask = { type: "task"; task: ITask };
 type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
+  useAuthRedirect()
   const [isOpen, setIsOpen] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const router = useRouter();

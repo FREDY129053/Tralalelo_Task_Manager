@@ -2,8 +2,10 @@ import UserCard from "@/components/UserCard";
 import { IUserFullInfo } from "@/interfaces/User";
 import { useEffect, useState } from "react";
 import { getProfile } from "./api/users";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function UserPage() {
+  useAuthRedirect()
   const [user, setUser] = useState<IUserFullInfo | null>(null);
 
   useEffect(() => {
