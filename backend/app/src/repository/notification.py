@@ -43,6 +43,9 @@ async def check_due_dates() -> Dict[int, List[Dict[str, Any]]]:
 
     for offset in day_offsets:
         date = today + timedelta(days=offset)
+        date = datetime.strptime(str(date), "%Y-%m-%d")
+        date = date.replace(hour=14, minute=0, second=0, tzinfo=timezone.utc)
+
         tasks: List[Task] = await Task.filter(due_date=date).prefetch_related(
             "responsibles__user", "column__board__members__user"
         )

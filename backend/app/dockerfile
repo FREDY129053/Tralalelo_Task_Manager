@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app
 
+RUN cp /app/backend/app/src/config/.env.example /app/backend/app/src/config/.env
+
 CMD ["python", "-m", "backend.app.main"]

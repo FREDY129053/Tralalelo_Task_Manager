@@ -6,24 +6,36 @@ services:
       POSTGRES_DB: tralalelo_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
-    # volumes:
-    #   - ./backend/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    volumes:
+      - ./backend/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     ports:
       - "5433:5432"
     networks:
       - api_network
 
-  # api:
-  #   container_name: main_api
-  #   build:
-  #     context: .
-  #     dockerfile: backend/app/dockerfile
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - api_network
-  #   ports:
-  #     - "8080:8080"
+  api:
+    container_name: main_api
+    build:
+      context: .
+      dockerfile: backend/app/dockerfile
+    depends_on:
+      - db
+    networks:
+      - api_network
+    ports:
+      - "8080:8080"
+
+  frontend:
+    container_name: main_front
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    depends_on:
+      - api
+    networks:
+      - api_network
+    ports:
+      - "3000:3000"
 
 networks:
   api_network:

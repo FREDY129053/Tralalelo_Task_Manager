@@ -1,4 +1,5 @@
 # Здесь собирается приложение(app) из роутеров, инициализации БД и т.д.
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -24,7 +25,9 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await init_db_tortoise(_app)
 
     # scheduler.add_job(notify_users, CronTrigger(day="*/30"))
-    scheduler.add_job(notify_users, CronTrigger(second="*/30"))
+    scheduler.add_job(
+        notify_users, CronTrigger(second=f"*/{int(os.getenv("EVERY_N_SECONDS", 30))}")
+    )
     scheduler.start()
     yield
 

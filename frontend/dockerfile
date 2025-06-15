@@ -1,0 +1,27 @@
+# Production-ready Node.js environment
+# FROM node:20-alpine
+FROM node:18-bullseye
+# Never блять не брать react-datepicker 4 часа из-за него контейнеры падают
+
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install
+RUN npm ci --omit=dev
+
+RUN npm install -g node-gyp
+RUN npm rebuild
+
+COPY . .
+
+ENV TAILWIND_MODE=build
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm rebuild @tailwindcss/oxide
+
+RUN npm run build
+
+EXPOSE 3000
+CMD ["npm", "start"]
+

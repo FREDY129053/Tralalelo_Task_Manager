@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
       new URL('https://i.ibb.co/**'),
     ],
   },
+  experimental: {
+    esmExternals: 'loose',
+    serverComponentsExternalPackages: ['@tailwindcss/oxide'],
+    optimizePackageImports: [
+      '@tailwindcss/postcss',
+      "react-datepicker"
+    ]
+  }
 };
 
 export default nextConfig;

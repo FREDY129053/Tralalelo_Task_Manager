@@ -69,7 +69,7 @@ type DraggedColumn = { type: "column"; column: IColumn };
 
 export default function BoardPage() {
   useAuthRedirect();
-  const isMobile = useIsMobile(640); // или 640, если нужно строже
+  const isMobile = useIsMobile(640);
   const [isOpen, setIsOpen] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const router = useRouter();
@@ -104,6 +104,7 @@ export default function BoardPage() {
       .then((res) => setUserRole(res.message))
       .catch(console.error);
     getBoardData(uuid).then(setBoardData).catch(console.error);
+    getBoardMembers(uuid).then(setMembers).catch(console.error);
   }, [uuid]);
 
   const sensors = useSensors(

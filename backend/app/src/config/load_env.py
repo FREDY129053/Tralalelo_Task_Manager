@@ -20,10 +20,7 @@ def validate_environment():
         "TOKEN_EXPIRE_MINUTES",
         "ALGORITHM",
         "JWT_SECRET_KEY",
-        "DB_USER",
-        "DB_PASS",
-        "DB_HOST",
-        "DB_PORT",
+        "EVERY_N_SECONDS",
     ]
     missing = [var for var in required_vars if not os.getenv(var)]
     if missing:
